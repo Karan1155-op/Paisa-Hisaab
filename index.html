@@ -709,6 +709,16 @@
     cursor:pointer;
   }
   .save-btn:active{ transform: scale(0.98); }
+  .backup-action.fetch-cloud{
+    background:#F0F0F7;
+    color: var(--text);
+    margin-top:10px;
+  }
+  .backup-action.push-cloud{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color:#fff;
+    margin-top:10px;
+  }
 </style>
 </head>
 <body>
@@ -716,7 +726,10 @@
 <div class="wrap">
   <header>
     <h1><span class="dot"></span>Paisa Hisaab</h1>
-    <button class="local-tag backup-trigger" id="openBackup" title="Backup & Restore">⇅ Backup</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="local-tag backup-trigger" id="changePinBtn" title="Change Password">🔒</button>
+      <button class="local-tag backup-trigger" id="openBackup" title="Backup & Restore">⇅ Backup</button>
+    </div>
   </header>
 
   <div class="balance-card">
@@ -896,7 +909,8 @@
       <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
     </div>
     <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
-    <button type="button" class="backup-action sync-now" id="syncNowBtn">🔄 Sync now</button>
+    <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
+    <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
     <p class="sync-last" id="syncLast"></p>
   </div>
 </div>
@@ -915,7 +929,14 @@
   const overlay = document.getElementById('overlay');
   const formTitle = document.getElementById('formTitle');
   const saveBtn = document.getElementById('saveBtn');
-  const SPEND_PASSWORD = '0987';
+  const PIN_HASH_KEY = 'paisa-hisaab-pin-hash';
+  async function hashPin(pin){
+    const data = new TextEncoder().encode(pin + 'paisa-hisaab-salt');
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  function getStoredPinHash(){ return localStorage.getItem(PIN_HASH_KEY); }
+  function setStoredPinHash(hash){ localStorage.setItem(PIN_HASH_KEY, hash); }
   let currentFilter = 'all';
 
   const dateFilterChip = document.getElementById('dateFilterChip');
@@ -1205,13 +1226,45 @@
   const pinError = document.getElementById('pinError');
   let pinValue = '';
   let pinCallbacks = null;
+  let pinMode = 'verify';
+  let pendingNewPin = '';
 
   function requestPassword({title, sub, onSuccess, onCancel}){
+    if(!getStoredPinHash()){
+      pinCallbacks = {onSuccess, onCancel};
+      startSetPin();
+      return;
+    }
     pinCallbacks = {onSuccess, onCancel};
+    pinMode = 'verify';
     pinTitle.textContent = title || 'Enter security password';
     pinSub.textContent = sub || 'Confirm to continue';
     pinValue = '';
     pinError.textContent = '';
+    pendingNewPin = '';
+    updatePinDots();
+    pinOverlay.classList.add('show');
+  }
+
+  function startSetPin(){
+    pinMode = 'set';
+    pinTitle.textContent = 'Set your password';
+    pinSub.textContent = 'Choose a 4-digit password';
+    pinValue = '';
+    pinError.textContent = '';
+    pendingNewPin = '';
+    updatePinDots();
+    pinOverlay.classList.add('show');
+  }
+
+  function startChangePin(){
+    pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
+    pinMode = 'change-verify';
+    pinTitle.textContent = 'Enter current password';
+    pinSub.textContent = 'Verify your identity first';
+    pinValue = '';
+    pinError.textContent = '';
+    pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
   }
@@ -1220,22 +1273,120 @@
     pinDots.forEach((d, i) => d.classList.toggle('filled', i < pinValue.length));
   }
 
-  function checkPin(){
-    if(pinValue === SPEND_PASSWORD){
-      pinOverlay.classList.remove('show');
-      const cb = pinCallbacks;
-      pinCallbacks = null;
+  async function checkPin(){
+    if(pinMode === 'set'){
+      pendingNewPin = pinValue;
+      pinMode = 'set-confirm';
+      pinTitle.textContent = 'Confirm your password';
+      pinSub.textContent = 'Re-enter the same 4-digit password';
       pinValue = '';
+      pinError.textContent = '';
       updatePinDots();
-      if(cb && cb.onSuccess) cb.onSuccess();
-    } else {
-      pinError.textContent = 'Invalid password. Try again.';
-      pinDotsWrap.classList.add('shake');
-      setTimeout(() => {
-        pinDotsWrap.classList.remove('shake');
+      return;
+    }
+    if(pinMode === 'set-confirm'){
+      if(pinValue === pendingNewPin){
+        var hash = await hashPin(pinValue);
+        setStoredPinHash(hash);
+        pinOverlay.classList.remove('show');
+        pinValue = '';
+        pendingNewPin = '';
+        updatePinDots();
+        var cb = pinCallbacks;
+        pinCallbacks = null;
+        if(cb && cb.onSuccess) cb.onSuccess();
+      } else {
+        pinError.textContent = "Passwords don't match. Start over.";
+        pinDotsWrap.classList.add('shake');
+        setTimeout(function(){
+          pinDotsWrap.classList.remove('shake');
+          pinMode = 'set';
+          pinTitle.textContent = 'Set your password';
+          pinSub.textContent = 'Choose a 4-digit password';
+          pinValue = '';
+          pinError.textContent = '';
+          pendingNewPin = '';
+          updatePinDots();
+        }, 400);
+      }
+      return;
+    }
+    if(pinMode === 'verify'){
+      var hash = await hashPin(pinValue);
+      if(hash === getStoredPinHash()){
+        pinOverlay.classList.remove('show');
+        var cb = pinCallbacks;
+        pinCallbacks = null;
         pinValue = '';
         updatePinDots();
-      }, 350);
+        if(cb && cb.onSuccess) cb.onSuccess();
+      } else {
+        pinError.textContent = 'Invalid password. Try again.';
+        pinDotsWrap.classList.add('shake');
+        setTimeout(function(){
+          pinDotsWrap.classList.remove('shake');
+          pinValue = '';
+          updatePinDots();
+        }, 350);
+      }
+      return;
+    }
+    if(pinMode === 'change-verify'){
+      var hash = await hashPin(pinValue);
+      if(hash === getStoredPinHash()){
+        pinMode = 'change-new';
+        pinTitle.textContent = 'Enter new password';
+        pinSub.textContent = 'Choose a new 4-digit password';
+        pinValue = '';
+        pinError.textContent = '';
+        updatePinDots();
+      } else {
+        pinError.textContent = 'Invalid password. Try again.';
+        pinDotsWrap.classList.add('shake');
+        setTimeout(function(){
+          pinDotsWrap.classList.remove('shake');
+          pinValue = '';
+          updatePinDots();
+        }, 350);
+      }
+      return;
+    }
+    if(pinMode === 'change-new'){
+      pendingNewPin = pinValue;
+      pinMode = 'change-confirm';
+      pinTitle.textContent = 'Confirm new password';
+      pinSub.textContent = 'Re-enter the new password';
+      pinValue = '';
+      pinError.textContent = '';
+      updatePinDots();
+      return;
+    }
+    if(pinMode === 'change-confirm'){
+      if(pinValue === pendingNewPin){
+        var hash = await hashPin(pinValue);
+        setStoredPinHash(hash);
+        pinOverlay.classList.remove('show');
+        pinValue = '';
+        pendingNewPin = '';
+        updatePinDots();
+        var cb = pinCallbacks;
+        pinCallbacks = null;
+        if(cb && cb.onSuccess) cb.onSuccess();
+      } else {
+        pinError.textContent = "Passwords don't match. Try again.";
+        pinDotsWrap.classList.add('shake');
+        setTimeout(function(){
+          pinDotsWrap.classList.remove('shake');
+          pinMode = 'change-new';
+          pinTitle.textContent = 'Enter new password';
+          pinSub.textContent = 'Choose a new 4-digit password';
+          pinValue = '';
+          pinError.textContent = '';
+          pendingNewPin = '';
+          updatePinDots();
+        }, 400);
+      }
+      return;
     }
   }
 
@@ -1257,12 +1408,26 @@
   });
 
   document.getElementById('pinCancel').addEventListener('click', () => {
+    if((pinMode === 'set' || pinMode === 'set-confirm') && !getStoredPinHash()){
+      pinError.textContent = 'You must set a password to use the app.';
+      return;
+    }
     pinOverlay.classList.remove('show');
     pinValue = '';
+    pendingNewPin = '';
     updatePinDots();
     const cb = pinCallbacks;
     pinCallbacks = null;
     if(cb && cb.onCancel) cb.onCancel();
+  });
+
+  document.getElementById('changePinBtn').addEventListener('click', () => {
+    if(!getStoredPinHash()){
+      pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
+      startSetPin();
+      return;
+    }
+    startChangePin();
   });
 
   /* Entry detail sheet */
@@ -1458,16 +1623,19 @@
       entries.push(e);
       added++;
     });
+    // Clean tombstones for re-imported entries so they survive sync
+    const currentIds = new Set(entries.map(e => e.id));
+    const cleaned = loadDeletedIds().filter(id => !currentIds.has(id));
+    saveDeletedIds(cleaned);
     render();
     saveEntries();
     return { added, skipped };
   }
 
   function replaceImport(validEntries){
-    const incomingIds = new Set(validEntries.map(e => e.id));
-    const trulyRemovedIds = entries.filter(e => !incomingIds.has(e.id)).map(e => e.id);
-    markDeleted(trulyRemovedIds);
     entries = validEntries.map(normalizeImportedEntry);
+    // Clear tombstones — fresh start with imported data
+    saveDeletedIds([]);
     render();
     saveEntries();
   }
@@ -1534,14 +1702,13 @@
     setBackupStatus('Sync settings saved on this device.', 'ok');
   });
 
-  async function syncNow(){
+  async function fetchFromCloud(){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       setBackupStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
-    setBackupStatus('Syncing…', '');
-
+    setBackupStatus('Fetching…', '');
     try{
       const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
         headers: {
@@ -1549,10 +1716,9 @@
           'Accept': 'application/vnd.github+json'
         }
       });
-      if(!getRes.ok) throw new Error('get-failed-' + getRes.status);
+      if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
       const gist = await getRes.json();
       const file = gist.files && gist.files[SYNC_FILE_NAME];
-
       let remoteEntries = [];
       let remoteDeleted = [];
       if(file && file.content){
@@ -1564,31 +1730,43 @@
             remoteEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
             remoteDeleted = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
           }
-        }catch(err){ /* treat remote file as empty/corrupt, proceed with local only */ }
+        }catch(err){ /* treat as empty */ }
       }
-
-      // Self-heal: any id currently present locally is, by definition, not deleted —
-      // clean out any stale tombstone that would otherwise wipe it out below.
+      // Self-heal: never delete entries that exist locally
       const currentIds = new Set(entries.map(e => e.id));
       const localDeleted = loadDeletedIds().filter(id => !currentIds.has(id));
       saveDeletedIds(localDeleted);
-
-      const mergedDeleted = Array.from(new Set([...localDeleted, ...remoteDeleted]));
-
-      const localAlive = entries.filter(e => !mergedDeleted.includes(e.id));
+      const mergedDeleted = Array.from(new Set([...localDeleted, ...remoteDeleted])).filter(id => !currentIds.has(id));
       const remoteAlive = remoteEntries.filter(e => e && e.id && !mergedDeleted.includes(e.id));
-
-      const mergedMap = new Map();
-      localAlive.forEach(e => mergedMap.set(e.id, e));
-      remoteAlive.forEach(e => { if(!mergedMap.has(e.id)) mergedMap.set(e.id, normalizeImportedEntry(e)); });
-
-      const mergedEntries = Array.from(mergedMap.values());
-
-      entries = mergedEntries;
-      saveEntries();
+      let added = 0;
+      remoteAlive.forEach(e => {
+        if(!entries.some(en => en.id === e.id)){
+          entries.push(normalizeImportedEntry(e));
+          added++;
+        }
+      });
       saveDeletedIds(mergedDeleted);
+      saveEntries();
       render();
+      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+      updateSyncLastText();
+      setBackupStatus(`Fetched — ${added} new ${added === 1 ? 'entry' : 'entries'} pulled, ${entries.length} total locally.`, 'ok');
+    }catch(err){
+      setBackupStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
+    }
+  }
 
+  async function pushToCloud(){
+    const cfg = loadSyncConfig();
+    if(!cfg.gistId || !cfg.token){
+      setBackupStatus('Save your Gist ID and Token first.', 'err');
+      return;
+    }
+    setBackupStatus('Pushing…', '');
+    try{
+      const currentIds = new Set(entries.map(e => e.id));
+      const localDeleted = loadDeletedIds().filter(id => !currentIds.has(id));
+      saveDeletedIds(localDeleted);
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
         method: 'PATCH',
         headers: {
@@ -1599,24 +1777,30 @@
         body: JSON.stringify({
           files: {
             [SYNC_FILE_NAME]: {
-              content: JSON.stringify({ entries: mergedEntries, deletedIds: mergedDeleted }, null, 2)
+              content: JSON.stringify({ entries: entries, deletedIds: localDeleted }, null, 2)
             }
           }
         })
       });
       if(!putRes.ok) throw new Error('push-failed-' + putRes.status);
-
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
       updateSyncLastText();
-      setBackupStatus(`Synced — ${mergedEntries.length} total entries across all devices.`, 'ok');
+      setBackupStatus(`Pushed — ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} uploaded to cloud.`, 'ok');
     }catch(err){
-      setBackupStatus('Sync failed. Check your Gist ID, Token, and internet connection.', 'err');
+      setBackupStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
     }
   }
 
-  document.getElementById('syncNowBtn').addEventListener('click', syncNow);
+  document.getElementById('fetchCloudBtn').addEventListener('click', fetchFromCloud);
+  document.getElementById('pushCloudBtn').addEventListener('click', pushToCloud);
 
   loadEntries();
+
+  // If no PIN is set yet, prompt user to create one
+  if(!getStoredPinHash()){
+    pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
+    startSetPin();
+  }
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
