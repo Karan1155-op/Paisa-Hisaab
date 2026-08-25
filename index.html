@@ -1719,38 +1719,26 @@
       if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
       const gist = await getRes.json();
       const file = gist.files && gist.files[SYNC_FILE_NAME];
-      let remoteEntries = [];
-      let remoteDeleted = [];
+      let rawData = [];
       if(file && file.content){
         try{
           const parsed = JSON.parse(file.content);
           if(Array.isArray(parsed)){
-            remoteEntries = parsed;
+            rawData = parsed;
           } else if(parsed && typeof parsed === 'object'){
-            remoteEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
-            remoteDeleted = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
+            rawData = Array.isArray(parsed.entries) ? parsed.entries : [];
           }
-        }catch(err){ /* treat as empty */ }
+        }catch(err){ rawData = []; }
       }
-      // Self-heal: never delete entries that exist locally
-      const currentIds = new Set(entries.map(e => e.id));
-      const localDeleted = loadDeletedIds().filter(id => !currentIds.has(id));
-      saveDeletedIds(localDeleted);
-      const mergedDeleted = Array.from(new Set([...localDeleted, ...remoteDeleted])).filter(id => !currentIds.has(id));
-      const remoteAlive = remoteEntries.filter(e => e && e.id && !mergedDeleted.includes(e.id));
-      let added = 0;
-      remoteAlive.forEach(e => {
-        if(!entries.some(en => en.id === e.id)){
-          entries.push(normalizeImportedEntry(e));
-          added++;
-        }
-      });
-      saveDeletedIds(mergedDeleted);
+      const { valid } = validateImportData(rawData);
+      // Pure overwrite: replace local entries with cloud entries
+      entries = valid.map(normalizeImportedEntry);
+      saveDeletedIds([]);
       saveEntries();
       render();
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
       updateSyncLastText();
-      setBackupStatus(`Fetched — ${added} new ${added === 1 ? 'entry' : 'entries'} pulled, ${entries.length} total locally.`, 'ok');
+      setBackupStatus(`Fetched — Local data replaced with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from cloud.`, 'ok');
     }catch(err){
       setBackupStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
     }
@@ -1764,9 +1752,7 @@
     }
     setBackupStatus('Pushing…', '');
     try{
-      const currentIds = new Set(entries.map(e => e.id));
-      const localDeleted = loadDeletedIds().filter(id => !currentIds.has(id));
-      saveDeletedIds(localDeleted);
+      // Pure overwrite: push exactly what is in local entries right now
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
         method: 'PATCH',
         headers: {
@@ -1777,7 +1763,7 @@
         body: JSON.stringify({
           files: {
             [SYNC_FILE_NAME]: {
-              content: JSON.stringify({ entries: entries, deletedIds: localDeleted }, null, 2)
+              content: JSON.stringify({ entries: entries }, null, 2)
             }
           }
         })
@@ -1785,7 +1771,7 @@
       if(!putRes.ok) throw new Error('push-failed-' + putRes.status);
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
       updateSyncLastText();
-      setBackupStatus(`Pushed — ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} uploaded to cloud.`, 'ok');
+      setBackupStatus(`Pushed — Cloud overwritten with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from local.`, 'ok');
     }catch(err){
       setBackupStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
     }
