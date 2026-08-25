@@ -451,6 +451,74 @@
     cursor:pointer;
   }
 
+  /* Custom Confirmation Dialog */
+  #confirmOverlay{ z-index: 300; }
+  .confirm-sheet{
+    text-align: center;
+    padding: 16px 22px 28px;
+  }
+  .confirm-sheet .confirm-icon{
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--grad1), var(--grad3));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 4px auto 14px;
+    box-shadow: 0 8px 20px rgba(91,61,245,0.22);
+  }
+  .confirm-sheet .confirm-icon.danger{
+    background: linear-gradient(135deg, #E3483F, #FF6B6B);
+    box-shadow: 0 8px 20px rgba(227,72,63,0.22);
+  }
+  .confirm-sheet h2{
+    font-family: 'Poppins', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    padding-right: 0;
+  }
+  .confirm-sheet .confirm-msg{
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-soft);
+    margin: 0 0 22px;
+  }
+  .confirm-actions{
+    display: flex;
+    gap: 12px;
+  }
+  .confirm-btn{
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .confirm-btn:active{
+    transform: scale(0.97);
+  }
+  .confirm-btn.cancel{
+    background: #F0F0F7;
+    color: var(--text);
+  }
+  .confirm-btn.ok{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.25);
+  }
+  .confirm-btn.ok.danger{
+    background: linear-gradient(135deg, #E3483F, #C0292B);
+    box-shadow: 0 4px 14px rgba(227,72,63,0.25);
+  }
+
   /* Filter chips */
   .filter-row{
     display:flex;
@@ -950,6 +1018,19 @@
     <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
     <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
     <p class="sync-last" id="syncLast"></p>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet confirm-sheet">
+    <div class="handle"></div>
+    <div class="confirm-icon" id="confirmIcon">❓</div>
+    <h2 id="confirmTitle">Confirm Action</h2>
+    <p class="confirm-msg" id="confirmMsg">Are you sure you want to proceed?</p>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-btn cancel" id="confirmCancelBtn">Cancel</button>
+      <button type="button" class="confirm-btn ok" id="confirmOkBtn">Proceed</button>
+    </div>
   </div>
 </div>
 
@@ -1815,15 +1896,62 @@
     }
   }
 
-  document.getElementById('fetchCloudBtn').addEventListener('click', () => {
-    if(confirm('Are you sure you want to fetch from cloud? This will overwrite your local data with data from cloud.')){
-      fetchFromCloud();
-    }
+  function showCustomConfirm({ icon = '❓', title = 'Confirm Action', msg = 'Are you sure?', okText = 'Proceed', cancelText = 'Cancel', isDanger = false }){
+    return new Promise((resolve) => {
+      const ov = document.getElementById('confirmOverlay');
+      const iconEl = document.getElementById('confirmIcon');
+      const titleEl = document.getElementById('confirmTitle');
+      const msgEl = document.getElementById('confirmMsg');
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      iconEl.textContent = icon;
+      iconEl.className = 'confirm-icon' + (isDanger ? ' danger' : '');
+      titleEl.textContent = title;
+      msgEl.textContent = msg;
+      okBtn.textContent = okText;
+      okBtn.className = 'confirm-btn ok' + (isDanger ? ' danger' : '');
+      cancelBtn.textContent = cancelText;
+
+      const cleanup = () => {
+        ov.classList.remove('show');
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        ov.removeEventListener('click', onBackdrop);
+      };
+
+      const onOk = () => { cleanup(); resolve(true); };
+      const onCancel = () => { cleanup(); resolve(false); };
+      const onBackdrop = (e) => { if(e.target === ov){ cleanup(); resolve(false); } };
+
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+      ov.addEventListener('click', onBackdrop);
+
+      ov.classList.add('show');
+    });
+  }
+
+  document.getElementById('fetchCloudBtn').addEventListener('click', async () => {
+    const confirmed = await showCustomConfirm({
+      icon: '⬇️',
+      title: 'Fetch from Cloud?',
+      msg: 'This will replace your local transactions with data from your cloud backup.',
+      okText: 'Yes, Fetch & Replace',
+      cancelText: 'Cancel'
+    });
+    if(confirmed) fetchFromCloud();
   });
-  document.getElementById('pushCloudBtn').addEventListener('click', () => {
-    if(confirm('Are you sure you want to push to cloud? This will overwrite cloud backup with your current local data.')){
-      pushToCloud();
-    }
+
+  document.getElementById('pushCloudBtn').addEventListener('click', async () => {
+    const confirmed = await showCustomConfirm({
+      icon: '⬆️',
+      title: 'Push to Cloud?',
+      msg: 'This will overwrite your cloud backup with your current local transactions.',
+      okText: 'Yes, Push to Cloud',
+      cancelText: 'Cancel'
+    });
+    if(confirmed) pushToCloud();
   });
 
   // Close buttons for bottom sheets
