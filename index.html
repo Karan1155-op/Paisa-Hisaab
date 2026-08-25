@@ -1777,8 +1777,16 @@
     }
   }
 
-  document.getElementById('fetchCloudBtn').addEventListener('click', fetchFromCloud);
-  document.getElementById('pushCloudBtn').addEventListener('click', pushToCloud);
+  document.getElementById('fetchCloudBtn').addEventListener('click', () => {
+    if(confirm('Are you sure you want to fetch from cloud? This will overwrite your local data with data from cloud.')){
+      fetchFromCloud();
+    }
+  });
+  document.getElementById('pushCloudBtn').addEventListener('click', () => {
+    if(confirm('Are you sure you want to push to cloud? This will overwrite cloud backup with your current local data.')){
+      pushToCloud();
+    }
+  });
 
   loadEntries();
 
