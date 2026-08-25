@@ -31,6 +31,10 @@
     --shadow-lg: 0 16px 40px rgba(91,61,245,0.22);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html, body{
+    overscroll-behavior-y: none;
+    overscroll-behavior: none;
+  }
   body{
     margin:0;
     background: var(--bg);
@@ -246,13 +250,20 @@
     align-items:flex-end;
     justify-content:center;
     z-index:100;
+    overscroll-behavior: none;
+    touch-action: none;
   }
   .overlay.show{ display:flex; }
   #pinOverlay{ z-index:200; }
   .sheet{
+    position: relative;
     background:#fff;
     width:100%;
     max-width:480px;
+    max-height: 88vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     border-radius: 24px 24px 0 0;
     padding: 10px 22px 26px;
     animation: rise .22s ease-out;
@@ -263,10 +274,34 @@
     background:#E2E3EE;
     margin: 6px auto 16px;
   }
+  .sheet-close{
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F0F0F7;
+    border: none;
+    color: var(--text-soft);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.12s, color 0.12s;
+  }
+  .sheet-close:active{
+    background: #E2E3EE;
+    color: var(--text);
+  }
   .sheet h2{
     font-family:'Poppins', sans-serif;
     font-size:18px;
     margin:0 0 16px;
+    padding-right: 36px;
   }
 
   .type-toggle{
@@ -784,6 +819,7 @@
 
 <div class="overlay" id="overlay">
   <div class="sheet">
+    <button type="button" class="sheet-close" id="closeEntrySheet" title="Close">✕</button>
     <div class="handle"></div>
     <h2 id="formTitle">Add entry</h2>
     <form id="entryForm">
@@ -844,6 +880,7 @@
 
 <div class="overlay" id="detailOverlay">
   <div class="sheet detail-sheet">
+    <button type="button" class="sheet-close" id="closeDetailSheet" title="Close">✕</button>
     <div class="handle"></div>
     <div class="detail-top">
       <div class="detail-avatar" id="detailAvatar"></div>
@@ -874,6 +911,7 @@
 
 <div class="overlay" id="backupOverlay">
   <div class="sheet backup-sheet">
+    <button type="button" class="sheet-close" id="closeBackupSheet" title="Close">✕</button>
     <div class="handle"></div>
     <h2>Backup & Restore</h2>
     <p class="backup-note">Your data lives only on this device. Export a backup file to keep it safe, or move it to another phone.</p>
@@ -1786,6 +1824,51 @@
     if(confirm('Are you sure you want to push to cloud? This will overwrite cloud backup with your current local data.')){
       pushToCloud();
     }
+  });
+
+  // Close buttons for bottom sheets
+  document.getElementById('closeEntrySheet').addEventListener('click', () => overlay.classList.remove('show'));
+  document.getElementById('closeDetailSheet').addEventListener('click', () => detailOverlay.classList.remove('show'));
+  document.getElementById('closeBackupSheet').addEventListener('click', () => backupOverlay.classList.remove('show'));
+
+  // Swipe/drag down to dismiss sheets & block pull-to-refresh
+  document.querySelectorAll('.overlay').forEach(ov => {
+    const sheet = ov.querySelector('.sheet');
+    if(!sheet || ov.id === 'pinOverlay') return;
+    let startY = 0;
+    let currentY = 0;
+    let isTracking = false;
+
+    sheet.addEventListener('touchstart', (e) => {
+      if(sheet.scrollTop <= 5){
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isTracking = true;
+      } else {
+        isTracking = false;
+      }
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', (e) => {
+      if(!isTracking) return;
+      currentY = e.touches[0].clientY;
+      const diff = currentY - startY;
+      if(diff > 0 && sheet.scrollTop <= 5){
+        sheet.style.transform = `translateY(${Math.min(diff * 0.7, 250)}px)`;
+      }
+    }, { passive: true });
+
+    sheet.addEventListener('touchend', () => {
+      if(!isTracking) return;
+      isTracking = false;
+      const diff = currentY - startY;
+      sheet.style.transition = 'transform 0.2s ease-out';
+      sheet.style.transform = '';
+      setTimeout(() => { sheet.style.transition = ''; }, 200);
+      if(diff > 90 && sheet.scrollTop <= 5){
+        ov.classList.remove('show');
+      }
+    });
   });
 
   loadEntries();
