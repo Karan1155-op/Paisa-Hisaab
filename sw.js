@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paisa-hisaab-v12';
+const CACHE_NAME = 'paisa-hisaab-v13';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -18,7 +18,33 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  // For navigation requests (HTML pages): network-first, so updates always arrive
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache the fresh copy for offline use
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // For everything else (images, manifest, etc.): stale-while-revalidate
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    caches.match(request).then((cached) => {
+      const networkFetch = fetch(request).then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        return response;
+      }).catch(() => cached);
+
+      return cached || networkFetch;
+    })
   );
 });
