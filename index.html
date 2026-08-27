@@ -818,6 +818,162 @@
     color:#fff;
     margin-top:10px;
   }
+
+  /* Detailed Transactions View */
+  .txn-list-overlay{
+    position:fixed;
+    inset:0;
+    background:#fff;
+    z-index:150;
+    display:none;
+    flex-direction:column;
+    animation: txnSlideUp .25s ease-out;
+  }
+  .txn-list-overlay.show{ display:flex; }
+  @keyframes txnSlideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+
+  .txn-list-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px 0;
+    flex-shrink:0;
+  }
+  .txn-list-header h2{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin:0;
+  }
+  .txn-list-header .txn-count{
+    font-size:12.5px;
+    color: var(--text-soft);
+    font-weight:500;
+    margin:2px 0 0;
+  }
+  .txn-list-close{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:#F0F0F7;
+    border:none;
+    color: var(--text-soft);
+    font-size:16px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .txn-list-close:active{ background:#E2E3EE; }
+
+  .txn-list-filters{
+    display:flex;
+    gap:8px;
+    padding:14px 20px 10px;
+    flex-shrink:0;
+  }
+  .txn-filter-chip{
+    padding:7px 14px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background: var(--card);
+    font-family:'Inter', sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color: var(--text-soft);
+    cursor:pointer;
+  }
+  .txn-filter-chip.active{
+    background: var(--grad1);
+    color:#fff;
+    border-color: var(--grad1);
+  }
+
+  .txn-list-body{
+    flex:1;
+    overflow-y:auto;
+    padding:6px 16px 30px;
+    overscroll-behavior:contain;
+  }
+  .txn-list-empty{
+    text-align:center;
+    padding:50px 20px;
+    color: var(--text-soft);
+    font-size:14px;
+  }
+
+  .txn-card{
+    background: var(--card);
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:10px;
+    box-shadow: var(--shadow);
+  }
+  .txn-card-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:10px;
+  }
+  .txn-card-top .avatar{
+    width:42px; height:42px;
+    border-radius:13px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .txn-card-info{ flex:1; min-width:0; }
+  .txn-card-name{
+    font-weight:600;
+    font-size:14.5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .txn-card-datetime{
+    font-size:11.5px;
+    color: var(--text-soft);
+    margin-top:2px;
+  }
+  .txn-card-badge{
+    font-size:11px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:20px;
+    flex-shrink:0;
+  }
+  .txn-card-badge.received{
+    background: #E8F9EF;
+    color: var(--green);
+  }
+  .txn-card-badge.spent{
+    background: #FEECEB;
+    color: var(--red);
+  }
+  .txn-card-amount{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:20px;
+    margin-bottom:6px;
+  }
+  .txn-card-amount.received{ color: var(--green); }
+  .txn-card-amount.spent{ color: var(--red); }
+  .txn-card-reason{
+    font-size:13px;
+    color: var(--text-soft);
+    line-height:1.45;
+    padding:8px 12px;
+    background:#F8F8FC;
+    border-radius:10px;
+    border-left: 3px solid var(--line);
+  }
+  .txn-card-reason.has-reason{
+    border-left-color: var(--grad1);
+    color: var(--text);
+  }
 </style>
 </head>
 <body>
@@ -826,6 +982,7 @@
   <header>
     <h1><span class="dot"></span>Paisa Hisaab</h1>
     <div style="display:flex;gap:8px;align-items:center;">
+      <button class="local-tag backup-trigger" id="openTxnList" title="View all transactions">📋</button>
       <button class="local-tag backup-trigger" id="changePinBtn" title="Change Password">🔒</button>
       <button class="local-tag backup-trigger" id="openBackup" title="Backup & Restore">⇅ Backup</button>
     </div>
@@ -1028,6 +1185,22 @@
       <button type="button" class="confirm-btn ok" id="confirmOkBtn">Proceed</button>
     </div>
   </div>
+</div>
+
+<div class="txn-list-overlay" id="txnListOverlay">
+  <div class="txn-list-header">
+    <div>
+      <h2>All Transactions</h2>
+      <p class="txn-count" id="txnCount">Showing 0 entries</p>
+    </div>
+    <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
+  </div>
+  <div class="txn-list-filters">
+    <button type="button" class="txn-filter-chip active" data-txnf="all">All</button>
+    <button type="button" class="txn-filter-chip" data-txnf="received">Received</button>
+    <button type="button" class="txn-filter-chip" data-txnf="spent">Spent</button>
+  </div>
+  <div class="txn-list-body" id="txnListBody"></div>
 </div>
 
 <script>
@@ -1825,10 +1998,12 @@
     }
     setBackupStatus('Fetching…', '');
     try{
-      const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
+        cache: 'no-store',
         headers: {
           'Authorization': `token ${cfg.token}`,
-          'Accept': 'application/vnd.github+json'
+          'Accept': 'application/vnd.github+json',
+          'If-None-Match': ''
         }
       });
       if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
@@ -1992,6 +2167,82 @@
       if(diff > 90 && sheet.scrollTop <= 5){
         ov.classList.remove('show');
       }
+    });
+  });
+  // ── Detailed Transactions View ──
+  const txnListOverlay = document.getElementById('txnListOverlay');
+  const txnListBody = document.getElementById('txnListBody');
+  const txnCountEl = document.getElementById('txnCount');
+  let txnListFilter = 'all';
+
+  function renderTxnList(){
+    txnListBody.innerHTML = '';
+
+    let filtered;
+    if(txnListFilter === 'all'){
+      filtered = entries;
+    } else {
+      filtered = entries.filter(e => e.type === txnListFilter);
+    }
+
+    // If date filter is active on main page, apply it here too
+    if(currentFilter === 'date' && calDateInput.value){
+      filtered = filtered.filter(e => toLocalDateStr(e.when) === calDateInput.value);
+    }
+
+    const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
+
+    txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
+
+    if(sorted.length === 0){
+      txnListBody.innerHTML = '<div class="txn-list-empty">🧾<br>No entries to show.</div>';
+      return;
+    }
+
+    sorted.forEach(e => {
+      const d = new Date(e.when);
+      const datePart = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const timePart = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      const sign = e.type === 'received' ? '+' : '−';
+      const reasonText = e.reason ? escapeHtml(e.reason) : '— No reason provided';
+      const hasReason = e.reason ? ' has-reason' : '';
+
+      const card = document.createElement('div');
+      card.className = 'txn-card';
+      card.innerHTML = `
+        <div class="txn-card-top">
+          <div class="avatar" style="background:${colorFor(e.name)}">${initials(e.name)}</div>
+          <div class="txn-card-info">
+            <div class="txn-card-name">${escapeHtml(e.name)}</div>
+            <div class="txn-card-datetime">${datePart} · ${timePart}</div>
+          </div>
+          <span class="txn-card-badge ${e.type}">${e.type === 'received' ? 'Received' : 'Spent'}</span>
+        </div>
+        <div class="txn-card-amount ${e.type}">${sign} ${formatRupee(e.amount)}</div>
+        <div class="txn-card-reason${hasReason}">${reasonText}</div>
+      `;
+      txnListBody.appendChild(card);
+    });
+  }
+
+  document.getElementById('openTxnList').addEventListener('click', () => {
+    txnListFilter = 'all';
+    document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
+    renderTxnList();
+    txnListOverlay.classList.add('show');
+  });
+
+  document.getElementById('closeTxnList').addEventListener('click', () => {
+    txnListOverlay.classList.remove('show');
+  });
+
+  document.querySelectorAll('.txn-filter-chip[data-txnf]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      txnListFilter = chip.dataset.txnf;
+      document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderTxnList();
     });
   });
 
