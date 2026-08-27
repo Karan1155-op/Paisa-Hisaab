@@ -828,10 +828,31 @@
     z-index:80;
     display:none;
     flex-direction:column;
-    animation: txnSlideUp .25s ease-out;
   }
   .txn-list-overlay.show{ display:flex; }
-  @keyframes txnSlideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+
+  /* Horizontal Tab Slide Animations */
+  @keyframes slideInFromRight {
+    from { transform: translateX(100%); opacity: 0.92; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideInFromLeft {
+    from { transform: translateX(-100%); opacity: 0.92; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideInHomeFromLeft {
+    from { transform: translateX(-40px); opacity: 0.85; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .slide-right {
+    animation: slideInFromRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+  .slide-left {
+    animation: slideInFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+  .slide-home-left {
+    animation: slideInHomeFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
 
   .txn-list-header{
     display:flex;
@@ -1055,7 +1076,6 @@
     z-index:80;
     display:none;
     flex-direction:column;
-    animation: txnSlideUp .25s ease-out;
   }
   .settings-overlay.show{ display:flex; }
   .settings-header{
@@ -1142,8 +1162,50 @@
   }
   .settings-item .si-arrow{
     color: var(--text-soft);
-    font-size:14px;
+    font-size:16px;
+    font-weight:600;
   }
+
+  /* Settings Subpages (Backup & Restore, Cloud Sync) */
+  .settings-subpage{
+    position:fixed;
+    inset:0;
+    bottom:64px;
+    background:#fff;
+    z-index:85;
+    display:none;
+    flex-direction:column;
+  }
+  .settings-subpage.show{ display:flex; }
+  .settings-subpage-header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:16px 18px 12px;
+    flex-shrink:0;
+    border-bottom: 1px solid var(--line);
+  }
+  .settings-subpage-header h2{
+    font-family:'Poppins', sans-serif;
+    font-size:18px;
+    font-weight:700;
+    margin:0;
+  }
+  .settings-back-btn{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:#F0F0F7;
+    border:none;
+    color: var(--text);
+    font-size:16px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: background 0.12s;
+  }
+  .settings-back-btn:active{ background:#E2E3EE; }
 </style>
 </head>
 <body>
@@ -1311,47 +1373,74 @@
     </div>
 
     <div class="settings-section">
-      <p class="settings-section-title">Backup & Restore</p>
-      <p class="backup-note">Your data lives only on this device. Export a backup file to keep it safe, or move it to another phone.</p>
-
-      <button type="button" class="backup-action export" id="exportBtn">
-        <span class="ic">⬇</span> Export backup file
+      <p class="settings-section-title">Data & Storage</p>
+      <button type="button" class="settings-item" id="openBackupSubpageBtn">
+        <div class="si-icon green">📦</div>
+        <div class="si-text">Backup & Restore<div class="si-sub">Export or import backup JSON file</div></div>
+        <span class="si-arrow">›</span>
       </button>
 
-      <div class="backup-divider"><span>or restore from a file</span></div>
-
-      <input type="file" id="importFile" accept="application/json,.json" hidden>
-      <button type="button" class="backup-action import" id="chooseFileBtn">
-        <span class="ic">⬆</span> Choose backup file
+      <button type="button" class="settings-item" id="openCloudSyncSubpageBtn">
+        <div class="si-icon blue">☁️</div>
+        <div class="si-text">Cloud Sync<div class="si-sub">Connect GitHub Gist to push & fetch</div></div>
+        <span class="si-arrow">›</span>
       </button>
-
-      <p class="backup-status" id="backupStatus"></p>
-
-      <div class="import-preview" id="importPreview">
-        <p class="ip-summary" id="ipSummary"></p>
-        <button type="button" class="backup-action merge" id="mergeBtn">Merge with my current data</button>
-        <button type="button" class="backup-action replace" id="replaceBtn">Replace all my data</button>
-      </div>
     </div>
 
-    <div class="settings-section">
-      <p class="settings-section-title">Cloud Sync</p>
-      <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+  </div>
+</div>
 
-      <div class="field">
-        <label for="gistId">Gist ID</label>
-        <input type="text" id="gistId" placeholder="e.g. 8f9a2b1c3d4e5f6a7b8c9d0e1f2a3b4c" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="gistToken">GitHub Token</label>
-        <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-      </div>
-      <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
-      <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
-      <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
-      <p class="sync-last" id="syncLast"></p>
+<!-- Dedicated Subpage for Backup & Restore -->
+<div class="settings-subpage" id="backupSubpageOverlay">
+  <div class="settings-subpage-header">
+    <button type="button" class="settings-back-btn" id="closeBackupSubpageBtn" title="Back">←</button>
+    <h2>📦 Backup & Restore</h2>
+  </div>
+  <div class="settings-body" style="padding-top:16px;">
+    <p class="backup-note">Your data lives only on this device. Export a backup file to keep it safe, or move it to another phone.</p>
+
+    <button type="button" class="backup-action export" id="exportBtn">
+      <span class="ic">⬇</span> Export backup file
+    </button>
+
+    <div class="backup-divider"><span>or restore from a file</span></div>
+
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+    <button type="button" class="backup-action import" id="chooseFileBtn">
+      <span class="ic">⬆</span> Choose backup file
+    </button>
+
+    <p class="backup-status" id="backupStatus"></p>
+
+    <div class="import-preview" id="importPreview">
+      <p class="ip-summary" id="ipSummary"></p>
+      <button type="button" class="backup-action merge" id="mergeBtn">Merge with my current data</button>
+      <button type="button" class="backup-action replace" id="replaceBtn">Replace all my data</button>
     </div>
+  </div>
+</div>
 
+<!-- Dedicated Subpage for Cloud Sync -->
+<div class="settings-subpage" id="cloudSyncSubpageOverlay">
+  <div class="settings-subpage-header">
+    <button type="button" class="settings-back-btn" id="closeCloudSyncSubpageBtn" title="Back">←</button>
+    <h2>☁️ Cloud Sync</h2>
+  </div>
+  <div class="settings-body" style="padding-top:16px;">
+    <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+
+    <div class="field">
+      <label for="gistId">Gist ID</label>
+      <input type="text" id="gistId" placeholder="e.g. 8f9a2b1c3d4e5f6a7b8c9d0e1f2a3b4c" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="gistToken">GitHub Token</label>
+      <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+    </div>
+    <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
+    <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
+    <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
+    <p class="sync-last" id="syncLast"></p>
   </div>
 </div>
 
@@ -2432,31 +2521,66 @@
   // ── Bottom Navbar Logic ──
   const fabBtn = document.getElementById('openSheet');
   const navItems = document.querySelectorAll('.nav-item[data-nav]');
+  const tabOrder = { 'home': 0, 'transactions': 1, 'settings': 2 };
   let activeTab = 'home';
 
   function switchTab(tab){
+    if(tab === activeTab) return;
+    const isGoingRight = tabOrder[tab] > tabOrder[activeTab];
     activeTab = tab;
     navItems.forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
 
     // Hide all full-screen overlays first
-    txnListOverlay.classList.remove('show');
-    settingsOverlay.classList.remove('show');
+    txnListOverlay.classList.remove('show', 'slide-right', 'slide-left');
+    settingsOverlay.classList.remove('show', 'slide-right', 'slide-left');
+    backupSubpage.classList.remove('show', 'slide-right', 'slide-left');
+    cloudSyncSubpage.classList.remove('show', 'slide-right', 'slide-left');
+    const wrap = document.querySelector('.wrap');
+    wrap.classList.remove('slide-home-left');
+
+    const animClass = isGoingRight ? 'slide-right' : 'slide-left';
 
     if(tab === 'home'){
       fabBtn.style.display = 'flex';
+      wrap.classList.add('slide-home-left');
     } else if(tab === 'transactions'){
       fabBtn.style.display = 'none';
       txnListFilter = 'all';
       document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
       document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
       renderTxnList();
-      txnListOverlay.classList.add('show');
+      txnListOverlay.classList.add('show', animClass);
     } else if(tab === 'settings'){
       fabBtn.style.display = 'none';
       resetBackupSheet();
-      settingsOverlay.classList.add('show');
+      settingsOverlay.classList.add('show', animClass);
     }
   }
+
+  // ── Settings Subpages Navigation ──
+  const backupSubpage = document.getElementById('backupSubpageOverlay');
+  const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
+
+  document.getElementById('openBackupSubpageBtn').addEventListener('click', () => {
+    backupSubpage.classList.remove('slide-left');
+    backupSubpage.classList.add('show', 'slide-right');
+  });
+  document.getElementById('closeBackupSubpageBtn').addEventListener('click', () => {
+    backupSubpage.classList.remove('slide-right');
+    backupSubpage.classList.add('slide-left');
+    setTimeout(() => { backupSubpage.classList.remove('show', 'slide-left'); }, 200);
+  });
+
+  document.getElementById('openCloudSyncSubpageBtn').addEventListener('click', () => {
+    resetBackupSheet();
+    cloudSyncSubpage.classList.remove('slide-left');
+    cloudSyncSubpage.classList.add('show', 'slide-right');
+  });
+  document.getElementById('closeCloudSyncSubpageBtn').addEventListener('click', () => {
+    cloudSyncSubpage.classList.remove('slide-right');
+    cloudSyncSubpage.classList.add('slide-left');
+    setTimeout(() => { cloudSyncSubpage.classList.remove('show', 'slide-left'); }, 200);
+  });
 
   navItems.forEach(item => {
     item.addEventListener('click', () => switchTab(item.dataset.nav));
