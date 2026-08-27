@@ -1484,6 +1484,7 @@
     <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
     <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
     <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
+    <p class="backup-status" id="cloudSyncStatus"></p>
     <p class="sync-last" id="syncLast"></p>
   </div>
 </div>
@@ -2123,6 +2124,7 @@
 
   const settingsOverlay = document.getElementById('settingsOverlay');
   const backupStatus = document.getElementById('backupStatus');
+  const cloudSyncStatus = document.getElementById('cloudSyncStatus');
   const importPreview = document.getElementById('importPreview');
   const ipSummary = document.getElementById('ipSummary');
   const importFileInput = document.getElementById('importFile');
@@ -2133,8 +2135,14 @@
     backupStatus.className = 'backup-status' + (kind ? (' ' + kind) : '');
   }
 
+  function setSyncStatus(text, kind){
+    cloudSyncStatus.textContent = text || '';
+    cloudSyncStatus.className = 'backup-status' + (kind ? (' ' + kind) : '');
+  }
+
   function resetBackupSheet(){
     setBackupStatus('');
+    setSyncStatus('');
     importPreview.classList.remove('show');
     importFileInput.value = '';
     pendingImportValid = [];
@@ -2308,20 +2316,20 @@
     const gistId = document.getElementById('gistId').value.trim();
     const token = document.getElementById('gistToken').value.trim();
     if(!gistId || !token){
-      setBackupStatus('Enter both Gist ID and Token to save.', 'err');
+      setSyncStatus('Enter both Gist ID and Token to save.', 'err');
       return;
     }
     saveSyncConfig({ gistId, token });
-    setBackupStatus('Sync settings saved on this device.', 'ok');
+    setSyncStatus('Sync settings saved on this device.', 'ok');
   });
 
   async function fetchFromCloud(){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
-      setBackupStatus('Save your Gist ID and Token first.', 'err');
+      setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
-    setBackupStatus('Fetching…', '');
+    setSyncStatus('Fetching…', '');
     try{
       const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
         cache: 'no-store',
@@ -2353,19 +2361,19 @@
       render();
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
       updateSyncLastText();
-      setBackupStatus(`Fetched — Local data replaced with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from cloud.`, 'ok');
+      setSyncStatus(`Fetched — Local data replaced with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from cloud.`, 'ok');
     }catch(err){
-      setBackupStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
+      setSyncStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
     }
   }
 
   async function pushToCloud(){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
-      setBackupStatus('Save your Gist ID and Token first.', 'err');
+      setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
-    setBackupStatus('Pushing…', '');
+    setSyncStatus('Pushing…', '');
     try{
       // Pure overwrite: push exactly what is in local entries right now
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
@@ -2386,9 +2394,9 @@
       if(!putRes.ok) throw new Error('push-failed-' + putRes.status);
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
       updateSyncLastText();
-      setBackupStatus(`Pushed — Cloud overwritten with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from local.`, 'ok');
+      setSyncStatus(`Pushed — Cloud overwritten with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from local.`, 'ok');
     }catch(err){
-      setBackupStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
+      setSyncStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
     }
   }
 
