@@ -1596,12 +1596,12 @@
   document.getElementById('openSheet').addEventListener('click', () => {
     resetToAddMode();
     overlay.classList.add('show');
-    pushNavState('addEntry');
+    ensureNavHistory();
   });
   overlay.addEventListener('click', (e) => {
     if(e.target === overlay){
       overlay.classList.remove('show');
-      popNavState();
+      resetToAddMode();
     }
   });
 
@@ -1803,7 +1803,6 @@
       render();
       saveEntries();
       overlay.classList.remove('show');
-      popNavState();
       resetToAddMode();
       return;
     }
@@ -1817,18 +1816,19 @@
       when: new Date().toISOString()
     };
 
-    overlay.classList.remove('show');
-    popNavState();
     requestPassword({
       title: 'Enter security password',
       sub: currentType === 'spent' ? 'Confirm this expense to save it' : 'Confirm to save this entry',
       onSuccess: () => {
         entries.push(newEntry);
+        overlay.classList.remove('show');
         resetToAddMode();
         render();
         saveEntries();
       },
-      onCancel: () => overlay.classList.add('show')
+      onCancel: () => {
+        // Overlay was kept open underneath, so inputs stay preserved!
+      }
     });
   });
 
@@ -1900,7 +1900,7 @@
     pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
-    pushNavState('pin');
+    ensureNavHistory();
   }
 
   function startSetPin(){
@@ -1912,6 +1912,7 @@
     pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
+    ensureNavHistory();
   }
 
   function startChangePin(){
@@ -1924,7 +1925,7 @@
     pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
-    pushNavState('pin');
+    ensureNavHistory();
   }
 
   function updatePinDots(){
@@ -1973,7 +1974,6 @@
       var hash = await hashPin(pinValue);
       if(hash === getStoredPinHash()){
         pinOverlay.classList.remove('show');
-        popNavState();
         var cb = pinCallbacks;
         pinCallbacks = null;
         pinValue = '';
@@ -2025,7 +2025,6 @@
         var hash = await hashPin(pinValue);
         setStoredPinHash(hash);
         pinOverlay.classList.remove('show');
-        popNavState();
         pinValue = '';
         pendingNewPin = '';
         updatePinDots();
@@ -2073,7 +2072,6 @@
       return;
     }
     pinOverlay.classList.remove('show');
-    popNavState();
     pinValue = '';
     pendingNewPin = '';
     updatePinDots();
@@ -2119,13 +2117,12 @@
     document.getElementById('detailTime').textContent = d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 
     detailOverlay.classList.add('show');
-    pushNavState('detail');
+    ensureNavHistory();
   }
 
   detailOverlay.addEventListener('click', (e) => {
     if(e.target === detailOverlay){
       detailOverlay.classList.remove('show');
-      popNavState();
     }
   });
 
@@ -2141,12 +2138,12 @@
   });
 
   document.getElementById('detailEdit').addEventListener('click', () => {
+    const e = entries.find(en => en.id === currentDetailId);
+    if(!e) return;
     requestPassword({
       title: 'Enter security password',
       sub: 'Confirm to edit this transaction',
       onSuccess: () => {
-        const e = entries.find(en => en.id === currentDetailId);
-        if(!e) return;
         detailOverlay.classList.remove('show');
         openEditForm(e);
       }
@@ -2507,24 +2504,36 @@
   });
 
   // ── Native Mobile Back Button & Navigation History ──
-  function pushNavState(name){
-    history.pushState({ paisaNav: name, time: Date.now() }, '');
+  function ensureNavHistory(){
+    if(!history.state || !history.state.paisaNav){
+      history.pushState({ paisaNav: true, time: Date.now() }, '');
+    }
   }
 
-  function popNavState(){
-    if(history.state && history.state.paisaNav){
-      history.back();
-    }
+  function hasAnyOpenOverlay(){
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const pinOverlay = document.getElementById('pinOverlay');
+    const detailOverlay = document.getElementById('detailOverlay');
+    const overlay = document.getElementById('overlay');
+    const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
+    const backupSubpage = document.getElementById('backupSubpageOverlay');
+
+    return (confirmOverlay && confirmOverlay.classList.contains('show')) ||
+           (pinOverlay && pinOverlay.classList.contains('show')) ||
+           (detailOverlay && detailOverlay.classList.contains('show')) ||
+           (overlay && overlay.classList.contains('show')) ||
+           (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
+           (backupSubpage && backupSubpage.classList.contains('show')) ||
+           (activeTab !== 'home');
   }
 
   // Close buttons for bottom sheets
   document.getElementById('closeEntrySheet').addEventListener('click', () => {
     overlay.classList.remove('show');
-    popNavState();
+    resetToAddMode();
   });
   document.getElementById('closeDetailSheet').addEventListener('click', () => {
     detailOverlay.classList.remove('show');
-    popNavState();
   });
 
   // Swipe/drag down to dismiss sheets & block pull-to-refresh
@@ -2563,7 +2572,7 @@
       setTimeout(() => { sheet.style.transition = ''; }, 200);
       if(diff > 90 && sheet.scrollTop <= 5){
         ov.classList.remove('show');
-        popNavState();
+        if(ov.id === 'overlay') resetToAddMode();
       }
     });
   });
@@ -2623,8 +2632,7 @@
   }
 
   document.getElementById('closeTxnList').addEventListener('click', () => {
-    if(history.state && history.state.paisaNav) history.back();
-    else switchTab('home');
+    switchTab('home');
   });
 
   document.querySelectorAll('.txn-filter-chip[data-txnf]').forEach(chip => {
@@ -2643,20 +2651,15 @@
   let activeTab = 'home';
   let isTabAnimating = false;
 
-  function switchTab(newTab, pushHistory = true){
+  function switchTab(newTab){
     if(newTab === activeTab || isTabAnimating) return;
     const prevTab = activeTab;
     const isGoingRight = tabOrder[newTab] > tabOrder[prevTab];
     activeTab = newTab;
     isTabAnimating = true;
 
-    if(pushHistory){
-      if(newTab === 'home'){
-        popNavState();
-      } else {
-        if(prevTab === 'home') pushNavState(newTab);
-        else history.replaceState({ paisaNav: newTab, time: Date.now() }, '');
-      }
+    if(newTab !== 'home'){
+      ensureNavHistory();
     }
 
     navItems.forEach(n => n.classList.toggle('active', n.dataset.nav === newTab));
@@ -2737,29 +2740,23 @@
 
   document.getElementById('openBackupSubpageBtn').addEventListener('click', () => {
     backupSubpage.className = 'settings-subpage show slide-in-right';
-    pushNavState('backupSubpage');
+    ensureNavHistory();
     setTimeout(() => { backupSubpage.className = 'settings-subpage show'; }, 150);
   });
   document.getElementById('closeBackupSubpageBtn').addEventListener('click', () => {
-    if(history.state && history.state.paisaNav) history.back();
-    else {
-      backupSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 150);
-    }
+    backupSubpage.className = 'settings-subpage show slide-out-right';
+    setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 150);
   });
 
   document.getElementById('openCloudSyncSubpageBtn').addEventListener('click', () => {
     resetBackupSheet();
     cloudSyncSubpage.className = 'settings-subpage show slide-in-right';
-    pushNavState('cloudSyncSubpage');
+    ensureNavHistory();
     setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 150);
   });
   document.getElementById('closeCloudSyncSubpageBtn').addEventListener('click', () => {
-    if(history.state && history.state.paisaNav) history.back();
-    else {
-      cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
-    }
+    cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
+    setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
   });
 
   navItems.forEach(item => {
@@ -2773,10 +2770,12 @@
     if(confirmOverlay && confirmOverlay.classList.contains('show')){
       const cancelBtn = document.getElementById('confirmCancelBtn');
       if(cancelBtn) cancelBtn.click();
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
     // 2. PIN dialog
+    const pinOverlay = document.getElementById('pinOverlay');
     if(pinOverlay && pinOverlay.classList.contains('show')){
       if(getStoredPinHash()){
         pinOverlay.classList.remove('show');
@@ -2787,38 +2786,48 @@
         pinCallbacks = null;
         if(cb && cb.onCancel) cb.onCancel();
       }
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
-    // 3. Entry detail sheet
-    if(detailOverlay && detailOverlay.classList.contains('show')){
-      detailOverlay.classList.remove('show');
-      return;
-    }
-
-    // 4. Add/Edit entry sheet
+    // 3. Add/Edit entry sheet
+    const overlay = document.getElementById('overlay');
     if(overlay && overlay.classList.contains('show')){
       overlay.classList.remove('show');
+      resetToAddMode();
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4. Entry detail sheet
+    const detailOverlay = document.getElementById('detailOverlay');
+    if(detailOverlay && detailOverlay.classList.contains('show')){
+      detailOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
     // 5. Cloud Sync subpage
+    const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     if(cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')){
       cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
       setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
     // 6. Backup subpage
+    const backupSubpage = document.getElementById('backupSubpageOverlay');
     if(backupSubpage && backupSubpage.classList.contains('show')){
       backupSubpage.className = 'settings-subpage show slide-out-right';
       setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 150);
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
     // 7. Tabs: If on transactions or settings, go to home
     if(activeTab !== 'home'){
-      switchTab('home', false);
+      switchTab('home');
       return;
     }
   });
