@@ -872,35 +872,35 @@
   }
   .txn-list-overlay.show{ display:flex; }
 
-  /* Horizontal Screen & Subpage Slide Animations */
+  /* Snappy Horizontal Screen & Subpage Slide Animations */
   @keyframes slideInFromRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from { transform: translateX(32px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
   @keyframes slideInFromLeft {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+    from { transform: translateX(-32px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
   @keyframes slideOutToRight {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(32px); opacity: 0; }
   }
   @keyframes slideOutToLeft {
-    from { transform: translateX(0); }
-    to { transform: translateX(-100%); }
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-32px); opacity: 0; }
   }
 
   .slide-in-right {
-    animation: slideInFromRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: slideInFromRight 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .slide-in-left {
-    animation: slideInFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: slideInFromLeft 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .slide-out-right {
-    animation: slideOutToRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: slideOutToRight 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .slide-out-left {
-    animation: slideOutToLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: slideOutToLeft 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .txn-list-header{
@@ -2661,7 +2661,7 @@
         setTimeout(() => {
           prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay');
           isTabAnimating = false;
-        }, 220);
+        }, 150);
       } else {
         isTabAnimating = false;
       }
@@ -2681,7 +2681,7 @@
         setTimeout(() => {
           newOverlay.className = (newTab === 'transactions' ? 'txn-list-overlay show' : 'settings-overlay show');
           isTabAnimating = false;
-        }, 220);
+        }, 150);
       } else {
         // Switching between transactions and settings — prevent any home screen flash
         if(isGoingRight){
@@ -2694,7 +2694,7 @@
             newOverlay.className = 'settings-overlay show';
             newOverlay.style.zIndex = '';
             isTabAnimating = false;
-          }, 220);
+          }, 150);
         } else {
           newOverlay.style.zIndex = '80';
           newOverlay.className = 'txn-list-overlay show';
@@ -2706,7 +2706,7 @@
             newOverlay.className = 'txn-list-overlay show';
             newOverlay.style.zIndex = '';
             isTabAnimating = false;
-          }, 220);
+          }, 150);
         }
       }
     }
@@ -2719,13 +2719,13 @@
   document.getElementById('openBackupSubpageBtn').addEventListener('click', () => {
     backupSubpage.className = 'settings-subpage show slide-in-right';
     pushNavState('backupSubpage');
-    setTimeout(() => { backupSubpage.className = 'settings-subpage show'; }, 220);
+    setTimeout(() => { backupSubpage.className = 'settings-subpage show'; }, 150);
   });
   document.getElementById('closeBackupSubpageBtn').addEventListener('click', () => {
     if(history.state && history.state.paisaNav) history.back();
     else {
       backupSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 220);
+      setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 150);
     }
   });
 
@@ -2733,13 +2733,13 @@
     resetBackupSheet();
     cloudSyncSubpage.className = 'settings-subpage show slide-in-right';
     pushNavState('cloudSyncSubpage');
-    setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 220);
+    setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 150);
   });
   document.getElementById('closeCloudSyncSubpageBtn').addEventListener('click', () => {
     if(history.state && history.state.paisaNav) history.back();
     else {
       cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 220);
+      setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
     }
   });
 
@@ -2786,14 +2786,14 @@
     // 5. Cloud Sync subpage
     if(cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')){
       cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 220);
+      setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
       return;
     }
 
     // 6. Backup subpage
     if(backupSubpage && backupSubpage.classList.contains('show')){
       backupSubpage.className = 'settings-subpage show slide-out-right';
-      setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 220);
+      setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 150);
       return;
     }
 
