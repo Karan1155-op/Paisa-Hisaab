@@ -983,6 +983,11 @@
     padding:16px;
     margin-bottom:10px;
     box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .txn-card:active{
+    transform: scale(0.985);
   }
   .txn-card-top{
     display:flex;
@@ -2477,7 +2482,7 @@
       ov.addEventListener('click', onBackdrop);
 
       ov.classList.add('show');
-      pushNavState('confirm');
+      ensureNavHistory();
     });
   }
 
@@ -2627,6 +2632,7 @@
         </div>
         <div class="txn-card-reason${hasReason}">${reasonText}</div>
       `;
+      card.addEventListener('click', () => openDetail(e.id));
       txnListBody.appendChild(card);
     });
   }
