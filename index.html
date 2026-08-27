@@ -345,8 +345,7 @@
     border-color: var(--grad2);
     background:#fff;
   }
-  .reason-field{ display:none; }
-  .reason-field.show{ display:block; }
+  .reason-field{ display:block; }
 
   .auto-note{
     font-size:12px;
@@ -1348,8 +1347,8 @@
       </div>
 
       <div class="field reason-field" id="reasonField">
-        <label for="reason">Reason (what was it spent on)</label>
-        <input type="text" id="reason" placeholder="e.g. Snacks for the party">
+        <label for="reason" id="reasonLabel">Reason (what was it received for)</label>
+        <input type="text" id="reason" placeholder="e.g. Salary, Gift, Loan return">
       </div>
 
       <p class="auto-note"><span class="ic">🕒</span> Date & time will be filled in automatically</p>
@@ -1661,7 +1660,15 @@
     currentType = type;
     btnReceived.classList.toggle('active', type === 'received');
     btnSpent.classList.toggle('active', type === 'spent');
-    reasonField.classList.toggle('show', type === 'spent');
+    const reasonLabel = document.getElementById('reasonLabel');
+    const reasonInput = document.getElementById('reason');
+    if(type === 'received'){
+      if(reasonLabel) reasonLabel.textContent = 'Reason (what was it received for)';
+      if(reasonInput) reasonInput.placeholder = 'e.g. Salary, Gift, Loan return, Freelance';
+    } else {
+      if(reasonLabel) reasonLabel.textContent = 'Reason (what was it spent on)';
+      if(reasonInput) reasonInput.placeholder = 'e.g. Snacks for the party, Groceries';
+    }
   }
 
   function formatRupee(n){
@@ -1790,12 +1797,13 @@
           name,
           amount: Number(amount),
           type: currentType,
-          reason: currentType === 'spent' ? reason : ''
+          reason: reason
         };
       }
       render();
       saveEntries();
       overlay.classList.remove('show');
+      popNavState();
       resetToAddMode();
       return;
     }
@@ -1805,11 +1813,12 @@
       name,
       amount: Number(amount),
       type: currentType,
-      reason: currentType === 'spent' ? reason : '',
+      reason: reason,
       when: new Date().toISOString()
     };
 
     overlay.classList.remove('show');
+    popNavState();
     requestPassword({
       title: 'Enter security password',
       sub: currentType === 'spent' ? 'Confirm this expense to save it' : 'Confirm to save this entry',
@@ -2269,7 +2278,7 @@
       name: e.name,
       amount: Number(e.amount),
       type: e.type,
-      reason: e.type === 'spent' ? (e.reason || '') : '',
+      reason: e.reason || '',
       when: e.when
     };
   }
