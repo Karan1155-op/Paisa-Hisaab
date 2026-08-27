@@ -223,7 +223,7 @@
     position:fixed;
     right: 50%;
     transform: translateX(212px);
-    bottom: 26px;
+    bottom: 86px;
     width:58px; height:58px;
     border-radius:50%;
     background: linear-gradient(135deg, var(--grad1), var(--grad3));
@@ -823,8 +823,9 @@
   .txn-list-overlay{
     position:fixed;
     inset:0;
+    bottom:64px;
     background:#fff;
-    z-index:150;
+    z-index:80;
     display:none;
     flex-direction:column;
     animation: txnSlideUp .25s ease-out;
@@ -974,6 +975,175 @@
     border-left-color: var(--grad1);
     color: var(--text);
   }
+
+  /* Bottom Navigation Bar */
+  .bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:64px;
+    background: linear-gradient(135deg, #5B3DF5 0%, #6E56E0 50%, #8B5CF6 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:90;
+    box-shadow: 0 -4px 20px rgba(91,61,245,0.25);
+    max-width:100%;
+  }
+  .bottom-nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    width:100%;
+    max-width:480px;
+  }
+  .nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    padding:8px 18px;
+    border:none;
+    background:none;
+    color:rgba(255,255,255,0.55);
+    font-family:'Inter', sans-serif;
+    font-size:10.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition: color 0.15s;
+    position:relative;
+  }
+  .nav-item .nav-icon{
+    font-size:20px;
+    line-height:1;
+  }
+  .nav-item.active{
+    color:#fff;
+  }
+  .nav-item.active::after{
+    content:'';
+    position:absolute;
+    bottom:4px;
+    left:50%;
+    transform:translateX(-50%);
+    width:20px;
+    height:3px;
+    border-radius:2px;
+    background:#fff;
+  }
+
+  /* Adjust FAB above navbar */
+  .fab{
+    bottom: 86px;
+  }
+  @media (max-width: 520px){
+    .fab{ right: 24px; transform:none; bottom: 86px; }
+  }
+
+  /* Adjust wrap padding for navbar */
+  .wrap{
+    padding-bottom: 80px;
+  }
+
+  /* Settings Overlay */
+  .settings-overlay{
+    position:fixed;
+    inset:0;
+    bottom:64px;
+    background:#fff;
+    z-index:80;
+    display:none;
+    flex-direction:column;
+    animation: txnSlideUp .25s ease-out;
+  }
+  .settings-overlay.show{ display:flex; }
+  .settings-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px 14px;
+    flex-shrink:0;
+  }
+  .settings-header h2{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin:0;
+  }
+  .settings-body{
+    flex:1;
+    overflow-y:auto;
+    padding:0 20px 40px;
+    overscroll-behavior:contain;
+  }
+  .settings-section{
+    margin-bottom:24px;
+  }
+  .settings-section-title{
+    font-family:'Poppins', sans-serif;
+    font-size:14px;
+    font-weight:700;
+    color: var(--text-soft);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin:0 0 12px;
+    padding-bottom:8px;
+    border-bottom:1.5px solid var(--line);
+  }
+  .settings-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:15px 16px;
+    background: var(--card);
+    border-radius:16px;
+    box-shadow: var(--shadow);
+    margin-bottom:10px;
+    cursor:pointer;
+    border:none;
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color: var(--text);
+    text-align:left;
+  }
+  .settings-item:active{ background:#FAFAFD; }
+  .settings-item .si-icon{
+    width:40px; height:40px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .settings-item .si-icon.purple{
+    background: linear-gradient(135deg, var(--grad1), var(--grad3));
+    color:#fff;
+  }
+  .settings-item .si-icon.blue{
+    background: linear-gradient(135deg, #0EA5B7, #3E6BFF);
+    color:#fff;
+  }
+  .settings-item .si-icon.green{
+    background: linear-gradient(135deg, #12A454, #7CF7B0);
+    color:#fff;
+  }
+  .settings-item .si-icon.orange{
+    background: linear-gradient(135deg, #F5A623, #E3483F);
+    color:#fff;
+  }
+  .settings-item .si-text{ flex:1; }
+  .settings-item .si-sub{
+    font-size:12px;
+    font-weight:500;
+    color: var(--text-soft);
+    margin-top:2px;
+  }
+  .settings-item .si-arrow{
+    color: var(--text-soft);
+    font-size:14px;
+  }
 </style>
 </head>
 <body>
@@ -981,11 +1151,6 @@
 <div class="wrap">
   <header>
     <h1><span class="dot"></span>Paisa Hisaab</h1>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="local-tag backup-trigger" id="openTxnList" title="View all transactions">📋</button>
-      <button class="local-tag backup-trigger" id="changePinBtn" title="Change Password">🔒</button>
-      <button class="local-tag backup-trigger" id="openBackup" title="Backup & Restore">⇅ Backup</button>
-    </div>
   </header>
 
   <div class="balance-card">
@@ -1130,47 +1295,63 @@
   </div>
 </div>
 
-<div class="overlay" id="backupOverlay">
-  <div class="sheet backup-sheet">
-    <button type="button" class="sheet-close" id="closeBackupSheet" title="Close">✕</button>
-    <div class="handle"></div>
-    <h2>Backup & Restore</h2>
-    <p class="backup-note">Your data lives only on this device. Export a backup file to keep it safe, or move it to another phone.</p>
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-header">
+    <h2>⚙️ Settings</h2>
+  </div>
+  <div class="settings-body">
 
-    <button type="button" class="backup-action export" id="exportBtn">
-      <span class="ic">⬇</span> Export backup file
-    </button>
-
-    <div class="backup-divider"><span>or restore from a file</span></div>
-
-    <input type="file" id="importFile" accept="application/json,.json" hidden>
-    <button type="button" class="backup-action import" id="chooseFileBtn">
-      <span class="ic">⬆</span> Choose backup file
-    </button>
-
-    <p class="backup-status" id="backupStatus"></p>
-
-    <div class="import-preview" id="importPreview">
-      <p class="ip-summary" id="ipSummary"></p>
-      <button type="button" class="backup-action merge" id="mergeBtn">Merge with my current data</button>
-      <button type="button" class="backup-action replace" id="replaceBtn">Replace all my data</button>
+    <div class="settings-section">
+      <p class="settings-section-title">Security</p>
+      <button type="button" class="settings-item" id="changePinBtn">
+        <div class="si-icon purple">🔒</div>
+        <div class="si-text">Change Password<div class="si-sub">Update your 4-digit security PIN</div></div>
+        <span class="si-arrow">›</span>
+      </button>
     </div>
 
-    <div class="backup-divider"><span>Cloud Sync (optional)</span></div>
-    <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+    <div class="settings-section">
+      <p class="settings-section-title">Backup & Restore</p>
+      <p class="backup-note">Your data lives only on this device. Export a backup file to keep it safe, or move it to another phone.</p>
 
-    <div class="field">
-      <label for="gistId">Gist ID</label>
-      <input type="text" id="gistId" placeholder="e.g. 8f9a2b1c3d4e5f6a7b8c9d0e1f2a3b4c" autocomplete="off">
+      <button type="button" class="backup-action export" id="exportBtn">
+        <span class="ic">⬇</span> Export backup file
+      </button>
+
+      <div class="backup-divider"><span>or restore from a file</span></div>
+
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button type="button" class="backup-action import" id="chooseFileBtn">
+        <span class="ic">⬆</span> Choose backup file
+      </button>
+
+      <p class="backup-status" id="backupStatus"></p>
+
+      <div class="import-preview" id="importPreview">
+        <p class="ip-summary" id="ipSummary"></p>
+        <button type="button" class="backup-action merge" id="mergeBtn">Merge with my current data</button>
+        <button type="button" class="backup-action replace" id="replaceBtn">Replace all my data</button>
+      </div>
     </div>
-    <div class="field">
-      <label for="gistToken">GitHub Token</label>
-      <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+
+    <div class="settings-section">
+      <p class="settings-section-title">Cloud Sync</p>
+      <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+
+      <div class="field">
+        <label for="gistId">Gist ID</label>
+        <input type="text" id="gistId" placeholder="e.g. 8f9a2b1c3d4e5f6a7b8c9d0e1f2a3b4c" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="gistToken">GitHub Token</label>
+        <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
+      <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
+      <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
+      <p class="sync-last" id="syncLast"></p>
     </div>
-    <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
-    <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
-    <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
-    <p class="sync-last" id="syncLast"></p>
+
   </div>
 </div>
 
@@ -1790,7 +1971,7 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   }
 
-  const backupOverlay = document.getElementById('backupOverlay');
+  const settingsOverlay = document.getElementById('settingsOverlay');
   const backupStatus = document.getElementById('backupStatus');
   const importPreview = document.getElementById('importPreview');
   const ipSummary = document.getElementById('ipSummary');
@@ -1812,12 +1993,6 @@
     document.getElementById('gistToken').value = cfg.token || '';
     updateSyncLastText();
   }
-
-  document.getElementById('openBackup').addEventListener('click', () => {
-    resetBackupSheet();
-    backupOverlay.classList.add('show');
-  });
-  backupOverlay.addEventListener('click', (e) => { if(e.target === backupOverlay) backupOverlay.classList.remove('show'); });
 
   document.getElementById('exportBtn').addEventListener('click', () => {
     const dataStr = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(entries, null, 2));
@@ -2128,7 +2303,6 @@
   // Close buttons for bottom sheets
   document.getElementById('closeEntrySheet').addEventListener('click', () => overlay.classList.remove('show'));
   document.getElementById('closeDetailSheet').addEventListener('click', () => detailOverlay.classList.remove('show'));
-  document.getElementById('closeBackupSheet').addEventListener('click', () => backupOverlay.classList.remove('show'));
 
   // Swipe/drag down to dismiss sheets & block pull-to-refresh
   document.querySelectorAll('.overlay').forEach(ov => {
@@ -2225,16 +2399,8 @@
     });
   }
 
-  document.getElementById('openTxnList').addEventListener('click', () => {
-    txnListFilter = 'all';
-    document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
-    document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
-    renderTxnList();
-    txnListOverlay.classList.add('show');
-  });
-
   document.getElementById('closeTxnList').addEventListener('click', () => {
-    txnListOverlay.classList.remove('show');
+    switchTab('home');
   });
 
   document.querySelectorAll('.txn-filter-chip[data-txnf]').forEach(chip => {
@@ -2244,6 +2410,39 @@
       chip.classList.add('active');
       renderTxnList();
     });
+  });
+
+  // ── Bottom Navbar Logic ──
+  const fabBtn = document.getElementById('openSheet');
+  const navItems = document.querySelectorAll('.nav-item[data-nav]');
+  let activeTab = 'home';
+
+  function switchTab(tab){
+    activeTab = tab;
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
+
+    // Hide all full-screen overlays first
+    txnListOverlay.classList.remove('show');
+    settingsOverlay.classList.remove('show');
+
+    if(tab === 'home'){
+      fabBtn.style.display = 'flex';
+    } else if(tab === 'transactions'){
+      fabBtn.style.display = 'none';
+      txnListFilter = 'all';
+      document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
+      renderTxnList();
+      txnListOverlay.classList.add('show');
+    } else if(tab === 'settings'){
+      fabBtn.style.display = 'none';
+      resetBackupSheet();
+      settingsOverlay.classList.add('show');
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => switchTab(item.dataset.nav));
   });
 
   loadEntries();
@@ -2260,5 +2459,23 @@
     });
   }
 </script>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="nav-item active" data-nav="home">
+      <span class="nav-icon">🏠</span>
+      Home
+    </button>
+    <button class="nav-item" data-nav="transactions">
+      <span class="nav-icon">📋</span>
+      All Txns
+    </button>
+    <button class="nav-item" data-nav="settings">
+      <span class="nav-icon">⚙️</span>
+      Settings
+    </button>
+  </div>
+</nav>
+
 </body>
 </html>
