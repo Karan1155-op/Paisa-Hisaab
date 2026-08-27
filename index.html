@@ -378,11 +378,16 @@
     font-size:22px;
     margin: 4px auto 14px;
   }
-  .pin-sheet h2{ margin: 0 0 4px; }
+  .pin-sheet h2{
+    margin: 0 0 4px;
+    padding-right: 0;
+    text-align: center;
+  }
   .pin-sheet .pin-sub{
     font-size:13px;
     color: var(--text-soft);
     margin: 0 0 22px;
+    text-align: center;
   }
   .pin-dots{
     display:flex;
@@ -1886,6 +1891,7 @@
     pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
+    pushNavState('pin');
   }
 
   function startSetPin(){
@@ -1909,6 +1915,7 @@
     pendingNewPin = '';
     updatePinDots();
     pinOverlay.classList.add('show');
+    pushNavState('pin');
   }
 
   function updatePinDots(){
@@ -1957,6 +1964,7 @@
       var hash = await hashPin(pinValue);
       if(hash === getStoredPinHash()){
         pinOverlay.classList.remove('show');
+        popNavState();
         var cb = pinCallbacks;
         pinCallbacks = null;
         pinValue = '';
@@ -2008,6 +2016,7 @@
         var hash = await hashPin(pinValue);
         setStoredPinHash(hash);
         pinOverlay.classList.remove('show');
+        popNavState();
         pinValue = '';
         pendingNewPin = '';
         updatePinDots();
@@ -2055,6 +2064,7 @@
       return;
     }
     pinOverlay.classList.remove('show');
+    popNavState();
     pinValue = '';
     pendingNewPin = '';
     updatePinDots();
