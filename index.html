@@ -438,13 +438,30 @@
   .pin-keypad button.ghost{ background:none; box-shadow:none; cursor:default; }
   .pin-keypad button.backspace{ font-size:17px; background:none; color: var(--text-soft); }
   .pin-cancel{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     margin-top: 18px;
-    background:none;
-    border:none;
-    color: var(--text-soft);
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
+    padding: 10px 30px;
+    background: #F0F0F7;
+    border: 1.5px solid var(--line);
+    border-radius: 24px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 6px rgba(20,22,43,0.04);
+  }
+  .pin-cancel:hover{
+    background: #E5E5F2;
+    border-color: #D2D2E4;
+  }
+  .pin-cancel:active{
+    transform: scale(0.96);
+    background: #D8D8EC;
   }
 
   /* Custom Confirmation Dialog */
@@ -831,27 +848,35 @@
   }
   .txn-list-overlay.show{ display:flex; }
 
-  /* Horizontal Tab Slide Animations */
+  /* Horizontal Screen & Subpage Slide Animations */
   @keyframes slideInFromRight {
-    from { transform: translateX(100%); opacity: 0.92; }
-    to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
   }
   @keyframes slideInFromLeft {
-    from { transform: translateX(-100%); opacity: 0.92; }
-    to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
   }
-  @keyframes slideInHomeFromLeft {
-    from { transform: translateX(-40px); opacity: 0.85; }
-    to { transform: translateX(0); opacity: 1; }
+  @keyframes slideOutToRight {
+    from { transform: translateX(0); }
+    to { transform: translateX(100%); }
   }
-  .slide-right {
-    animation: slideInFromRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+  @keyframes slideOutToLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
   }
-  .slide-left {
-    animation: slideInFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+
+  .slide-in-right {
+    animation: slideInFromRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
-  .slide-home-left {
-    animation: slideInHomeFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) both;
+  .slide-in-left {
+    animation: slideInFromLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+  .slide-out-right {
+    animation: slideOutToRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+  .slide-out-left {
+    animation: slideOutToLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   .txn-list-header{
@@ -1192,20 +1217,35 @@
     margin:0;
   }
   .settings-back-btn{
-    width:36px; height:36px;
-    border-radius:50%;
-    background:#F0F0F7;
-    border:none;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #F0F0F7;
+    border: 1.5px solid var(--line);
     color: var(--text);
-    font-size:16px;
-    font-weight:700;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition: background 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(20,22,43,0.04);
   }
-  .settings-back-btn:active{ background:#E2E3EE; }
+  .settings-back-btn svg{
+    width: 20px;
+    height: 20px;
+    display: block;
+    stroke: currentColor;
+  }
+  .settings-back-btn:hover{
+    background: #E5E5F2;
+    border-color: #D2D2E4;
+    color: var(--grad1);
+  }
+  .settings-back-btn:active{
+    transform: scale(0.92);
+    background: #D8D8EC;
+  }
 </style>
 </head>
 <body>
@@ -1393,7 +1433,9 @@
 <!-- Dedicated Subpage for Backup & Restore -->
 <div class="settings-subpage" id="backupSubpageOverlay">
   <div class="settings-subpage-header">
-    <button type="button" class="settings-back-btn" id="closeBackupSubpageBtn" title="Back">←</button>
+    <button type="button" class="settings-back-btn" id="closeBackupSubpageBtn" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <h2>📦 Backup & Restore</h2>
   </div>
   <div class="settings-body" style="padding-top:16px;">
@@ -1423,7 +1465,9 @@
 <!-- Dedicated Subpage for Cloud Sync -->
 <div class="settings-subpage" id="cloudSyncSubpageOverlay">
   <div class="settings-subpage-header">
-    <button type="button" class="settings-back-btn" id="closeCloudSyncSubpageBtn" title="Back">←</button>
+    <button type="button" class="settings-back-btn" id="closeCloudSyncSubpageBtn" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <h2>☁️ Cloud Sync</h2>
   </div>
   <div class="settings-body" style="padding-top:16px;">
@@ -2523,37 +2567,84 @@
   const navItems = document.querySelectorAll('.nav-item[data-nav]');
   const tabOrder = { 'home': 0, 'transactions': 1, 'settings': 2 };
   let activeTab = 'home';
+  let isTabAnimating = false;
 
-  function switchTab(tab){
-    if(tab === activeTab) return;
-    const isGoingRight = tabOrder[tab] > tabOrder[activeTab];
-    activeTab = tab;
-    navItems.forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
+  function switchTab(newTab){
+    if(newTab === activeTab || isTabAnimating) return;
+    const prevTab = activeTab;
+    const isGoingRight = tabOrder[newTab] > tabOrder[prevTab];
+    activeTab = newTab;
+    isTabAnimating = true;
 
-    // Hide all full-screen overlays first
-    txnListOverlay.classList.remove('show', 'slide-right', 'slide-left');
-    settingsOverlay.classList.remove('show', 'slide-right', 'slide-left');
-    backupSubpage.classList.remove('show', 'slide-right', 'slide-left');
-    cloudSyncSubpage.classList.remove('show', 'slide-right', 'slide-left');
-    const wrap = document.querySelector('.wrap');
-    wrap.classList.remove('slide-home-left');
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.nav === newTab));
 
-    const animClass = isGoingRight ? 'slide-right' : 'slide-left';
+    // Close any open subpages immediately
+    backupSubpage.className = 'settings-subpage';
+    cloudSyncSubpage.className = 'settings-subpage';
 
-    if(tab === 'home'){
+    const overlayMap = {
+      'transactions': txnListOverlay,
+      'settings': settingsOverlay
+    };
+
+    const prevOverlay = overlayMap[prevTab];
+    const newOverlay = overlayMap[newTab];
+
+    if(newTab === 'home'){
       fabBtn.style.display = 'flex';
-      wrap.classList.add('slide-home-left');
-    } else if(tab === 'transactions'){
+      if(prevOverlay){
+        prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay show slide-out-right' : 'settings-overlay show slide-out-right');
+        setTimeout(() => {
+          prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay');
+          isTabAnimating = false;
+        }, 220);
+      } else {
+        isTabAnimating = false;
+      }
+    } else {
       fabBtn.style.display = 'none';
-      txnListFilter = 'all';
-      document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
-      document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
-      renderTxnList();
-      txnListOverlay.classList.add('show', animClass);
-    } else if(tab === 'settings'){
-      fabBtn.style.display = 'none';
-      resetBackupSheet();
-      settingsOverlay.classList.add('show', animClass);
+      if(newTab === 'transactions'){
+        txnListFilter = 'all';
+        document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
+        document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
+        renderTxnList();
+      } else if(newTab === 'settings'){
+        resetBackupSheet();
+      }
+
+      if(prevTab === 'home'){
+        newOverlay.className = (newTab === 'transactions' ? 'txn-list-overlay show slide-in-right' : 'settings-overlay show slide-in-right');
+        setTimeout(() => {
+          newOverlay.className = (newTab === 'transactions' ? 'txn-list-overlay show' : 'settings-overlay show');
+          isTabAnimating = false;
+        }, 220);
+      } else {
+        // Switching between transactions and settings — prevent any home screen flash
+        if(isGoingRight){
+          prevOverlay.style.zIndex = '80';
+          newOverlay.style.zIndex = '82';
+          newOverlay.className = 'settings-overlay show slide-in-right';
+          setTimeout(() => {
+            prevOverlay.className = 'txn-list-overlay';
+            prevOverlay.style.zIndex = '';
+            newOverlay.className = 'settings-overlay show';
+            newOverlay.style.zIndex = '';
+            isTabAnimating = false;
+          }, 220);
+        } else {
+          newOverlay.style.zIndex = '80';
+          newOverlay.className = 'txn-list-overlay show';
+          prevOverlay.style.zIndex = '82';
+          prevOverlay.className = 'settings-overlay show slide-out-right';
+          setTimeout(() => {
+            prevOverlay.className = 'settings-overlay';
+            prevOverlay.style.zIndex = '';
+            newOverlay.className = 'txn-list-overlay show';
+            newOverlay.style.zIndex = '';
+            isTabAnimating = false;
+          }, 220);
+        }
+      }
     }
   }
 
@@ -2562,24 +2653,22 @@
   const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
 
   document.getElementById('openBackupSubpageBtn').addEventListener('click', () => {
-    backupSubpage.classList.remove('slide-left');
-    backupSubpage.classList.add('show', 'slide-right');
+    backupSubpage.className = 'settings-subpage show slide-in-right';
+    setTimeout(() => { backupSubpage.className = 'settings-subpage show'; }, 220);
   });
   document.getElementById('closeBackupSubpageBtn').addEventListener('click', () => {
-    backupSubpage.classList.remove('slide-right');
-    backupSubpage.classList.add('slide-left');
-    setTimeout(() => { backupSubpage.classList.remove('show', 'slide-left'); }, 200);
+    backupSubpage.className = 'settings-subpage show slide-out-right';
+    setTimeout(() => { backupSubpage.className = 'settings-subpage'; }, 220);
   });
 
   document.getElementById('openCloudSyncSubpageBtn').addEventListener('click', () => {
     resetBackupSheet();
-    cloudSyncSubpage.classList.remove('slide-left');
-    cloudSyncSubpage.classList.add('show', 'slide-right');
+    cloudSyncSubpage.className = 'settings-subpage show slide-in-right';
+    setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 220);
   });
   document.getElementById('closeCloudSyncSubpageBtn').addEventListener('click', () => {
-    cloudSyncSubpage.classList.remove('slide-right');
-    cloudSyncSubpage.classList.add('slide-left');
-    setTimeout(() => { cloudSyncSubpage.classList.remove('show', 'slide-left'); }, 200);
+    cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
+    setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 220);
   });
 
   navItems.forEach(item => {
