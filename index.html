@@ -825,15 +825,39 @@
     cursor:pointer;
   }
   .save-btn:active{ transform: scale(0.98); }
-  .backup-action.fetch-cloud{
-    background:#F0F0F7;
+  .backup-action.save-sync{
+    background: #F0F0F7;
     color: var(--text);
-    margin-top:10px;
+    border: 1.5px solid var(--line);
+    margin-top: 6px;
+  }
+  .backup-action.save-sync:hover{
+    background: #E5E5F2;
+    border-color: #D0D0E2;
+  }
+  .backup-action.save-sync:active{
+    transform: scale(0.98);
+    background: #DADAE8;
+  }
+  .backup-action.fetch-cloud{
+    background: linear-gradient(135deg, #0EA5B7 0%, #3E6BFF 100%);
+    color: #fff;
+    margin-top: 14px;
+    box-shadow: 0 4px 14px rgba(14,165,183,0.28);
+  }
+  .backup-action.fetch-cloud:active{
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(14,165,183,0.2);
   }
   .backup-action.push-cloud{
-    background: linear-gradient(135deg, var(--grad1), var(--grad2));
-    color:#fff;
-    margin-top:10px;
+    background: linear-gradient(135deg, #5B3DF5 0%, #8B5CF6 100%);
+    color: #fff;
+    margin-top: 10px;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.28);
+  }
+  .backup-action.push-cloud:active{
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(91,61,245,0.2);
   }
 
   /* Detailed Transactions View */
@@ -985,41 +1009,33 @@
     color: var(--text-soft);
     margin-top:2px;
   }
-  .txn-card-badge{
-    font-size:11px;
-    font-weight:700;
-    padding:4px 10px;
-    border-radius:20px;
-    flex-shrink:0;
-  }
-  .txn-card-badge.received{
-    background: #E8F9EF;
-    color: var(--green);
-  }
-  .txn-card-badge.spent{
-    background: #FEECEB;
-    color: var(--red);
-  }
   .txn-card-amount{
     font-family:'IBM Plex Mono', monospace;
     font-weight:700;
-    font-size:20px;
-    margin-bottom:6px;
+    font-size:16.5px;
+    white-space:nowrap;
+    text-align:right;
+    flex-shrink:0;
   }
   .txn-card-amount.received{ color: var(--green); }
   .txn-card-amount.spent{ color: var(--red); }
   .txn-card-reason{
-    font-size:13px;
+    font-size:13.5px;
     color: var(--text-soft);
-    line-height:1.45;
-    padding:8px 12px;
-    background:#F8F8FC;
-    border-radius:10px;
-    border-left: 3px solid var(--line);
+    line-height:1.5;
+    padding:10px 14px;
+    background:#F8F8FD;
+    border-radius:12px;
+    border-left: 3.5px solid var(--line);
+    word-break: break-word;
   }
   .txn-card-reason.has-reason{
     border-left-color: var(--grad1);
     color: var(--text);
+    background: #F4F2FF;
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.55;
   }
 
   /* Bottom Navigation Bar */
@@ -2548,9 +2564,8 @@
             <div class="txn-card-name">${escapeHtml(e.name)}</div>
             <div class="txn-card-datetime">${datePart} · ${timePart}</div>
           </div>
-          <span class="txn-card-badge ${e.type}">${e.type === 'received' ? 'Received' : 'Spent'}</span>
+          <div class="txn-card-amount ${e.type}">${sign} ${formatRupee(e.amount)}</div>
         </div>
-        <div class="txn-card-amount ${e.type}">${sign} ${formatRupee(e.amount)}</div>
         <div class="txn-card-reason${hasReason}">${reasonText}</div>
       `;
       txnListBody.appendChild(card);
