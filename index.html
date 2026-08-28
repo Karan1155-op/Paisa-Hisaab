@@ -3178,8 +3178,9 @@
 
     setTimeout(() => {
       try {
-        if(!window.jspdf || !window.jspdf.jsPDF){
-          // Fallback to printable browser window if jsPDF is unavailable
+        const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        if(!jsPDFClass){
+          // Fallback to hidden iframe print if jsPDF is unavailable
           printStatementFallback(list, dateRangeLabel, typeLabel, totalRec, totalSp);
           closePdfModal();
           pdfGenerateBtn.disabled = false;
@@ -3187,8 +3188,7 @@
           return;
         }
 
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
         const now = new Date();
@@ -3408,13 +3408,23 @@
       `;
     });
 
-    const printWin = window.open('', '_blank');
-    if(!printWin){
-      alert('Pop-up blocked. Please allow pop-ups to print your statement.');
-      return;
-    }
+    // Use a hidden iframe so about:blank NEVER opens in browser
+    let printFrame = document.getElementById('paisaHiddenPrintFrame');
+    if(printFrame) printFrame.remove();
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'paisaHiddenPrintFrame';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    printFrame.style.visibility = 'hidden';
+    document.body.appendChild(printFrame);
 
-    printWin.document.write(`
+    const fDoc = printFrame.contentDocument || printFrame.contentWindow.document;
+    fDoc.open();
+    fDoc.write(`
       <!DOCTYPE html>
       <html>
       <head>
@@ -3484,12 +3494,15 @@
       </body>
       </html>
     `);
-    printWin.document.close();
+    fDoc.close();
+
     setTimeout(() => {
       try {
-        printWin.focus();
-        printWin.print();
-      } catch(e) {}
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+      } catch(e) {
+        console.error('Print frame error:', e);
+      }
     }, 250);
   }
 
