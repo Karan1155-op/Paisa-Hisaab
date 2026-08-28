@@ -1659,50 +1659,156 @@
   }
   .backup-action.smart-sync:active{ transform: scale(0.98); }
 
-  .sync-advanced-toggle{
-    text-align: center;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--text-soft);
-    padding: 8px;
-    cursor: pointer;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-  }
-  .sync-advanced-actions{
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .sync-auto-options{
-    background: #F8F8FC;
-    border-radius: 14px;
-    padding: 12px 14px;
+  /* ── Modern Sync Toggle Card (iOS Style) ── */
+  .sync-toggle-card{
+    background: var(--card);
+    border-radius: 16px;
+    padding: 2px 14px;
     margin: 14px 0 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    border: 1px solid var(--line);
+    border: 1.5px solid var(--line);
+    box-shadow: var(--shadow);
   }
-  .sync-checkbox-label{
+  .sync-toggle-row{
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 12.5px;
-    font-weight: 600;
+    justify-content: space-between;
+    padding: 12px 0;
+    gap: 12px;
+  }
+  .sync-toggle-row:not(:last-child){
+    border-bottom: 1px solid var(--line);
+  }
+  .sync-toggle-info{
+    flex: 1;
+    min-width: 0;
+  }
+  .sync-toggle-title{
+    font-size: 12.8px;
+    font-weight: 700;
     color: var(--text);
+  }
+  .sync-toggle-desc{
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-soft);
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+
+  /* iOS Switch */
+  .ios-switch{
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 25px;
+    flex-shrink: 0;
     cursor: pointer;
   }
-  .sync-checkbox-label input[type="checkbox"]{
-    width: 17px;
-    height: 17px;
-    accent-color: var(--grad1);
+  .ios-switch input{
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .ios-slider{
+    position: absolute;
     cursor: pointer;
+    inset: 0;
+    background-color: #D6D6E5;
+    transition: 0.25s ease;
+    border-radius: 26px;
+  }
+  .ios-slider:before{
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(20,22,43,0.2);
+  }
+  .ios-switch input:checked + .ios-slider{
+    background: linear-gradient(135deg, #5B3DF5, #7D40FF);
+  }
+  .ios-switch input:checked + .ios-slider:before{
+    transform: translateX(19px);
+  }
+
+  /* ── Sync Navigation Tile (Advanced Overwrite Options) ── */
+  .sync-nav-tile{
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin: 10px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s ease, background 0.15s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  .sync-nav-tile:active{
+    transform: scale(0.98);
+    background: #EFEFF9;
+  }
+  .snt-icon{
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: #F3EEFF;
+    color: var(--grad1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .snt-content{ flex: 1; min-width: 0; }
+  .snt-title{ font-size: 13px; font-weight: 700; color: var(--text); }
+  .snt-sub{ font-size: 11.2px; font-weight: 500; color: var(--text-soft); margin-top: 1px; }
+  .snt-arrow{ font-size: 18px; font-weight: 700; color: #A0A3BD; }
+
+  /* ── Advanced Subpage Elements ── */
+  .adv-warning-card{
+    background: #FFF9E6;
+    border: 1.5px solid #FFE4A0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .adv-warning-card .awc-icon{ font-size: 18px; flex-shrink: 0; }
+  .adv-warning-card .awc-text{ font-size: 12px; color: #734E00; line-height: 1.4; font-weight: 500; }
+  .adv-action-section{
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .adv-action-label{
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+  }
+  .adv-action-desc{
+    font-size: 11.5px;
+    color: var(--text-soft);
+    margin: 0 0 12px;
+    line-height: 1.4;
+    font-weight: 500;
   }
 </style>
 </head>
@@ -1957,16 +2063,19 @@
 
     <!-- Smart Sync Primary Action -->
     <button type="button" class="backup-action smart-sync" id="smartSyncBtn">
-      <span>⚡</span> Smart Sync (Merge Both Devices)
+      <span>⚡</span> Smart Sync (Merge All Devices)
     </button>
 
-    <div class="sync-advanced-toggle" id="syncAdvancedToggle">Advanced Overwrite Options ▾</div>
-    <div class="sync-advanced-actions" id="syncAdvancedActions" style="display:none;">
-      <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Force Fetch (Overwrite Local)</button>
-      <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Force Push (Overwrite Cloud)</button>
-    </div>
+    <button type="button" class="sync-nav-tile" id="openSyncAdvancedSubpageBtn">
+      <div class="snt-icon">⚙️</div>
+      <div class="snt-content">
+        <div class="snt-title">Advanced Overwrite Options</div>
+        <div class="snt-sub">Force Fetch or Force Push manually</div>
+      </div>
+      <div class="snt-arrow">›</div>
+    </button>
 
-    <p class="sync-note" style="margin-top:16px;">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+    <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
 
     <div class="field">
       <label for="gistId">Gist ID</label>
@@ -1978,23 +2087,68 @@
     </div>
     <div class="field">
       <label for="deviceName">This Device Name (optional)</label>
-      <input type="text" id="deviceName" placeholder="e.g. Karan's Phone, Papa's Phone" autocomplete="off">
+      <input type="text" id="deviceName" placeholder="e.g. My Phone, Shop Tablet, Office" autocomplete="off">
     </div>
 
-    <div class="sync-auto-options">
-      <label class="sync-checkbox-label">
-        <input type="checkbox" id="autoCheckCloudOnOpen" checked>
-        <span>Auto-check cloud when opening app</span>
-      </label>
-      <label class="sync-checkbox-label">
-        <input type="checkbox" id="autoPushOnSave" checked>
-        <span>Auto-sync when saving transactions</span>
-      </label>
+    <!-- Modern iOS-style Toggle Switches Card -->
+    <div class="sync-toggle-card">
+      <div class="sync-toggle-row">
+        <div class="sync-toggle-info">
+          <div class="sync-toggle-title">Auto-Check on App Launch</div>
+          <div class="sync-toggle-desc">Silently checks for updates when opening app</div>
+        </div>
+        <label class="ios-switch">
+          <input type="checkbox" id="autoCheckCloudOnOpen" checked>
+          <span class="ios-slider"></span>
+        </label>
+      </div>
+      <div class="sync-toggle-row">
+        <div class="sync-toggle-info">
+          <div class="sync-toggle-title">Auto-Sync on Entry Save</div>
+          <div class="sync-toggle-desc">Pushes changes to cloud when adding or editing</div>
+        </div>
+        <label class="ios-switch">
+          <input type="checkbox" id="autoPushOnSave" checked>
+          <span class="ios-slider"></span>
+        </label>
+      </div>
     </div>
 
     <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
     <p class="backup-status" id="cloudSyncStatus"></p>
     <p class="sync-last" id="syncLast"></p>
+  </div>
+</div>
+
+<!-- Advanced Cloud Overwrite Options Subpage -->
+<div class="settings-subpage" id="syncAdvancedSubpageOverlay">
+  <div class="settings-subpage-header">
+    <button type="button" class="settings-back-btn" id="closeSyncAdvancedSubpageBtn" title="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <h2>Advanced Overwrite</h2>
+  </div>
+  <div class="settings-subpage-body">
+    <div class="adv-warning-card">
+      <div class="awc-icon">⚠️</div>
+      <div class="awc-text">
+        <b>Use with caution:</b> These manual options bypass Smart Merge and will completely replace all entries on one side with the other.
+      </div>
+    </div>
+
+    <div class="adv-action-section">
+      <p class="adv-action-label">⬇ Force Fetch from Cloud</p>
+      <p class="adv-action-desc">Download and replace all transactions on this device with the backup stored in the cloud.</p>
+      <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Force Fetch (Overwrite Local)</button>
+    </div>
+
+    <div class="adv-action-section" style="margin-top:16px;">
+      <p class="adv-action-label">⬆ Force Push to Cloud</p>
+      <p class="adv-action-desc">Overwrite the cloud backup completely with the transactions currently on this device.</p>
+      <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Force Push (Overwrite Cloud)</button>
+    </div>
   </div>
 </div>
 
@@ -3560,6 +3714,7 @@
     const detailOverlay = document.getElementById('detailOverlay');
     const overlay = document.getElementById('overlay');
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
+    const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     const backupSubpage = document.getElementById('backupSubpageOverlay');
 
@@ -3568,6 +3723,7 @@
            (detailOverlay && detailOverlay.classList.contains('show')) ||
            (overlay && overlay.classList.contains('show')) ||
            (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
+           (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
            (activeTab !== 'home');
@@ -4290,6 +4446,7 @@
   // ── Settings Subpages Navigation ──
   const backupSubpage = document.getElementById('backupSubpageOverlay');
   const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
+  const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
 
   document.getElementById('openBackupSubpageBtn').addEventListener('click', () => {
     backupSubpage.className = 'settings-subpage show slide-in-right';
@@ -4318,6 +4475,16 @@
   document.getElementById('closeCloudSyncSubpageBtn').addEventListener('click', () => {
     cloudSyncSubpage.className = 'settings-subpage show slide-out-right';
     setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage'; }, 150);
+  });
+
+  document.getElementById('openSyncAdvancedSubpageBtn').addEventListener('click', () => {
+    syncAdvSubpage.className = 'settings-subpage show slide-in-right';
+    ensureNavHistory();
+    setTimeout(() => { syncAdvSubpage.className = 'settings-subpage show'; }, 150);
+  });
+  document.getElementById('closeSyncAdvancedSubpageBtn').addEventListener('click', () => {
+    syncAdvSubpage.className = 'settings-subpage show slide-out-right';
+    setTimeout(() => { syncAdvSubpage.className = 'settings-subpage'; }, 150);
   });
 
   navItems.forEach(item => {
@@ -4372,6 +4539,14 @@
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
     if(pdfExportOverlay && pdfExportOverlay.classList.contains('show')){
       pdfExportOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4c. Advanced Sync subpage
+    if(syncAdvSubpage && syncAdvSubpage.classList.contains('show')){
+      syncAdvSubpage.className = 'settings-subpage show slide-out-right';
+      setTimeout(() => { syncAdvSubpage.className = 'settings-subpage'; }, 150);
       if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
