@@ -1157,38 +1157,42 @@
   }
   .txn-list-close:active{ background:#E2E3EE; }
 
-  .txn-header-actions{
+  .txn-list-filters{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:12px 20px 8px;
+    flex-shrink:0;
+  }
+  .txn-filter-chips-wrap{
     display:flex;
     align-items:center;
     gap:8px;
   }
   .txn-pdf-btn{
-    width:36px; height:36px;
-    border-radius:50%;
+    padding:6.5px 13px;
+    border-radius:20px;
     background: linear-gradient(135deg, var(--grad1), var(--grad3));
     border:none;
     color:#fff;
-    font-size:15px;
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
     display:flex;
     align-items:center;
-    justify-content:center;
+    gap:5px;
     cursor:pointer;
     transition: transform 0.12s, box-shadow 0.12s;
-    box-shadow: 0 3px 10px rgba(91,61,245,0.25);
+    box-shadow: 0 3px 10px rgba(91,61,245,0.22);
+    flex-shrink:0;
   }
   .txn-pdf-btn:active{
-    transform: scale(0.92);
+    transform: scale(0.94);
     box-shadow: 0 1px 4px rgba(91,61,245,0.2);
   }
   .txn-pdf-btn svg{
-    width:18px; height:18px;
-  }
-
-  .txn-list-filters{
-    display:flex;
-    gap:8px;
-    padding:14px 20px 10px;
-    flex-shrink:0;
+    width:14px; height:14px;
   }
   .txn-filter-chip{
     padding:7px 14px;
@@ -1841,21 +1845,22 @@
       <h2>All Transactions</h2>
       <p class="txn-count" id="txnCount">Showing 0 entries</p>
     </div>
-    <div class="txn-header-actions">
-      <button type="button" class="txn-pdf-btn" id="downloadPdfBtn" title="Download PDF">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </button>
-      <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
-    </div>
+    <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
   </div>
   <div class="txn-list-filters">
-    <button type="button" class="txn-filter-chip active" data-txnf="all">All</button>
-    <button type="button" class="txn-filter-chip" data-txnf="received">Received</button>
-    <button type="button" class="txn-filter-chip" data-txnf="spent">Spent</button>
+    <div class="txn-filter-chips-wrap">
+      <button type="button" class="txn-filter-chip active" data-txnf="all">All</button>
+      <button type="button" class="txn-filter-chip" data-txnf="received">Received</button>
+      <button type="button" class="txn-filter-chip" data-txnf="spent">Spent</button>
+    </div>
+    <button type="button" class="txn-pdf-btn" id="downloadPdfBtn" title="Download PDF Statement">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>PDF</span>
+    </button>
   </div>
   <div class="txn-list-body" id="txnListBody"></div>
 </div>
