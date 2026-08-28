@@ -1622,27 +1622,60 @@
     margin: 0 12px;
   }
   .ssc-label{
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
     color: var(--text-soft);
   }
   .ssc-val{
     font-family: 'Poppins', sans-serif;
-    font-size: 14.5px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
-    margin: 2px 0;
+    margin: 2px 0 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .ssc-time{
+  .ssc-badge-row{
+    margin: 2px 0 4px;
+    display: flex;
+    align-items: center;
+  }
+  .ssc-device-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2.5px 8px;
+    border-radius: 7px;
+    background: #EDEBF8;
+    color: #4C2FD1;
     font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    border: 1px solid #D8D4F5;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ssc-device-pill.cloud{
+    background: #E8F5E9;
+    color: #1B5E20;
+    border-color: #C8E6C9;
+  }
+  .ssc-device-pill.cloud.active{
+    background: #EDE8FF;
+    color: #5527D6;
+    border-color: #D3C4FF;
+  }
+  .ssc-time{
+    font-size: 10.5px;
     color: var(--text-soft);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 500;
   }
 
   .backup-action.smart-sync{
@@ -2050,13 +2083,19 @@
         <div class="ssc-col">
           <div class="ssc-label">THIS DEVICE</div>
           <div class="ssc-val" id="sscLocalEntries">0 entries</div>
-          <div class="ssc-time" id="sscLocalTime">Updated: Just now</div>
+          <div class="ssc-badge-row">
+            <span class="ssc-device-pill" id="sscLocalDevice">📱 This Device</span>
+          </div>
+          <div class="ssc-time" id="sscLocalTime">Modified: Just now</div>
         </div>
         <div class="ssc-divider"></div>
         <div class="ssc-col">
           <div class="ssc-label">CLOUD BACKUP</div>
           <div class="ssc-val" id="sscCloudEntries">—</div>
-          <div class="ssc-time" id="sscCloudTime">Checking...</div>
+          <div class="ssc-badge-row">
+            <span class="ssc-device-pill cloud" id="sscCloudDevice">☁️ Cloud</span>
+          </div>
+          <div class="ssc-time" id="sscCloudTime">Not checked yet</div>
         </div>
       </div>
     </div>
@@ -3186,25 +3225,39 @@
     const ind = document.getElementById('sscIndicator');
     const localEntriesEl = document.getElementById('sscLocalEntries');
     const localTimeEl = document.getElementById('sscLocalTime');
+    const localDeviceEl = document.getElementById('sscLocalDevice');
     const cloudEntriesEl = document.getElementById('sscCloudEntries');
     const cloudTimeEl = document.getElementById('sscCloudTime');
+    const cloudDeviceEl = document.getElementById('sscCloudDevice');
 
     if(!ind) return;
 
-    localEntriesEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
-    localTimeEl.textContent = `Modified: ${formatRelativeTime(getLocalModifiedTime())}`;
+    const cfg = loadSyncConfig();
+    const myDevice = cfg.deviceName ? cfg.deviceName : (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'This PC');
+
+    if(localEntriesEl) localEntriesEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
+    if(localTimeEl) localTimeEl.textContent = `Modified: ${formatRelativeTime(getLocalModifiedTime())}`;
+    if(localDeviceEl) localDeviceEl.textContent = `📱 ${myDevice}`;
 
     if(syncState.cloudEntriesCount !== null){
-      cloudEntriesEl.textContent = `${syncState.cloudEntriesCount} ${syncState.cloudEntriesCount === 1 ? 'entry' : 'entries'}`;
+      if(cloudEntriesEl) cloudEntriesEl.textContent = `${syncState.cloudEntriesCount} ${syncState.cloudEntriesCount === 1 ? 'entry' : 'entries'}`;
     } else {
-      cloudEntriesEl.textContent = '—';
+      if(cloudEntriesEl) cloudEntriesEl.textContent = '—';
     }
 
     if(syncState.cloudLastModified){
-      const byDevice = syncState.cloudDeviceTag ? ` (${escapeHtml(syncState.cloudDeviceTag)})` : '';
-      cloudTimeEl.textContent = `Updated: ${formatRelativeTime(syncState.cloudLastModified)}${byDevice}`;
+      if(cloudTimeEl) cloudTimeEl.textContent = `Updated: ${formatRelativeTime(syncState.cloudLastModified)}`;
+      const cloudDevName = syncState.cloudDeviceTag || 'Connected Device';
+      if(cloudDeviceEl){
+        cloudDeviceEl.textContent = `☁️ ${cloudDevName}`;
+        cloudDeviceEl.className = 'ssc-device-pill cloud active';
+      }
     } else {
-      cloudTimeEl.textContent = 'Not checked yet';
+      if(cloudTimeEl) cloudTimeEl.textContent = 'Not checked yet';
+      if(cloudDeviceEl){
+        cloudDeviceEl.textContent = '☁️ Cloud';
+        cloudDeviceEl.className = 'ssc-device-pill cloud';
+      }
     }
 
     ind.className = 'ssc-indicator ' + syncState.status;
