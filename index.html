@@ -605,6 +605,186 @@
     border-color: var(--grad1);
   }
 
+  /* PDF Export Modal / Bottom Sheet */
+  .pdf-export-sheet{
+    text-align: left;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .pdf-export-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pdf-icon-wrap{
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #F3F0FF;
+    color: var(--grad1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .pdf-export-header h2{
+    font-family: 'Poppins', sans-serif;
+    font-size: 17.5px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .pdf-export-header .pdf-sub{
+    font-size: 12px;
+    color: var(--text-soft);
+    margin: 2px 0 0;
+  }
+  .pdf-field-group{
+    margin-bottom: 14px;
+  }
+  .pdf-label{
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+  }
+  .pdf-range-presets{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pdf-preset-chip{
+    padding: 6px 12px;
+    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .pdf-preset-chip.active{
+    background: var(--grad1);
+    border-color: var(--grad1);
+    color: #fff;
+  }
+  .pdf-custom-dates{
+    margin-top: 10px;
+    padding: 12px;
+    background: #F8F8FC;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+  }
+  .pdf-date-row{
+    display: flex;
+    gap: 10px;
+  }
+  .pdf-date-col{
+    flex: 1;
+  }
+  .pdf-date-col label{
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+  }
+  .pdf-date-col input[type="date"]{
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .pdf-type-selector{
+    display: flex;
+    gap: 8px;
+  }
+  .pdf-type-btn{
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+  }
+  .pdf-type-btn.active{
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+  }
+  .pdf-preview-box{
+    background: #FAFAFD;
+    border: 1.5px dashed #D9D8EB;
+    border-radius: 14px;
+    padding: 11px 13px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pdf-preview-count{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .pdf-preview-amounts{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pdf-actions{
+    display: flex;
+    gap: 10px;
+  }
+  .pdf-btn{
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .pdf-btn:active{ transform: scale(0.98); }
+  .pdf-btn.cancel{
+    background: #F0F0F7;
+    color: var(--text);
+  }
+  .pdf-btn.generate{
+    background: linear-gradient(135deg, var(--grad1), var(--grad3));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.25);
+  }
+  .pdf-btn.generate svg{
+    width: 17px;
+    height: 17px;
+  }
+
   /* Detail sheet */
   .detail-sheet{ text-align:left; }
   .detail-top{
@@ -1575,6 +1755,70 @@
     <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
     <p class="backup-status" id="cloudSyncStatus"></p>
     <p class="sync-last" id="syncLast"></p>
+  </div>
+</div>
+
+<!-- PDF Export Modal / Date Range Selector -->
+<div class="overlay" id="pdfExportOverlay">
+  <div class="sheet pdf-export-sheet">
+    <div class="handle"></div>
+    <div class="pdf-export-header">
+      <div class="pdf-icon-wrap">📄</div>
+      <div>
+        <h2>Download Statement (PDF)</h2>
+        <p class="pdf-sub">Black & White A4 printable format</p>
+      </div>
+    </div>
+
+    <div class="pdf-field-group">
+      <label class="pdf-label">Date Range</label>
+      <div class="pdf-range-presets">
+        <button type="button" class="pdf-preset-chip active" data-range="all">All Time</button>
+        <button type="button" class="pdf-preset-chip" data-range="this_month">This Month</button>
+        <button type="button" class="pdf-preset-chip" data-range="last_month">Last Month</button>
+        <button type="button" class="pdf-preset-chip" data-range="last_30">Last 30 Days</button>
+        <button type="button" class="pdf-preset-chip" data-range="custom">Custom</button>
+      </div>
+
+      <div class="pdf-custom-dates" id="pdfCustomDates" style="display:none;">
+        <div class="pdf-date-row">
+          <div class="pdf-date-col">
+            <label for="pdfStartDate">From</label>
+            <input type="date" id="pdfStartDate">
+          </div>
+          <div class="pdf-date-col">
+            <label for="pdfEndDate">To</label>
+            <input type="date" id="pdfEndDate">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-field-group">
+      <label class="pdf-label">Transaction Type</label>
+      <div class="pdf-type-selector">
+        <button type="button" class="pdf-type-btn active" data-type="all">All</button>
+        <button type="button" class="pdf-type-btn" data-type="received">Received</button>
+        <button type="button" class="pdf-type-btn" data-type="spent">Spent</button>
+      </div>
+    </div>
+
+    <div class="pdf-preview-box">
+      <div class="pdf-preview-count" id="pdfPreviewCount">📊 0 entries found</div>
+      <div class="pdf-preview-amounts" id="pdfPreviewAmounts">Total: Rs. 0</div>
+    </div>
+
+    <div class="pdf-actions">
+      <button type="button" class="pdf-btn cancel" id="pdfCancelBtn">Cancel</button>
+      <button type="button" class="pdf-btn generate" id="pdfGenerateBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download PDF
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2619,6 +2863,7 @@
     const pinOverlay = document.getElementById('pinOverlay');
     const detailOverlay = document.getElementById('detailOverlay');
     const overlay = document.getElementById('overlay');
+    const pdfExportOverlay = document.getElementById('pdfExportOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     const backupSubpage = document.getElementById('backupSubpageOverlay');
 
@@ -2626,6 +2871,7 @@
            (pinOverlay && pinOverlay.classList.contains('show')) ||
            (detailOverlay && detailOverlay.classList.contains('show')) ||
            (overlay && overlay.classList.contains('show')) ||
+           (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
            (activeTab !== 'home');
@@ -2758,197 +3004,488 @@
     });
   });
 
-  // ── PDF Download ──
-  document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
+  // ── PDF Export Modal & Black & White Generator ──
+  const pdfExportOverlay = document.getElementById('pdfExportOverlay');
+  const pdfCustomDates = document.getElementById('pdfCustomDates');
+  const pdfStartDate = document.getElementById('pdfStartDate');
+  const pdfEndDate = document.getElementById('pdfEndDate');
+  const pdfGenerateBtn = document.getElementById('pdfGenerateBtn');
+  const pdfCancelBtn = document.getElementById('pdfCancelBtn');
+  let currentPdfPreset = 'all';
+  let currentPdfType = 'all';
 
-  function generatePDF(){
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
+  function formatPdfRupee(num){
+    const n = Number(num) || 0;
+    return 'Rs. ' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
-    // Gather data
-    let filtered;
-    if(txnListFilter === 'all'){
-      filtered = entries;
-    } else {
-      filtered = entries.filter(e => e.type === txnListFilter);
+  function getPdfDateRange(preset){
+    const now = new Date();
+    const todayStr = toLocalDateStr(now.toISOString());
+    if(preset === 'all'){
+      return { start: null, end: null, label: 'All Recorded History' };
     }
-    if(currentFilter === 'date' && calDateInput.value){
-      filtered = filtered.filter(e => toLocalDateStr(e.when) === calDateInput.value);
+    if(preset === 'this_month'){
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startStr = toLocalDateStr(start.toISOString());
+      return { start: startStr, end: todayStr, label: `${start.toLocaleDateString('en-IN', {month:'short', year:'numeric'})}` };
     }
-    const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
+    if(preset === 'last_month'){
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0);
+      const startStr = toLocalDateStr(start.toISOString());
+      const endStr = toLocalDateStr(end.toISOString());
+      return { start: startStr, end: endStr, label: `${start.toLocaleDateString('en-IN', {month:'short', year:'numeric'})}` };
+    }
+    if(preset === 'last_30'){
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+      const startStr = toLocalDateStr(start.toISOString());
+      return { start: startStr, end: todayStr, label: 'Last 30 Days' };
+    }
+    if(preset === 'custom'){
+      const s = pdfStartDate.value;
+      const e = pdfEndDate.value;
+      const fmtDate = (dstr) => {
+        if(!dstr) return '';
+        const p = dstr.split('-');
+        return new Date(Number(p[0]), Number(p[1])-1, Number(p[2])).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+      };
+      const label = (s && e) ? `${fmtDate(s)} to ${fmtDate(e)}` : (s ? `From ${fmtDate(s)}` : (e ? `Up to ${fmtDate(e)}` : 'Custom Range'));
+      return { start: s || null, end: e || null, label };
+    }
+    return { start: null, end: null, label: 'All Recorded History' };
+  }
 
-    // Compute totals
+  function getFilteredPdfEntries(){
+    const { start, end } = getPdfDateRange(currentPdfPreset);
+    let list = [...entries];
+    if(currentPdfType !== 'all'){
+      list = list.filter(e => e.type === currentPdfType);
+    }
+    if(start){
+      list = list.filter(e => toLocalDateStr(e.when) >= start);
+    }
+    if(end){
+      list = list.filter(e => toLocalDateStr(e.when) <= end);
+    }
+    return list.sort((a,b) => new Date(b.when) - new Date(a.when));
+  }
+
+  function updatePdfPreview(){
+    const list = getFilteredPdfEntries();
     let totalRec = 0, totalSp = 0;
-    sorted.forEach(e => {
+    list.forEach(e => {
+      if(e.type === 'received') totalRec += Number(e.amount);
+      else totalSp += Number(e.amount);
+    });
+    const countEl = document.getElementById('pdfPreviewCount');
+    const amtEl = document.getElementById('pdfPreviewAmounts');
+    countEl.textContent = `📊 ${list.length} ${list.length === 1 ? 'entry' : 'entries'} found`;
+    if(currentPdfType === 'received'){
+      amtEl.textContent = `Total: Rs. ${Number(totalRec).toLocaleString('en-IN')}`;
+      amtEl.style.color = 'var(--green)';
+    } else if(currentPdfType === 'spent'){
+      amtEl.textContent = `Total: Rs. ${Number(totalSp).toLocaleString('en-IN')}`;
+      amtEl.style.color = 'var(--red)';
+    } else {
+      const net = totalRec - totalSp;
+      amtEl.textContent = `Net: ${net >= 0 ? '+' : '-'}Rs. ${Math.abs(net).toLocaleString('en-IN')}`;
+      amtEl.style.color = 'var(--grad1)';
+    }
+  }
+
+  function openPdfModal(){
+    currentPdfPreset = 'all';
+    currentPdfType = (txnListFilter && txnListFilter !== 'all') ? txnListFilter : 'all';
+    document.querySelectorAll('.pdf-preset-chip').forEach(c => c.classList.toggle('active', c.dataset.range === 'all'));
+    document.querySelectorAll('.pdf-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === currentPdfType));
+    pdfCustomDates.style.display = 'none';
+
+    const now = new Date();
+    const todayStr = toLocalDateStr(now.toISOString());
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    pdfStartDate.value = toLocalDateStr(thirtyDaysAgo.toISOString());
+    pdfEndDate.value = todayStr;
+
+    updatePdfPreview();
+    pdfExportOverlay.classList.add('show');
+    ensureNavHistory();
+  }
+
+  function closePdfModal(){
+    pdfExportOverlay.classList.remove('show');
+  }
+
+  document.getElementById('downloadPdfBtn').addEventListener('click', openPdfModal);
+  pdfCancelBtn.addEventListener('click', closePdfModal);
+  pdfExportOverlay.addEventListener('click', (e) => {
+    if(e.target === pdfExportOverlay) closePdfModal();
+  });
+
+  document.querySelectorAll('.pdf-preset-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.pdf-preset-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentPdfPreset = chip.dataset.range;
+      if(currentPdfPreset === 'custom'){
+        pdfCustomDates.style.display = 'block';
+      } else {
+        pdfCustomDates.style.display = 'none';
+      }
+      updatePdfPreview();
+    });
+  });
+
+  pdfStartDate.addEventListener('change', updatePdfPreview);
+  pdfEndDate.addEventListener('change', updatePdfPreview);
+
+  document.querySelectorAll('.pdf-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pdf-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPdfType = btn.dataset.type;
+      updatePdfPreview();
+    });
+  });
+
+  pdfGenerateBtn.addEventListener('click', executePdfExport);
+
+  function executePdfExport(){
+    const list = getFilteredPdfEntries();
+    if(list.length === 0){
+      alert('No transactions found for the selected date range and filter.');
+      return;
+    }
+
+    const { label: dateRangeLabel } = getPdfDateRange(currentPdfPreset);
+    const typeLabel = currentPdfType === 'all' ? 'All Transactions' : currentPdfType === 'received' ? 'Money Received' : 'Money Spent';
+
+    let totalRec = 0, totalSp = 0;
+    list.forEach(e => {
       if(e.type === 'received') totalRec += Number(e.amount);
       else totalSp += Number(e.amount);
     });
 
-    // ─── Header ───
-    // Purple gradient bar
-    doc.setFillColor(91, 61, 245);
-    doc.rect(0, 0, pageW, 28, 'F');
-    // Light accent stripe
-    doc.setFillColor(124, 92, 255);
-    doc.rect(0, 25, pageW, 3, 'F');
+    pdfGenerateBtn.disabled = true;
+    pdfGenerateBtn.textContent = 'Generating PDF...';
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('Paisa Hisaab', 14, 14);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    setTimeout(() => {
+      try {
+        if(!window.jspdf || !window.jspdf.jsPDF){
+          // Fallback to printable browser window if jsPDF is unavailable
+          printStatementFallback(list, dateRangeLabel, typeLabel, totalRec, totalSp);
+          closePdfModal();
+          pdfGenerateBtn.disabled = false;
+          pdfGenerateBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download PDF`;
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const now = new Date();
+        const genDate = now.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+        const genTime = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+
+        // ─── Header: Monochrome Clean Printable Style ───
+        // Top black bar
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.7);
+        doc.line(14, 12, pageW - 14, 12);
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('PAISA HISAAB', 14, 19);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(70, 70, 70);
+        doc.text('ACCOUNT STATEMENT  |  PRINT EDITION', 14, 24);
+
+        // Right side metadata
+        doc.setFontSize(8);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Statement Period: ' + dateRangeLabel, pageW - 14, 18, { align: 'right' });
+        doc.text('Generated: ' + genDate + ' at ' + genTime, pageW - 14, 22.5, { align: 'right' });
+        doc.text('Filter: ' + typeLabel + ' (' + list.length + ' entries)', pageW - 14, 27, { align: 'right' });
+
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.line(14, 30, pageW - 14, 30);
+
+        // ─── Summary Ledger Box (Black & White Bordered Cards) ───
+        const summaryY = 34;
+        const gap = 4;
+        const cardW = (pageW - 28 - (gap * 2)) / 3;
+
+        // Box 1: Total Received
+        doc.setDrawColor(40, 40, 40);
+        doc.setLineWidth(0.3);
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, summaryY, cardW, 16, 2, 2, 'FD');
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.text('TOTAL RECEIVED', 14 + cardW/2, summaryY + 5.5, { align: 'center' });
+        doc.setFontSize(10.5);
+        doc.setTextColor(0, 0, 0);
+        doc.text(formatPdfRupee(totalRec), 14 + cardW/2, summaryY + 12.5, { align: 'center' });
+
+        // Box 2: Total Spent
+        const spX = 14 + cardW + gap;
+        doc.roundedRect(spX, summaryY, cardW, 16, 2, 2, 'FD');
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.text('TOTAL SPENT', spX + cardW/2, summaryY + 5.5, { align: 'center' });
+        doc.setFontSize(10.5);
+        doc.setTextColor(0, 0, 0);
+        doc.text(formatPdfRupee(totalSp), spX + cardW/2, summaryY + 12.5, { align: 'center' });
+
+        // Box 3: Net Balance
+        const balX = spX + cardW + gap;
+        const bal = totalRec - totalSp;
+        doc.roundedRect(balX, summaryY, cardW, 16, 2, 2, 'FD');
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.text('NET BALANCE', balX + cardW/2, summaryY + 5.5, { align: 'center' });
+        doc.setFontSize(10.5);
+        doc.setTextColor(0, 0, 0);
+        doc.text((bal >= 0 ? '+ ' : '- ') + formatPdfRupee(Math.abs(bal)), balX + cardW/2, summaryY + 12.5, { align: 'center' });
+
+        // ─── Table Structure (Monochrome & High Legibility) ───
+        const bodyData = [];
+        let lastDatePdf = null;
+
+        list.forEach(e => {
+          const entryDate = toLocalDateStr(e.when);
+          if(entryDate !== lastDatePdf){
+            lastDatePdf = entryDate;
+            const parts = entryDate.split('-');
+            const dd = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            const dayLabel = dd.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'short', year:'numeric' }).toUpperCase();
+            bodyData.push([{
+              content: '─── ' + dayLabel + ' ───',
+              colSpan: 5,
+              styles: {
+                fillColor: [240, 240, 240],
+                textColor: [30, 30, 30],
+                fontStyle: 'bold',
+                fontSize: 8.5,
+                halign: 'center',
+                cellPadding: { top: 2.5, bottom: 2.5 }
+              }
+            }]);
+          }
+
+          const d = new Date(e.when);
+          const dateFormatted = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          const timeFormatted = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+          const dateTimeStr = dateFormatted + '\n' + timeFormatted;
+          const sign = e.type === 'received' ? '+' : '-';
+          const typeStr = e.type === 'received' ? 'RECEIVED' : 'SPENT';
+          const amountStr = sign + ' ' + formatPdfRupee(e.amount);
+
+          bodyData.push([
+            dateTimeStr,
+            e.name,
+            e.reason || '—',
+            { content: typeStr, styles: { halign: 'center', fontSize: 7.5, fontStyle: 'bold' } },
+            { content: amountStr, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 0, 0] } }
+          ]);
+        });
+
+        doc.autoTable({
+          startY: summaryY + 22,
+          head: [['Date & Time', 'Name / Party', 'Reason / Particulars', 'Type', 'Amount']],
+          body: bodyData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [230, 230, 230],
+            textColor: [0, 0, 0],
+            fontStyle: 'bold',
+            fontSize: 9,
+            cellPadding: 3.5,
+            lineColor: [80, 80, 80],
+            lineWidth: 0.3
+          },
+          styles: {
+            fontSize: 8.5,
+            cellPadding: 3,
+            lineColor: [200, 200, 200],
+            lineWidth: 0.25,
+            textColor: [20, 20, 20],
+            overflow: 'linebreak'
+          },
+          alternateRowStyles: {
+            fillColor: [252, 252, 252]
+          },
+          columnStyles: {
+            0: { cellWidth: 32, fontSize: 8 },
+            1: { cellWidth: 40, fontStyle: 'bold' },
+            2: { cellWidth: 'auto' },
+            3: { cellWidth: 22, halign: 'center' },
+            4: { cellWidth: 34, halign: 'right' }
+          },
+          margin: { left: 14, right: 14, bottom: 18 },
+          didDrawPage: function(data){
+            // Footer on every page
+            doc.setFontSize(8);
+            doc.setTextColor(110, 110, 110);
+            doc.setDrawColor(180, 180, 180);
+            doc.setLineWidth(0.3);
+            doc.line(14, pageH - 12, pageW - 14, pageH - 12);
+            doc.text('Paisa Hisaab — Personal Account Statement', 14, pageH - 7);
+            doc.text('* Computer Generated Statement *', pageW / 2, pageH - 7, { align: 'center' });
+            doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 7, { align: 'right' });
+          }
+        });
+
+        // Update total pages in footer
+        const totalPages = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= totalPages; i++){
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.setTextColor(110, 110, 110);
+          doc.setFillColor(255, 255, 255);
+          doc.rect(pageW - 35, pageH - 10, 25, 5, 'F');
+          doc.text('Page ' + i + ' of ' + totalPages, pageW - 14, pageH - 7, { align: 'right' });
+        }
+
+        const dateTag = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+        const fileName = 'PaisaHisaab_Statement_' + dateTag + '.pdf';
+        doc.save(fileName);
+        closePdfModal();
+      } catch(err) {
+        console.error('jsPDF generation failed, using print fallback:', err);
+        printStatementFallback(list, dateRangeLabel, typeLabel, totalRec, totalSp);
+        closePdfModal();
+      } finally {
+        pdfGenerateBtn.disabled = false;
+        pdfGenerateBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download PDF`;
+      }
+    }, 100);
+  }
+
+  function printStatementFallback(list, dateRangeLabel, typeLabel, totalRec, totalSp){
     const now = new Date();
     const genDate = now.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
     const genTime = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
-    doc.text(`Generated: ${genDate} at ${genTime}`, 14, 20);
+    const net = totalRec - totalSp;
 
-    // Filter label top-right
-    const filterLabel = txnListFilter === 'all' ? 'All Transactions' : txnListFilter === 'received' ? 'Money Received' : 'Money Spent';
-    doc.setFontSize(10);
-    doc.text(filterLabel, pageW - 14, 14, { align:'right' });
-    doc.text(`${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`, pageW - 14, 20, { align:'right' });
-
-    // ─── Summary Cards ───
-    const summaryY = 34;
-    const cardW = (pageW - 42) / 3;
-
-    // Received card
-    doc.setFillColor(228, 247, 236);
-    doc.roundedRect(14, summaryY, cardW, 18, 3, 3, 'F');
-    doc.setTextColor(18, 164, 84);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('RECEIVED', 14 + cardW/2, summaryY + 6, { align:'center' });
-    doc.setFontSize(11);
-    doc.text('\u20B9 ' + formatRupee(totalRec), 14 + cardW/2, summaryY + 13, { align:'center' });
-
-    // Spent card
-    const spX = 14 + cardW + 7;
-    doc.setFillColor(253, 234, 233);
-    doc.roundedRect(spX, summaryY, cardW, 18, 3, 3, 'F');
-    doc.setTextColor(227, 72, 63);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('SPENT', spX + cardW/2, summaryY + 6, { align:'center' });
-    doc.setFontSize(11);
-    doc.text('\u20B9 ' + formatRupee(totalSp), spX + cardW/2, summaryY + 13, { align:'center' });
-
-    // Balance card
-    const balX = spX + cardW + 7;
-    const bal = totalRec - totalSp;
-    doc.setFillColor(234, 231, 251);
-    doc.roundedRect(balX, summaryY, cardW, 18, 3, 3, 'F');
-    doc.setTextColor(85, 51, 235);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('BALANCE', balX + cardW/2, summaryY + 6, { align:'center' });
-    doc.setFontSize(11);
-    doc.text((bal >= 0 ? '' : '- ') + '\u20B9 ' + formatRupee(Math.abs(bal)), balX + cardW/2, summaryY + 13, { align:'center' });
-
-    // ─── Table ───
-    const tableRows = [];
-    let lastDatePdf = null;
-
-    sorted.forEach(e => {
+    let rowsHtml = '';
+    let lastDate = null;
+    list.forEach(e => {
       const entryDate = toLocalDateStr(e.when);
-      if(entryDate !== lastDatePdf){
-        lastDatePdf = entryDate;
+      if(entryDate !== lastDate){
+        lastDate = entryDate;
         const parts = entryDate.split('-');
         const dd = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-        const dayLabel = dd.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-        tableRows.push({ isDateRow: true, label: dayLabel });
+        const dayLabel = dd.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'short', year:'numeric' }).toUpperCase();
+        rowsHtml += `<tr class="date-header-row"><td colspan="5">─── ${escapeHtml(dayLabel)} ───</td></tr>`;
       }
       const d = new Date(e.when);
-      const timePart = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      const dt = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
       const sign = e.type === 'received' ? '+' : '-';
-      tableRows.push({
-        isDateRow: false,
-        name: e.name,
-        reason: e.reason || '—',
-        time: timePart,
-        amount: sign + ' \u20B9' + formatRupee(e.amount),
-        type: e.type
-      });
+      rowsHtml += `
+        <tr>
+          <td>${dt}</td>
+          <td style="font-weight:600;">${escapeHtml(e.name)}</td>
+          <td>${escapeHtml(e.reason || '—')}</td>
+          <td style="text-align:center; font-weight:bold; font-size:11px;">${e.type === 'received' ? 'RECEIVED' : 'SPENT'}</td>
+          <td style="text-align:right; font-weight:bold;">${sign} ${formatPdfRupee(e.amount)}</td>
+        </tr>
+      `;
     });
 
-    const bodyData = [];
-    const dateRowIndices = [];
-
-    tableRows.forEach((r, i) => {
-      if(r.isDateRow){
-        bodyData.push([{ content: r.label, colSpan: 4, styles:{ fillColor:[234,231,251], textColor:[85,51,235], fontStyle:'bold', fontSize:9, halign:'center', cellPadding:{ top:3, bottom:3, left:4, right:4 } } }]);
-        dateRowIndices.push(bodyData.length - 1);
-      } else {
-        bodyData.push([
-          r.name,
-          r.reason,
-          r.time,
-          { content: r.amount, styles:{ textColor: r.type === 'received' ? [18,164,84] : [227,72,63], fontStyle:'bold', halign:'right' } }
-        ]);
-      }
-    });
-
-    doc.autoTable({
-      startY: summaryY + 24,
-      head: [['Name', 'Reason', 'Time', 'Amount']],
-      body: bodyData,
-      theme: 'grid',
-      headStyles:{
-        fillColor: [91, 61, 245],
-        textColor: 255,
-        fontStyle: 'bold',
-        fontSize: 10,
-        cellPadding: 4
-      },
-      styles:{
-        fontSize: 9,
-        cellPadding: 3,
-        lineColor: [236, 237, 245],
-        lineWidth: 0.3,
-        overflow: 'linebreak'
-      },
-      alternateRowStyles:{
-        fillColor: [250, 250, 253]
-      },
-      columnStyles:{
-        0: { cellWidth: 38, fontStyle:'bold' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 24, halign:'center' },
-        3: { cellWidth: 32, halign:'right', font:'helvetica' }
-      },
-      margin: { left: 14, right: 14 },
-      didDrawPage: function(data){
-        // Footer on every page
-        const pg = doc.internal.getNumberOfPages();
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text('Paisa Hisaab — Personal Finance Tracker', 14, pageH - 8);
-        doc.text('Page ' + data.pageNumber + ' of ' + pg, pageW - 14, pageH - 8, { align:'right' });
-        // Thin bottom line
-        doc.setDrawColor(220);
-        doc.setLineWidth(0.3);
-        doc.line(14, pageH - 12, pageW - 14, pageH - 12);
-      }
-    });
-
-    // Fix footer page count (re-render all pages)
-    const totalPages = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= totalPages; i++){
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      // Overwrite page count
-      doc.setFillColor(255, 255, 255);
-      doc.rect(pageW - 40, pageH - 11, 30, 6, 'F');
-      doc.text('Page ' + i + ' of ' + totalPages, pageW - 14, pageH - 8, { align:'right' });
+    const printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('Pop-up blocked. Please allow pop-ups to print your statement.');
+      return;
     }
 
-    // Download
-    const fname = 'PaisaHisaab_' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '.pdf';
-    doc.save(fname);
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Paisa Hisaab - Statement</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm; }
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; margin: 0; padding: 0; }
+          .header { border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; display:flex; justify-content:space-between; align-items:flex-end; }
+          .header h1 { margin:0; font-size:22px; }
+          .header .sub { font-size:11px; color:#555; text-transform:uppercase; margin-top:3px; }
+          .header .meta { text-align:right; font-size:11px; color:#333; line-height:1.4; }
+          .summary { display:flex; gap:12px; margin-bottom:20px; }
+          .summary-box { flex:1; border:1px solid #000; padding:8px 12px; border-radius:4px; text-align:center; }
+          .summary-box .lbl { font-size:10px; font-weight:bold; color:#555; }
+          .summary-box .val { font-size:15px; font-weight:bold; margin-top:4px; }
+          table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px; }
+          th, td { border:1px solid #ccc; padding:6px 8px; text-align:left; }
+          th { background:#e5e5e5; font-weight:bold; border-color:#888; }
+          .date-header-row td { background:#f0f0f0; font-weight:bold; text-align:center; font-size:11px; padding:5px; border-color:#888; }
+          .footer { border-top:1px solid #888; padding-top:6px; font-size:10px; color:#666; display:flex; justify-content:space-between; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1>PAISA HISAAB</h1>
+            <div class="sub">Personal Account Statement (Print Edition)</div>
+          </div>
+          <div class="meta">
+            <div><strong>Period:</strong> ${escapeHtml(dateRangeLabel)}</div>
+            <div><strong>Generated:</strong> ${genDate} ${genTime}</div>
+            <div><strong>Filter:</strong> ${escapeHtml(typeLabel)} (${list.length} entries)</div>
+          </div>
+        </div>
+        <div class="summary">
+          <div class="summary-box">
+            <div class="lbl">TOTAL RECEIVED</div>
+            <div class="val">${formatPdfRupee(totalRec)}</div>
+          </div>
+          <div class="summary-box">
+            <div class="lbl">TOTAL SPENT</div>
+            <div class="val">${formatPdfRupee(totalSp)}</div>
+          </div>
+          <div class="summary-box">
+            <div class="lbl">NET BALANCE</div>
+            <div class="val">${(net >= 0 ? '+ ' : '- ') + formatPdfRupee(Math.abs(net))}</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:120px;">Date & Time</th>
+              <th>Name / Party</th>
+              <th>Reason / Particulars</th>
+              <th style="width:80px; text-align:center;">Type</th>
+              <th style="width:110px; text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+        <div class="footer">
+          <div>Paisa Hisaab — Personal Account Statement</div>
+          <div>* Computer Generated Statement *</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+    setTimeout(() => {
+      try {
+        printWin.focus();
+        printWin.print();
+      } catch(e) {}
+    }, 250);
   }
 
   // ── Bottom Navbar Logic ──
@@ -3110,6 +3647,14 @@
     const detailOverlay = document.getElementById('detailOverlay');
     if(detailOverlay && detailOverlay.classList.contains('show')){
       detailOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4b. PDF Export Sheet
+    const pdfExportOverlay = document.getElementById('pdfExportOverlay');
+    if(pdfExportOverlay && pdfExportOverlay.classList.contains('show')){
+      pdfExportOverlay.classList.remove('show');
       if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
