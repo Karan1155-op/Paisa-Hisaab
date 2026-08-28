@@ -208,6 +208,38 @@
   }
   .entry .del:hover{ color: var(--red); }
 
+  /* Date Group Header Divider */
+  .txn-date-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:14px 0 4px;
+    padding:0 2px;
+  }
+  .txn-date-divider:first-child{
+    margin-top:2px;
+  }
+  .txn-date-divider span{
+    font-family:'Poppins', sans-serif;
+    font-size:11.5px;
+    font-weight:600;
+    color: var(--text-soft);
+    background: #F0EFF8;
+    padding: 3.5px 11px;
+    border-radius: 20px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+  }
+  .txn-date-divider::after{
+    content:'';
+    flex:1;
+    height:1.5px;
+    background: #EFEFF6;
+    border-radius: 1px;
+  }
+
   .empty{
     text-align:center;
     padding: 50px 20px;
@@ -1703,6 +1735,22 @@
     return div.innerHTML;
   }
 
+  function getDateGroupLabel(isoDateStr){
+    const todayStr = toLocalDateStr(new Date().toISOString());
+    const yest = new Date();
+    yest.setDate(yest.getDate() - 1);
+    const yestStr = toLocalDateStr(yest.toISOString());
+
+    const parts = isoDateStr.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const dateText = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    if(isoDateStr === todayStr) return `Today · ${dateText}`;
+    if(isoDateStr === yestStr) return `Yesterday · ${dateText}`;
+    const weekday = d.toLocaleDateString('en-IN', { weekday: 'short' });
+    return `${weekday}, ${dateText}`;
+  }
+
   function render(){
     entriesEl.innerHTML = '';
 
@@ -1732,8 +1780,18 @@
     }
 
     const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
+    let lastDate = null;
 
     sorted.forEach((e) => {
+      const entryDate = toLocalDateStr(e.when);
+      if(entryDate !== lastDate){
+        lastDate = entryDate;
+        const divider = document.createElement('div');
+        divider.className = 'txn-date-divider';
+        divider.innerHTML = `<span>${getDateGroupLabel(entryDate)}</span>`;
+        entriesEl.appendChild(divider);
+      }
+
       const row = document.createElement('div');
       row.className = 'entry';
       row.dataset.id = e.id;
@@ -2603,6 +2661,7 @@
     }
 
     const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
+    let lastDate = null;
 
     txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
 
@@ -2612,8 +2671,16 @@
     }
 
     sorted.forEach(e => {
+      const entryDate = toLocalDateStr(e.when);
+      if(entryDate !== lastDate){
+        lastDate = entryDate;
+        const divider = document.createElement('div');
+        divider.className = 'txn-date-divider';
+        divider.innerHTML = `<span>${getDateGroupLabel(entryDate)}</span>`;
+        txnListBody.appendChild(divider);
+      }
+
       const d = new Date(e.when);
-      const datePart = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
       const timePart = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
       const sign = e.type === 'received' ? '+' : '−';
       const reasonText = e.reason ? escapeHtml(e.reason) : '— No reason provided';
@@ -2626,7 +2693,7 @@
           <div class="avatar" style="background:${colorFor(e.name)}">${initials(e.name)}</div>
           <div class="txn-card-info">
             <div class="txn-card-name">${escapeHtml(e.name)}</div>
-            <div class="txn-card-datetime">${datePart} · ${timePart}</div>
+            <div class="txn-card-datetime">${timePart}</div>
           </div>
           <div class="txn-card-amount ${e.type}">${sign} ${formatRupee(e.amount)}</div>
         </div>
