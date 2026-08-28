@@ -13,6 +13,8 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{
     --bg: #F3F4FA;
@@ -975,6 +977,33 @@
   }
   .txn-list-close:active{ background:#E2E3EE; }
 
+  .txn-header-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .txn-pdf-btn{
+    width:36px; height:36px;
+    border-radius:50%;
+    background: linear-gradient(135deg, var(--grad1), var(--grad3));
+    border:none;
+    color:#fff;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    box-shadow: 0 3px 10px rgba(91,61,245,0.25);
+  }
+  .txn-pdf-btn:active{
+    transform: scale(0.92);
+    box-shadow: 0 1px 4px rgba(91,61,245,0.2);
+  }
+  .txn-pdf-btn svg{
+    width:18px; height:18px;
+  }
+
   .txn-list-filters{
     display:flex;
     gap:8px;
@@ -1568,7 +1597,16 @@
       <h2>All Transactions</h2>
       <p class="txn-count" id="txnCount">Showing 0 entries</p>
     </div>
-    <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
+    <div class="txn-header-actions">
+      <button type="button" class="txn-pdf-btn" id="downloadPdfBtn" title="Download PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
+    </div>
   </div>
   <div class="txn-list-filters">
     <button type="button" class="txn-filter-chip active" data-txnf="all">All</button>
@@ -2719,6 +2757,199 @@
       renderTxnList();
     });
   });
+
+  // ── PDF Download ──
+  document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
+
+  function generatePDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // Gather data
+    let filtered;
+    if(txnListFilter === 'all'){
+      filtered = entries;
+    } else {
+      filtered = entries.filter(e => e.type === txnListFilter);
+    }
+    if(currentFilter === 'date' && calDateInput.value){
+      filtered = filtered.filter(e => toLocalDateStr(e.when) === calDateInput.value);
+    }
+    const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
+
+    // Compute totals
+    let totalRec = 0, totalSp = 0;
+    sorted.forEach(e => {
+      if(e.type === 'received') totalRec += Number(e.amount);
+      else totalSp += Number(e.amount);
+    });
+
+    // ─── Header ───
+    // Purple gradient bar
+    doc.setFillColor(91, 61, 245);
+    doc.rect(0, 0, pageW, 28, 'F');
+    // Light accent stripe
+    doc.setFillColor(124, 92, 255);
+    doc.rect(0, 25, pageW, 3, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Paisa Hisaab', 14, 14);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const now = new Date();
+    const genDate = now.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    const genTime = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    doc.text(`Generated: ${genDate} at ${genTime}`, 14, 20);
+
+    // Filter label top-right
+    const filterLabel = txnListFilter === 'all' ? 'All Transactions' : txnListFilter === 'received' ? 'Money Received' : 'Money Spent';
+    doc.setFontSize(10);
+    doc.text(filterLabel, pageW - 14, 14, { align:'right' });
+    doc.text(`${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`, pageW - 14, 20, { align:'right' });
+
+    // ─── Summary Cards ───
+    const summaryY = 34;
+    const cardW = (pageW - 42) / 3;
+
+    // Received card
+    doc.setFillColor(228, 247, 236);
+    doc.roundedRect(14, summaryY, cardW, 18, 3, 3, 'F');
+    doc.setTextColor(18, 164, 84);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('RECEIVED', 14 + cardW/2, summaryY + 6, { align:'center' });
+    doc.setFontSize(11);
+    doc.text('\u20B9 ' + formatRupee(totalRec), 14 + cardW/2, summaryY + 13, { align:'center' });
+
+    // Spent card
+    const spX = 14 + cardW + 7;
+    doc.setFillColor(253, 234, 233);
+    doc.roundedRect(spX, summaryY, cardW, 18, 3, 3, 'F');
+    doc.setTextColor(227, 72, 63);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('SPENT', spX + cardW/2, summaryY + 6, { align:'center' });
+    doc.setFontSize(11);
+    doc.text('\u20B9 ' + formatRupee(totalSp), spX + cardW/2, summaryY + 13, { align:'center' });
+
+    // Balance card
+    const balX = spX + cardW + 7;
+    const bal = totalRec - totalSp;
+    doc.setFillColor(234, 231, 251);
+    doc.roundedRect(balX, summaryY, cardW, 18, 3, 3, 'F');
+    doc.setTextColor(85, 51, 235);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('BALANCE', balX + cardW/2, summaryY + 6, { align:'center' });
+    doc.setFontSize(11);
+    doc.text((bal >= 0 ? '' : '- ') + '\u20B9 ' + formatRupee(Math.abs(bal)), balX + cardW/2, summaryY + 13, { align:'center' });
+
+    // ─── Table ───
+    const tableRows = [];
+    let lastDatePdf = null;
+
+    sorted.forEach(e => {
+      const entryDate = toLocalDateStr(e.when);
+      if(entryDate !== lastDatePdf){
+        lastDatePdf = entryDate;
+        const parts = entryDate.split('-');
+        const dd = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        const dayLabel = dd.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        tableRows.push({ isDateRow: true, label: dayLabel });
+      }
+      const d = new Date(e.when);
+      const timePart = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      const sign = e.type === 'received' ? '+' : '-';
+      tableRows.push({
+        isDateRow: false,
+        name: e.name,
+        reason: e.reason || '—',
+        time: timePart,
+        amount: sign + ' \u20B9' + formatRupee(e.amount),
+        type: e.type
+      });
+    });
+
+    const bodyData = [];
+    const dateRowIndices = [];
+
+    tableRows.forEach((r, i) => {
+      if(r.isDateRow){
+        bodyData.push([{ content: r.label, colSpan: 4, styles:{ fillColor:[234,231,251], textColor:[85,51,235], fontStyle:'bold', fontSize:9, halign:'center', cellPadding:{ top:3, bottom:3, left:4, right:4 } } }]);
+        dateRowIndices.push(bodyData.length - 1);
+      } else {
+        bodyData.push([
+          r.name,
+          r.reason,
+          r.time,
+          { content: r.amount, styles:{ textColor: r.type === 'received' ? [18,164,84] : [227,72,63], fontStyle:'bold', halign:'right' } }
+        ]);
+      }
+    });
+
+    doc.autoTable({
+      startY: summaryY + 24,
+      head: [['Name', 'Reason', 'Time', 'Amount']],
+      body: bodyData,
+      theme: 'grid',
+      headStyles:{
+        fillColor: [91, 61, 245],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 10,
+        cellPadding: 4
+      },
+      styles:{
+        fontSize: 9,
+        cellPadding: 3,
+        lineColor: [236, 237, 245],
+        lineWidth: 0.3,
+        overflow: 'linebreak'
+      },
+      alternateRowStyles:{
+        fillColor: [250, 250, 253]
+      },
+      columnStyles:{
+        0: { cellWidth: 38, fontStyle:'bold' },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 24, halign:'center' },
+        3: { cellWidth: 32, halign:'right', font:'helvetica' }
+      },
+      margin: { left: 14, right: 14 },
+      didDrawPage: function(data){
+        // Footer on every page
+        const pg = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text('Paisa Hisaab — Personal Finance Tracker', 14, pageH - 8);
+        doc.text('Page ' + data.pageNumber + ' of ' + pg, pageW - 14, pageH - 8, { align:'right' });
+        // Thin bottom line
+        doc.setDrawColor(220);
+        doc.setLineWidth(0.3);
+        doc.line(14, pageH - 12, pageW - 14, pageH - 12);
+      }
+    });
+
+    // Fix footer page count (re-render all pages)
+    const totalPages = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= totalPages; i++){
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      // Overwrite page count
+      doc.setFillColor(255, 255, 255);
+      doc.rect(pageW - 40, pageH - 11, 30, 6, 'F');
+      doc.text('Page ' + i + ' of ' + totalPages, pageW - 14, pageH - 8, { align:'right' });
+    }
+
+    // Download
+    const fname = 'PaisaHisaab_' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '.pdf';
+    doc.save(fname);
+  }
 
   // ── Bottom Navbar Logic ──
   const fabBtn = document.getElementById('openSheet');
