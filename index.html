@@ -3635,13 +3635,6 @@
     document.getElementById('openCloudSyncSubpageBtn').click();
   });
 
-  document.getElementById('syncAdvancedToggle').addEventListener('click', () => {
-    const adv = document.getElementById('syncAdvancedActions');
-    const isShown = adv.style.display !== 'none';
-    adv.style.display = isShown ? 'none' : 'flex';
-    document.getElementById('syncAdvancedToggle').textContent = isShown ? 'Advanced Overwrite Options ▾' : 'Hide Advanced Options ▴';
-  });
-
   function showCustomConfirm({ icon = '❓', title = 'Confirm Action', msg = 'Are you sure?', okText = 'Proceed', cancelText = 'Cancel', isDanger = false }){
     return new Promise((resolve) => {
       const ov = document.getElementById('confirmOverlay');
@@ -4376,6 +4369,7 @@
     // Close any open subpages immediately
     backupSubpage.className = 'settings-subpage';
     cloudSyncSubpage.className = 'settings-subpage';
+    if(syncAdvSubpage) syncAdvSubpage.className = 'settings-subpage';
 
     const overlayMap = {
       'transactions': txnListOverlay,
