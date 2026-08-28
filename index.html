@@ -2414,13 +2414,15 @@
     render();
   }
 
-  function saveEntries(){
+  function saveEntries(skipSync = false){
     try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
     }catch(err){
       console.error('Could not save entries', err);
     }
-    markLocalModified();
+    if(!skipSync){
+      markLocalModified();
+    }
   }
 
   document.getElementById('entryForm').addEventListener('submit', (ev) => {
@@ -2979,6 +2981,10 @@
   const LOCAL_MODIFIED_KEY = 'paisa-hisaab-local-modified';
   const LAST_SYNCED_CLOUD_KEY = 'paisa-hisaab-last-synced-cloud';
 
+  let isSyncInProgress = false;
+  let lastCloudCheckMs = 0;
+  let autoSyncTimer = null;
+
   let syncState = {
     status: 'no_config', // 'synced', 'cloud_new', 'local_new', 'conflict', 'syncing', 'error', 'no_config'
     cloudLastModified: null,
@@ -2992,6 +2998,7 @@
   }
 
   function markLocalModified(){
+    if(isSyncInProgress) return;
     localStorage.setItem(LOCAL_MODIFIED_KEY, new Date().toISOString());
     updateSyncBadgeUI();
     updateSubpageStateCard();
@@ -3002,12 +3009,14 @@
     }
   }
 
-  let autoSyncTimer = null;
   function debouncedAutoSync(){
+    if(isSyncInProgress) return;
     clearTimeout(autoSyncTimer);
     autoSyncTimer = setTimeout(() => {
-      smartSync(true); // silent = true
-    }, 1500);
+      if(!isSyncInProgress){
+        smartSync(true); // silent = true
+      }
+    }, 2000);
   }
 
   function loadSyncConfig(){
@@ -3150,7 +3159,7 @@
     updateSubpageStateCard();
   }
 
-  async function checkCloudStatus(silent = false){
+  async function checkCloudStatus(silent = false, forceCheck = false){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       syncState.status = 'no_config';
@@ -3158,6 +3167,14 @@
       updateSubpageStateCard();
       return;
     }
+
+    const nowMs = Date.now();
+    if(!forceCheck && nowMs - lastCloudCheckMs < 20000){
+      return;
+    }
+    lastCloudCheckMs = nowMs;
+
+    if(isSyncInProgress) return;
 
     if(!silent) setSyncBadgeSyncing(true);
 
@@ -3236,8 +3253,13 @@
   }
 
   async function smartSync(silent = false){
+    if(isSyncInProgress) return;
+    isSyncInProgress = true;
+    clearTimeout(autoSyncTimer);
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
+      isSyncInProgress = false;
       if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
@@ -3306,7 +3328,7 @@
       });
 
       entries = Array.from(entryMap.values()).sort((a,b) => new Date(b.when) - new Date(a.when));
-      saveEntries();
+      saveEntries(true); // skipSync = true to PREVENT RECURSIVE SYNC LOOPS!
       render();
 
       // 4. Push merged state back to cloud so both devices match 100%
@@ -3357,12 +3379,21 @@
       updateSyncBadgeUI();
       updateSubpageStateCard();
       if(!silent) setSyncStatus('Smart Sync failed. Check connection and Token.', 'err');
+    } finally {
+      isSyncInProgress = false;
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
     }
   }
 
   async function fetchFromCloud(silent = false){
+    if(isSyncInProgress) return;
+    isSyncInProgress = true;
+    clearTimeout(autoSyncTimer);
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
+      isSyncInProgress = false;
       if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
@@ -3397,7 +3428,7 @@
       const { valid } = validateImportData(rawData);
       entries = valid.map(normalizeImportedEntry);
       saveDeletedIds(cloudDeletedIds);
-      saveEntries();
+      saveEntries(true); // skipSync = true
       render();
 
       localStorage.setItem(LAST_SYNC_KEY, cloudTime);
@@ -3417,12 +3448,21 @@
       updateSyncBadgeUI();
       updateSubpageStateCard();
       if(!silent) setSyncStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
+    } finally {
+      isSyncInProgress = false;
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
     }
   }
 
   async function pushToCloud(silent = false){
+    if(isSyncInProgress) return;
+    isSyncInProgress = true;
+    clearTimeout(autoSyncTimer);
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
+      isSyncInProgress = false;
       if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
@@ -3473,6 +3513,10 @@
       updateSyncBadgeUI();
       updateSubpageStateCard();
       if(!silent) setSyncStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
+    } finally {
+      isSyncInProgress = false;
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
     }
   }
 
@@ -3487,11 +3531,11 @@
     }
     saveSyncConfig({ gistId, token, autoCheckOnOpen, autoPushOnSave });
     setSyncStatus('Sync settings saved on this device.', 'ok');
-    checkCloudStatus(false);
+    checkCloudStatus(false, true);
   });
 
   document.getElementById('smartSyncBtn').addEventListener('click', () => smartSync(false));
-  document.getElementById('sscRefreshBtn').addEventListener('click', () => checkCloudStatus(false));
+  document.getElementById('sscRefreshBtn').addEventListener('click', () => checkCloudStatus(false, true));
   document.getElementById('syncBadgeBtn').addEventListener('click', () => {
     if(syncState.status === 'cloud_new' || syncState.status === 'conflict' || syncState.status === 'local_new'){
       smartSync(false);
@@ -4336,7 +4380,7 @@
     if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = cfg.autoCheckOnOpen !== false;
     if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = cfg.autoPushOnSave !== false;
     updateSubpageStateCard();
-    checkCloudStatus(false);
+    checkCloudStatus(false, true);
     cloudSyncSubpage.className = 'settings-subpage show slide-in-right';
     ensureNavHistory();
     setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 150);
