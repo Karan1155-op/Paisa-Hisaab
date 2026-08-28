@@ -1157,6 +1157,69 @@
   }
   .txn-list-close:active{ background:#E2E3EE; }
 
+  /* ── Reason Search Bar in All Txns ── */
+  .txn-search-bar-wrap{
+    padding: 0 18px 4px;
+    flex-shrink: 0;
+  }
+  .txn-search-box{
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    padding: 0 12px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .txn-search-box:focus-within{
+    border-color: var(--grad1);
+    box-shadow: 0 2px 10px rgba(91,61,245,0.12);
+  }
+  .txn-search-icon{
+    font-size: 13px;
+    color: var(--text-soft);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .txn-search-input{
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8.5px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.8px;
+    font-weight: 500;
+    color: var(--text);
+    outline: none;
+  }
+  .txn-search-input::placeholder{
+    color: #9D9DAF;
+    font-weight: 400;
+  }
+  .txn-search-clear{
+    background: #EAEAF4;
+    border: none;
+    color: #6C6C8A;
+    font-size: 11px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 6px;
+    flex-shrink: 0;
+    transition: background 0.1s;
+  }
+  .txn-search-clear:active{
+    transform: scale(0.9);
+    background: #D8D8EC;
+  }
+
   .txn-list-filters{
     display:flex;
     align-items:center;
@@ -2276,6 +2339,16 @@
     </div>
     <button type="button" class="txn-list-close" id="closeTxnList" title="Close">✕</button>
   </div>
+
+  <!-- Real-time Reason Search Bar -->
+  <div class="txn-search-bar-wrap">
+    <div class="txn-search-box">
+      <span class="txn-search-icon">🔍</span>
+      <input type="text" id="txnReasonSearchInput" class="txn-search-input" placeholder="Search by reason (e.g. Chai, Rent, Petrol...)" autocomplete="off">
+      <button type="button" class="txn-search-clear" id="txnReasonSearchClear" title="Clear search" style="display:none;">✕</button>
+    </div>
+  </div>
+
   <div class="txn-list-filters">
     <div class="txn-filter-chips-wrap">
       <button type="button" class="txn-filter-chip active" data-txnf="all">All</button>
@@ -3828,7 +3901,10 @@
   const txnListOverlay = document.getElementById('txnListOverlay');
   const txnListBody = document.getElementById('txnListBody');
   const txnCountEl = document.getElementById('txnCount');
+  const txnReasonSearchInput = document.getElementById('txnReasonSearchInput');
+  const txnReasonSearchClear = document.getElementById('txnReasonSearchClear');
   let txnListFilter = 'all';
+  let txnReasonSearchQuery = '';
 
   function renderTxnList(){
     txnListBody.innerHTML = '';
@@ -3845,13 +3921,27 @@
       filtered = filtered.filter(e => toLocalDateStr(e.when) === calDateInput.value);
     }
 
+    // Target ONLY reason field for search
+    const q = txnReasonSearchQuery.trim().toLowerCase();
+    if(q){
+      filtered = filtered.filter(e => e.reason && e.reason.toLowerCase().includes(q));
+    }
+
     const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
     let lastDate = null;
 
-    txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
+    if(q){
+      txnCountEl.textContent = `Found ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'} for "${txnReasonSearchQuery.trim()}"`;
+    } else {
+      txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
+    }
 
     if(sorted.length === 0){
-      txnListBody.innerHTML = '<div class="txn-list-empty">🧾<br>No entries to show.</div>';
+      if(q){
+        txnListBody.innerHTML = `<div class="txn-list-empty">🔍<br>No entries found for reason <b>"${escapeHtml(txnReasonSearchQuery.trim())}"</b>.</div>`;
+      } else {
+        txnListBody.innerHTML = '<div class="txn-list-empty">🧾<br>No entries to show.</div>';
+      }
       return;
     }
 
@@ -3886,6 +3976,26 @@
       `;
       card.addEventListener('click', () => openDetail(e.id));
       txnListBody.appendChild(card);
+    });
+  }
+
+  if(txnReasonSearchInput){
+    txnReasonSearchInput.addEventListener('input', () => {
+      txnReasonSearchQuery = txnReasonSearchInput.value;
+      if(txnReasonSearchClear){
+        txnReasonSearchClear.style.display = txnReasonSearchQuery ? 'flex' : 'none';
+      }
+      renderTxnList();
+    });
+  }
+
+  if(txnReasonSearchClear){
+    txnReasonSearchClear.addEventListener('click', () => {
+      txnReasonSearchInput.value = '';
+      txnReasonSearchQuery = '';
+      txnReasonSearchClear.style.display = 'none';
+      txnReasonSearchInput.focus();
+      renderTxnList();
     });
   }
 
@@ -4449,6 +4559,11 @@
         txnListFilter = 'all';
         document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
         document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
+        if(txnReasonSearchInput){
+          txnReasonSearchInput.value = '';
+          txnReasonSearchQuery = '';
+          if(txnReasonSearchClear) txnReasonSearchClear.style.display = 'none';
+        }
         renderTxnList();
       } else if(newTab === 'settings'){
         resetBackupSheet();
