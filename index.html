@@ -1519,6 +1519,236 @@
     transform: scale(0.92);
     background: #D8D8EC;
   }
+
+  /* ── Header Sync Badge ── */
+  .sync-badge-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+  .sync-badge-btn:active{ transform: scale(0.95); }
+  .sync-badge-btn.synced{ border-color: #B4F4CC; color: #0E8040; background: #EDFCF4; }
+  .sync-badge-btn.synced .sync-badge-dot{ background: #12A454; }
+  .sync-badge-btn.cloud-new{ border-color: #C5B0FF; color: #5B3DF5; background: #F3F0FF; animation: pulseSync 2s infinite; }
+  .sync-badge-btn.cloud-new .sync-badge-dot{ background: #7C5CFF; }
+  .sync-badge-btn.local-new{ border-color: #FFE2A6; color: #B36B00; background: #FFF9ED; }
+  .sync-badge-btn.local-new .sync-badge-dot{ background: #F5A623; }
+  .sync-badge-btn.conflict{ border-color: #FFB3AE; color: #C0292B; background: #FDEAE9; }
+  .sync-badge-btn.conflict .sync-badge-dot{ background: #E3483F; }
+  .sync-badge-btn.syncing{ opacity: 0.85; }
+  .sync-badge-btn.syncing .sync-badge-icon{ display:inline-block; animation: spinSync 1s linear infinite; }
+
+  @keyframes pulseSync{
+    0%{ box-shadow: 0 0 0 0 rgba(91,61,245,0.4); }
+    70%{ box-shadow: 0 0 0 7px rgba(91,61,245,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(91,61,245,0); }
+  }
+  @keyframes spinSync{ 100%{ transform: rotate(360deg); } }
+
+  .sync-badge-dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #A0A3BD;
+    display: inline-block;
+  }
+
+  /* ── Sync Floating Alert Banner ── */
+  .sync-alert-banner{
+    background: #F3F0FF;
+    border: 1.5px solid #D6CCFF;
+    border-radius: 16px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(91,61,245,0.1);
+    animation: slideDownBanner 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideDownBanner{
+    from{ transform: translateY(-8px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
+  }
+  .sync-alert-banner .sab-icon{ font-size: 20px; flex-shrink: 0; }
+  .sync-alert-banner .sab-content{ flex: 1; min-width: 0; }
+  .sync-alert-banner .sab-title{ font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; color: #3617C4; }
+  .sync-alert-banner .sab-desc{ font-size: 11.5px; color: #625990; margin-top: 1px; }
+  .sync-alert-banner .sab-action-btn{
+    padding: 6px 13px;
+    border-radius: 12px;
+    background: var(--grad1);
+    border: none;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.1s;
+  }
+  .sync-alert-banner .sab-action-btn:active{ transform: scale(0.95); }
+  .sync-alert-banner .sab-close-btn{
+    background: none;
+    border: none;
+    color: #8C87B0;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Sync State Card in Subpage ── */
+  .sync-state-card{
+    background: var(--card);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(20,22,43,0.03);
+  }
+  .ssc-top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ssc-indicator{
+    font-family: 'Poppins', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+  }
+  .ssc-indicator.synced{ color: #0E8040; }
+  .ssc-indicator.cloud_new{ color: #5B3DF5; }
+  .ssc-indicator.local_new{ color: #B36B00; }
+  .ssc-indicator.conflict{ color: #C0292B; }
+  .ssc-indicator.error{ color: #C0292B; }
+  .ssc-indicator.no_config{ color: var(--text-soft); }
+
+  .ssc-refresh-btn{
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #F8F8FD;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ssc-refresh-btn:active{ transform: scale(0.95); }
+  .ssc-grid{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ssc-col{ flex: 1; min-width: 0; }
+  .ssc-divider{
+    width: 1px;
+    height: 42px;
+    background: var(--line);
+    margin: 0 12px;
+  }
+  .ssc-label{
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-soft);
+  }
+  .ssc-val{
+    font-family: 'Poppins', sans-serif;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ssc-time{
+    font-size: 11px;
+    color: var(--text-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .backup-action.smart-sync{
+    background: linear-gradient(135deg, #5B3DF5, #7C5CFF);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(91,61,245,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .backup-action.smart-sync:active{ transform: scale(0.98); }
+
+  .sync-advanced-toggle{
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    padding: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .sync-advanced-actions{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .sync-auto-options{
+    background: #F8F8FC;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 14px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--line);
+  }
+  .sync-checkbox-label{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .sync-checkbox-label input[type="checkbox"]{
+    width: 17px;
+    height: 17px;
+    accent-color: var(--grad1);
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -1526,7 +1756,23 @@
 <div class="wrap">
   <header>
     <h1><span class="dot"></span>Paisa Hisaab</h1>
+    <button type="button" class="sync-badge-btn" id="syncBadgeBtn" title="Cloud Sync Status" style="display:none;">
+      <span class="sync-badge-dot"></span>
+      <span class="sync-badge-icon">☁️</span>
+      <span class="sync-badge-text" id="syncBadgeText">In Sync</span>
+    </button>
   </header>
+
+  <!-- Live Sync Alert Banner -->
+  <div class="sync-alert-banner" id="syncAlertBanner" style="display:none;">
+    <div class="sab-icon" id="sabIcon">☁️</div>
+    <div class="sab-content">
+      <div class="sab-title" id="sabTitle">New data available in cloud</div>
+      <div class="sab-desc" id="sabDesc">Another device made changes.</div>
+    </div>
+    <button type="button" class="sab-action-btn" id="sabActionBtn">Sync</button>
+    <button type="button" class="sab-close-btn" id="sabCloseBtn" title="Dismiss">✕</button>
+  </div>
 
   <div class="balance-card">
     <p class="label">Balance in hand</p>
@@ -1744,7 +1990,39 @@
     <h2>☁️ Cloud Sync</h2>
   </div>
   <div class="settings-body" style="padding-top:16px;">
-    <p class="sync-note">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
+    <!-- Live State Comparison Card -->
+    <div class="sync-state-card" id="syncStateCard">
+      <div class="ssc-top">
+        <div class="ssc-indicator" id="sscIndicator">⚪ Not Connected</div>
+        <button type="button" class="ssc-refresh-btn" id="sscRefreshBtn" title="Check Cloud Now">🔄 Check</button>
+      </div>
+      <div class="ssc-grid">
+        <div class="ssc-col">
+          <div class="ssc-label">THIS DEVICE</div>
+          <div class="ssc-val" id="sscLocalEntries">0 entries</div>
+          <div class="ssc-time" id="sscLocalTime">Updated: Just now</div>
+        </div>
+        <div class="ssc-divider"></div>
+        <div class="ssc-col">
+          <div class="ssc-label">CLOUD BACKUP</div>
+          <div class="ssc-val" id="sscCloudEntries">—</div>
+          <div class="ssc-time" id="sscCloudTime">Checking...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Sync Primary Action -->
+    <button type="button" class="backup-action smart-sync" id="smartSyncBtn">
+      <span>⚡</span> Smart Sync (Merge Both Devices)
+    </button>
+
+    <div class="sync-advanced-toggle" id="syncAdvancedToggle">Advanced Overwrite Options ▾</div>
+    <div class="sync-advanced-actions" id="syncAdvancedActions" style="display:none;">
+      <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Force Fetch (Overwrite Local)</button>
+      <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Force Push (Overwrite Cloud)</button>
+    </div>
+
+    <p class="sync-note" style="margin-top:16px;">Connect a shared GitHub Gist so multiple phones stay in sync. Anyone with this Gist ID + Token can read and edit this data — share only with people you trust.</p>
 
     <div class="field">
       <label for="gistId">Gist ID</label>
@@ -1754,9 +2032,19 @@
       <label for="gistToken">GitHub Token</label>
       <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
     </div>
+
+    <div class="sync-auto-options">
+      <label class="sync-checkbox-label">
+        <input type="checkbox" id="autoCheckCloudOnOpen" checked>
+        <span>Auto-check cloud when opening app</span>
+      </label>
+      <label class="sync-checkbox-label">
+        <input type="checkbox" id="autoPushOnSave" checked>
+        <span>Auto-sync when saving transactions</span>
+      </label>
+    </div>
+
     <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
-    <button type="button" class="backup-action fetch-cloud" id="fetchCloudBtn">⬇ Fetch from cloud</button>
-    <button type="button" class="backup-action push-cloud" id="pushCloudBtn">⬆ Push to cloud</button>
     <p class="backup-status" id="cloudSyncStatus"></p>
     <p class="sync-last" id="syncLast"></p>
   </div>
@@ -2132,6 +2420,7 @@
     }catch(err){
       console.error('Could not save entries', err);
     }
+    markLocalModified();
   }
 
   document.getElementById('entryForm').addEventListener('submit', (ev) => {
@@ -2683,16 +2972,49 @@
     });
   });
 
-  /* Cloud Sync via GitHub Gist */
+  /* ── Enhanced Cloud Sync Engine with State Detection & Smart Merge ── */
   const SYNC_CONFIG_KEY = 'paisa-hisaab-sync-config';
   const SYNC_FILE_NAME = 'paisa-hisaab-sync.json';
   const LAST_SYNC_KEY = 'paisa-hisaab-last-sync';
+  const LOCAL_MODIFIED_KEY = 'paisa-hisaab-local-modified';
+  const LAST_SYNCED_CLOUD_KEY = 'paisa-hisaab-last-synced-cloud';
+
+  let syncState = {
+    status: 'no_config', // 'synced', 'cloud_new', 'local_new', 'conflict', 'syncing', 'error', 'no_config'
+    cloudLastModified: null,
+    cloudEntriesCount: null,
+    cloudRawData: null,
+    cloudDeletedIds: []
+  };
+
+  function getLocalModifiedTime(){
+    return localStorage.getItem(LOCAL_MODIFIED_KEY) || localStorage.getItem(LAST_SYNC_KEY) || new Date().toISOString();
+  }
+
+  function markLocalModified(){
+    localStorage.setItem(LOCAL_MODIFIED_KEY, new Date().toISOString());
+    updateSyncBadgeUI();
+    updateSubpageStateCard();
+    // Auto-sync if enabled
+    const cfg = loadSyncConfig();
+    if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+      debouncedAutoSync();
+    }
+  }
+
+  let autoSyncTimer = null;
+  function debouncedAutoSync(){
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(() => {
+      smartSync(true); // silent = true
+    }, 1500);
+  }
 
   function loadSyncConfig(){
     try{
       const raw = localStorage.getItem(SYNC_CONFIG_KEY);
-      return raw ? JSON.parse(raw) : { gistId: '', token: '' };
-    }catch(err){ return { gistId: '', token: '' }; }
+      return raw ? JSON.parse(raw) : { gistId: '', token: '', autoCheckOnOpen: true, autoPushOnSave: true };
+    }catch(err){ return { gistId: '', token: '', autoCheckOnOpen: true, autoPushOnSave: true }; }
   }
 
   function saveSyncConfig(cfg){
@@ -2700,79 +3022,304 @@
     catch(err){ console.error('Could not save sync config', err); }
   }
 
+  function formatRelativeTime(isoStr){
+    if(!isoStr) return 'Never';
+    try {
+      const d = new Date(isoStr);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffSec = Math.floor(diffMs / 1000);
+      if(diffSec < 30) return 'Just now';
+      if(diffSec < 60) return `${diffSec}s ago`;
+      const diffMin = Math.floor(diffSec / 60);
+      if(diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if(diffHr < 24) return `${diffHr}h ago`;
+      return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    } catch(e){ return 'Unknown'; }
+  }
+
+  function updateSyncBadgeUI(){
+    const badgeBtn = document.getElementById('syncBadgeBtn');
+    const badgeText = document.getElementById('syncBadgeText');
+    const alertBanner = document.getElementById('syncAlertBanner');
+    const sabTitle = document.getElementById('sabTitle');
+    const sabDesc = document.getElementById('sabDesc');
+    const sabActionBtn = document.getElementById('sabActionBtn');
+
+    if(!badgeBtn || !badgeText) return;
+
+    const cfg = loadSyncConfig();
+    if(!cfg.gistId || !cfg.token){
+      badgeBtn.style.display = 'none';
+      if(alertBanner) alertBanner.style.display = 'none';
+      return;
+    }
+
+    badgeBtn.style.display = 'inline-flex';
+    badgeBtn.className = 'sync-badge-btn ' + syncState.status;
+
+    if(syncState.status === 'syncing'){
+      badgeText.textContent = 'Syncing…';
+    } else if(syncState.status === 'cloud_new'){
+      badgeText.textContent = 'Cloud Updated';
+      if(alertBanner){
+        sabTitle.textContent = '☁️ New Data in Cloud';
+        sabDesc.textContent = `${syncState.cloudEntriesCount || 'New'} entries in cloud. Tap Sync to update.`;
+        sabActionBtn.textContent = 'Sync Now';
+        alertBanner.style.display = 'flex';
+      }
+    } else if(syncState.status === 'local_new'){
+      badgeText.textContent = 'Unsaved to Cloud';
+      if(alertBanner) alertBanner.style.display = 'none';
+    } else if(syncState.status === 'conflict'){
+      badgeText.textContent = 'Sync Needed';
+      if(alertBanner){
+        sabTitle.textContent = '⚡ Multi-Device Changes';
+        sabDesc.textContent = 'Both cloud and this phone have new entries. Tap to merge.';
+        sabActionBtn.textContent = 'Smart Merge';
+        alertBanner.style.display = 'flex';
+      }
+    } else if(syncState.status === 'error'){
+      badgeText.textContent = 'Sync Error';
+      if(alertBanner) alertBanner.style.display = 'none';
+    } else {
+      badgeText.textContent = 'In Sync';
+      if(alertBanner) alertBanner.style.display = 'none';
+    }
+  }
+
+  function updateSubpageStateCard(){
+    const ind = document.getElementById('sscIndicator');
+    const localEntriesEl = document.getElementById('sscLocalEntries');
+    const localTimeEl = document.getElementById('sscLocalTime');
+    const cloudEntriesEl = document.getElementById('sscCloudEntries');
+    const cloudTimeEl = document.getElementById('sscCloudTime');
+
+    if(!ind) return;
+
+    localEntriesEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
+    localTimeEl.textContent = `Modified: ${formatRelativeTime(getLocalModifiedTime())}`;
+
+    if(syncState.cloudEntriesCount !== null){
+      cloudEntriesEl.textContent = `${syncState.cloudEntriesCount} ${syncState.cloudEntriesCount === 1 ? 'entry' : 'entries'}`;
+    } else {
+      cloudEntriesEl.textContent = '—';
+    }
+
+    if(syncState.cloudLastModified){
+      cloudTimeEl.textContent = `Updated: ${formatRelativeTime(syncState.cloudLastModified)}`;
+    } else {
+      cloudTimeEl.textContent = 'Not checked yet';
+    }
+
+    ind.className = 'ssc-indicator ' + syncState.status;
+    if(syncState.status === 'syncing'){
+      ind.textContent = '🔄 Syncing with cloud…';
+    } else if(syncState.status === 'cloud_new'){
+      ind.textContent = '🔵 Cloud Has New Updates';
+    } else if(syncState.status === 'local_new'){
+      ind.textContent = '🟠 Unsaved Local Changes';
+    } else if(syncState.status === 'conflict'){
+      ind.textContent = '⚡ Multi-Device Sync Needed';
+    } else if(syncState.status === 'error'){
+      ind.textContent = '🔴 Connection Error';
+    } else if(syncState.status === 'no_config'){
+      ind.textContent = '⚪ Connect Gist ID & Token';
+    } else {
+      ind.textContent = '🟢 In Sync with Cloud';
+    }
+  }
+
   function updateSyncLastText(){
     const el = document.getElementById('syncLast');
     const iso = localStorage.getItem(LAST_SYNC_KEY);
-    if(!iso){ el.textContent = 'Never synced yet.'; return; }
+    if(!iso){ if(el) el.textContent = 'Never synced yet.'; return; }
     const d = new Date(iso);
-    el.textContent = 'Last synced: ' + d.toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) +
-      ' · ' + d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+    if(el){
+      el.textContent = 'Last synced: ' + d.toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) +
+        ' · ' + d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+    }
   }
 
-  document.getElementById('saveSyncBtn').addEventListener('click', () => {
-    const gistId = document.getElementById('gistId').value.trim();
-    const token = document.getElementById('gistToken').value.trim();
-    if(!gistId || !token){
-      setSyncStatus('Enter both Gist ID and Token to save.', 'err');
-      return;
+  function setSyncBadgeSyncing(isSyncing){
+    if(isSyncing){
+      syncState.status = 'syncing';
     }
-    saveSyncConfig({ gistId, token });
-    setSyncStatus('Sync settings saved on this device.', 'ok');
-  });
+    updateSyncBadgeUI();
+    updateSubpageStateCard();
+  }
 
-  async function fetchFromCloud(){
+  async function checkCloudStatus(silent = false){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
-      setSyncStatus('Save your Gist ID and Token first.', 'err');
+      syncState.status = 'no_config';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
       return;
     }
-    setSyncStatus('Fetching…', '');
+
+    if(!silent) setSyncBadgeSyncing(true);
+
     try{
-      const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
+      const res = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
           'Authorization': `token ${cfg.token}`,
-          'Accept': 'application/vnd.github+json',
-          'If-None-Match': ''
+          'Accept': 'application/vnd.github+json'
         }
       });
-      if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
-      const gist = await getRes.json();
+
+      if(!res.ok){
+        syncState.status = 'error';
+        updateSyncBadgeUI();
+        updateSubpageStateCard();
+        return;
+      }
+
+      const gist = await res.json();
       const file = gist.files && gist.files[SYNC_FILE_NAME];
-      let rawData = [];
+      let cloudTime = null;
+      let cloudCount = 0;
+      let cloudEntries = [];
+      let cloudDeletedIds = [];
+
       if(file && file.content){
         try{
           const parsed = JSON.parse(file.content);
           if(Array.isArray(parsed)){
-            rawData = parsed;
+            cloudEntries = parsed;
+            cloudCount = parsed.length;
+            cloudTime = gist.updated_at || new Date().toISOString();
           } else if(parsed && typeof parsed === 'object'){
-            rawData = Array.isArray(parsed.entries) ? parsed.entries : [];
+            cloudEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
+            cloudCount = cloudEntries.length;
+            cloudTime = parsed.lastModified || gist.updated_at || new Date().toISOString();
+            cloudDeletedIds = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
           }
-        }catch(err){ rawData = []; }
+        }catch(e){}
       }
-      const { valid } = validateImportData(rawData);
-      // Pure overwrite: replace local entries with cloud entries
-      entries = valid.map(normalizeImportedEntry);
-      saveDeletedIds([]);
-      saveEntries();
-      render();
-      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
-      updateSyncLastText();
-      setSyncStatus(`Fetched — Local data replaced with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from cloud.`, 'ok');
+
+      syncState.cloudLastModified = cloudTime;
+      syncState.cloudEntriesCount = cloudCount;
+      syncState.cloudRawData = cloudEntries;
+      syncState.cloudDeletedIds = cloudDeletedIds;
+
+      const lastSyncedCloud = localStorage.getItem(LAST_SYNCED_CLOUD_KEY);
+      const localModified = getLocalModifiedTime();
+
+      const isCloudNewer = cloudTime && (!lastSyncedCloud || new Date(cloudTime).getTime() > new Date(lastSyncedCloud).getTime() + 1000);
+      const isLocalNewer = !lastSyncedCloud || (new Date(localModified).getTime() > new Date(lastSyncedCloud).getTime() + 1000);
+
+      if(isCloudNewer && isLocalNewer){
+        syncState.status = 'conflict';
+      } else if(isCloudNewer){
+        syncState.status = 'cloud_new';
+      } else if(isLocalNewer){
+        syncState.status = 'local_new';
+      } else {
+        syncState.status = 'synced';
+      }
+
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+
+      // If cloud has new data and local has no unpushed edits (or empty local list): auto-sync!
+      if(syncState.status === 'cloud_new' && (!isLocalNewer || entries.length === 0)){
+        smartSync(true);
+      }
     }catch(err){
-      setSyncStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
+      syncState.status = 'error';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
     }
   }
 
-  async function pushToCloud(){
+  async function smartSync(silent = false){
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
-      setSyncStatus('Save your Gist ID and Token first.', 'err');
+      if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
       return;
     }
-    setSyncStatus('Pushing…', '');
+
+    if(!silent) setSyncStatus('Syncing & Merging with cloud…', '');
+    setSyncBadgeSyncing(true);
+
     try{
-      // Pure overwrite: push exactly what is in local entries right now
+      // 1. Fetch current cloud state
+      const res = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `token ${cfg.token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if(!res.ok) throw new Error('Fetch failed: ' + res.status);
+      const gist = await res.json();
+      const file = gist.files && gist.files[SYNC_FILE_NAME];
+      let cloudEntries = [];
+      let cloudDeletedIds = [];
+
+      if(file && file.content){
+        try{
+          const parsed = JSON.parse(file.content);
+          if(Array.isArray(parsed)){
+            cloudEntries = parsed;
+          } else if(parsed && typeof parsed === 'object'){
+            cloudEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
+            cloudDeletedIds = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
+          }
+        }catch(e){}
+      }
+
+      const { valid: validCloudEntries } = validateImportData(cloudEntries);
+      const normalizedCloud = validCloudEntries.map(normalizeImportedEntry);
+
+      // 2. Merge local and cloud deleted tombstones
+      const localDeleted = loadDeletedIds();
+      const mergedDeleted = Array.from(new Set([...localDeleted, ...cloudDeletedIds]));
+      saveDeletedIds(mergedDeleted);
+
+      // 3. Smart Merge all entries
+      const entryMap = new Map();
+      entries.forEach(e => {
+        if(!mergedDeleted.includes(e.id)){
+          entryMap.set(e.id, e);
+        }
+      });
+
+      let newFromCloud = 0;
+      normalizedCloud.forEach(ce => {
+        if(!mergedDeleted.includes(ce.id)){
+          if(!entryMap.has(ce.id)){
+            newFromCloud++;
+            entryMap.set(ce.id, ce);
+          } else {
+            const localE = entryMap.get(ce.id);
+            entryMap.set(ce.id, {
+              ...ce,
+              ...localE,
+              reason: localE.reason || ce.reason || ''
+            });
+          }
+        }
+      });
+
+      entries = Array.from(entryMap.values()).sort((a,b) => new Date(b.when) - new Date(a.when));
+      saveEntries();
+      render();
+
+      // 4. Push merged state back to cloud so both devices match 100%
+      const nowIso = new Date().toISOString();
+      const payload = {
+        version: 2,
+        lastModified: nowIso,
+        entriesCount: entries.length,
+        deviceTag: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+        entries: entries,
+        deletedIds: mergedDeleted
+      };
+
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
         method: 'PATCH',
         headers: {
@@ -2783,19 +3330,190 @@
         body: JSON.stringify({
           files: {
             [SYNC_FILE_NAME]: {
-              content: JSON.stringify({ entries: entries }, null, 2)
+              content: JSON.stringify(payload, null, 2)
+            }
+          }
+        })
+      });
+
+      if(!putRes.ok) throw new Error('Push failed: ' + putRes.status);
+
+      localStorage.setItem(LAST_SYNC_KEY, nowIso);
+      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, nowIso);
+      localStorage.setItem(LOCAL_MODIFIED_KEY, nowIso);
+
+      syncState.status = 'synced';
+      syncState.cloudLastModified = nowIso;
+      syncState.cloudEntriesCount = entries.length;
+
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      updateSyncLastText();
+
+      const msg = `Synced — Both devices in sync (${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}${newFromCloud ? `, +${newFromCloud} from cloud` : ''}).`;
+      if(!silent) setSyncStatus(msg, 'ok');
+    } catch(err){
+      syncState.status = 'error';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      if(!silent) setSyncStatus('Smart Sync failed. Check connection and Token.', 'err');
+    }
+  }
+
+  async function fetchFromCloud(silent = false){
+    const cfg = loadSyncConfig();
+    if(!cfg.gistId || !cfg.token){
+      if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
+      return;
+    }
+    if(!silent) setSyncStatus('Fetching…', '');
+    setSyncBadgeSyncing(true);
+    try{
+      const getRes = await fetch(`https://api.github.com/gists/${cfg.gistId}?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `token ${cfg.token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
+      const gist = await getRes.json();
+      const file = gist.files && gist.files[SYNC_FILE_NAME];
+      let rawData = [];
+      let cloudTime = gist.updated_at || new Date().toISOString();
+      let cloudDeletedIds = [];
+      if(file && file.content){
+        try{
+          const parsed = JSON.parse(file.content);
+          if(Array.isArray(parsed)){
+            rawData = parsed;
+          } else if(parsed && typeof parsed === 'object'){
+            rawData = Array.isArray(parsed.entries) ? parsed.entries : [];
+            cloudTime = parsed.lastModified || cloudTime;
+            cloudDeletedIds = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
+          }
+        }catch(err){ rawData = []; }
+      }
+      const { valid } = validateImportData(rawData);
+      entries = valid.map(normalizeImportedEntry);
+      saveDeletedIds(cloudDeletedIds);
+      saveEntries();
+      render();
+
+      localStorage.setItem(LAST_SYNC_KEY, cloudTime);
+      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, cloudTime);
+      localStorage.setItem(LOCAL_MODIFIED_KEY, cloudTime);
+
+      syncState.status = 'synced';
+      syncState.cloudLastModified = cloudTime;
+      syncState.cloudEntriesCount = entries.length;
+
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      updateSyncLastText();
+      if(!silent) setSyncStatus(`Fetched — Local data replaced with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from cloud.`, 'ok');
+    }catch(err){
+      syncState.status = 'error';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      if(!silent) setSyncStatus('Fetch failed. Check your Gist ID, Token, and internet.', 'err');
+    }
+  }
+
+  async function pushToCloud(silent = false){
+    const cfg = loadSyncConfig();
+    if(!cfg.gistId || !cfg.token){
+      if(!silent) setSyncStatus('Save your Gist ID and Token first.', 'err');
+      return;
+    }
+    if(!silent) setSyncStatus('Pushing…', '');
+    setSyncBadgeSyncing(true);
+    try{
+      const nowIso = new Date().toISOString();
+      const payload = {
+        version: 2,
+        lastModified: nowIso,
+        entriesCount: entries.length,
+        deviceTag: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+        entries: entries,
+        deletedIds: loadDeletedIds()
+      };
+
+      const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `token ${cfg.token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          files: {
+            [SYNC_FILE_NAME]: {
+              content: JSON.stringify(payload, null, 2)
             }
           }
         })
       });
       if(!putRes.ok) throw new Error('push-failed-' + putRes.status);
-      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+
+      localStorage.setItem(LAST_SYNC_KEY, nowIso);
+      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, nowIso);
+      localStorage.setItem(LOCAL_MODIFIED_KEY, nowIso);
+
+      syncState.status = 'synced';
+      syncState.cloudLastModified = nowIso;
+      syncState.cloudEntriesCount = entries.length;
+
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
       updateSyncLastText();
-      setSyncStatus(`Pushed — Cloud overwritten with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from local.`, 'ok');
+      if(!silent) setSyncStatus(`Pushed — Cloud overwritten with ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} from local.`, 'ok');
     }catch(err){
-      setSyncStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
+      syncState.status = 'error';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      if(!silent) setSyncStatus('Push failed. Check your Gist ID, Token, and internet.', 'err');
     }
   }
+
+  document.getElementById('saveSyncBtn').addEventListener('click', () => {
+    const gistId = document.getElementById('gistId').value.trim();
+    const token = document.getElementById('gistToken').value.trim();
+    const autoCheckOnOpen = document.getElementById('autoCheckCloudOnOpen').checked;
+    const autoPushOnSave = document.getElementById('autoPushOnSave').checked;
+    if(!gistId || !token){
+      setSyncStatus('Enter both Gist ID and Token to save.', 'err');
+      return;
+    }
+    saveSyncConfig({ gistId, token, autoCheckOnOpen, autoPushOnSave });
+    setSyncStatus('Sync settings saved on this device.', 'ok');
+    checkCloudStatus(false);
+  });
+
+  document.getElementById('smartSyncBtn').addEventListener('click', () => smartSync(false));
+  document.getElementById('sscRefreshBtn').addEventListener('click', () => checkCloudStatus(false));
+  document.getElementById('syncBadgeBtn').addEventListener('click', () => {
+    if(syncState.status === 'cloud_new' || syncState.status === 'conflict' || syncState.status === 'local_new'){
+      smartSync(false);
+    } else {
+      // Open cloud sync subpage
+      document.getElementById('openCloudSyncSubpageBtn').click();
+    }
+  });
+
+  document.getElementById('sabActionBtn').addEventListener('click', () => {
+    smartSync(false);
+  });
+  document.getElementById('sabCloseBtn').addEventListener('click', () => {
+    document.getElementById('syncAlertBanner').style.display = 'none';
+  });
+
+  document.getElementById('syncAdvancedToggle').addEventListener('click', () => {
+    const adv = document.getElementById('syncAdvancedActions');
+    const isShown = adv.style.display !== 'none';
+    adv.style.display = isShown ? 'none' : 'flex';
+    document.getElementById('syncAdvancedToggle').textContent = isShown ? 'Advanced Overwrite Options ▾' : 'Hide Advanced Options ▴';
+  });
 
   function showCustomConfirm({ icon = '❓', title = 'Confirm Action', msg = 'Are you sure?', okText = 'Proceed', cancelText = 'Cancel', isDanger = false }){
     return new Promise((resolve) => {
@@ -3612,6 +4330,13 @@
 
   document.getElementById('openCloudSyncSubpageBtn').addEventListener('click', () => {
     resetBackupSheet();
+    const cfg = loadSyncConfig();
+    if(cfg.gistId) document.getElementById('gistId').value = cfg.gistId;
+    if(cfg.token) document.getElementById('gistToken').value = cfg.token;
+    if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = cfg.autoCheckOnOpen !== false;
+    if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = cfg.autoPushOnSave !== false;
+    updateSubpageStateCard();
+    checkCloudStatus(false);
     cloudSyncSubpage.className = 'settings-subpage show slide-in-right';
     ensureNavHistory();
     setTimeout(() => { cloudSyncSubpage.className = 'settings-subpage show'; }, 150);
@@ -3703,6 +4428,35 @@
   });
 
   loadEntries();
+
+  // Initialize Smart Cloud Sync
+  const initSyncCfg = loadSyncConfig();
+  if(initSyncCfg.gistId) document.getElementById('gistId').value = initSyncCfg.gistId;
+  if(initSyncCfg.token) document.getElementById('gistToken').value = initSyncCfg.token;
+  if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = initSyncCfg.autoCheckOnOpen !== false;
+  if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = initSyncCfg.autoPushOnSave !== false;
+  updateSyncBadgeUI();
+  updateSubpageStateCard();
+  updateSyncLastText();
+
+  if(initSyncCfg.gistId && initSyncCfg.token && initSyncCfg.autoCheckOnOpen !== false){
+    checkCloudStatus(true);
+  }
+
+  window.addEventListener('focus', () => {
+    const cfg = loadSyncConfig();
+    if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible'){
+      const cfg = loadSyncConfig();
+      if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true);
+    }
+  });
+  window.addEventListener('online', () => {
+    const cfg = loadSyncConfig();
+    if(cfg.gistId && cfg.token) checkCloudStatus(true);
+  });
 
   // If no PIN is set yet, prompt user to create one
   if(!getStoredPinHash()){
