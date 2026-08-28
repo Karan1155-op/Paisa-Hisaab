@@ -1565,51 +1565,6 @@
     display: inline-block;
   }
 
-  /* ── Sync Floating Alert Banner ── */
-  .sync-alert-banner{
-    background: #F3F0FF;
-    border: 1.5px solid #D6CCFF;
-    border-radius: 16px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 16px rgba(91,61,245,0.1);
-    animation: slideDownBanner 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes slideDownBanner{
-    from{ transform: translateY(-8px); opacity: 0; }
-    to{ transform: translateY(0); opacity: 1; }
-  }
-  .sync-alert-banner .sab-icon{ font-size: 20px; flex-shrink: 0; }
-  .sync-alert-banner .sab-content{ flex: 1; min-width: 0; }
-  .sync-alert-banner .sab-title{ font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; color: #3617C4; }
-  .sync-alert-banner .sab-desc{ font-size: 11.5px; color: #625990; margin-top: 1px; }
-  .sync-alert-banner .sab-action-btn{
-    padding: 6px 13px;
-    border-radius: 12px;
-    background: var(--grad1);
-    border: none;
-    color: #fff;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: transform 0.1s;
-  }
-  .sync-alert-banner .sab-action-btn:active{ transform: scale(0.95); }
-  .sync-alert-banner .sab-close-btn{
-    background: none;
-    border: none;
-    color: #8C87B0;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 4px;
-    flex-shrink: 0;
-  }
-
   /* ── Sync State Card in Subpage ── */
   .sync-state-card{
     background: var(--card);
@@ -1762,17 +1717,6 @@
       <span class="sync-badge-text" id="syncBadgeText">In Sync</span>
     </button>
   </header>
-
-  <!-- Live Sync Alert Banner -->
-  <div class="sync-alert-banner" id="syncAlertBanner" style="display:none;">
-    <div class="sab-icon" id="sabIcon">☁️</div>
-    <div class="sab-content">
-      <div class="sab-title" id="sabTitle">New data available in cloud</div>
-      <div class="sab-desc" id="sabDesc">Another device made changes.</div>
-    </div>
-    <button type="button" class="sab-action-btn" id="sabActionBtn">Sync</button>
-    <button type="button" class="sab-close-btn" id="sabCloseBtn" title="Dismiss">✕</button>
-  </div>
 
   <div class="balance-card">
     <p class="label">Balance in hand</p>
@@ -2031,6 +1975,10 @@
     <div class="field">
       <label for="gistToken">GitHub Token</label>
       <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="deviceName">This Device Name (optional)</label>
+      <input type="text" id="deviceName" placeholder="e.g. Karan's Phone, Papa's Phone" autocomplete="off">
     </div>
 
     <div class="sync-auto-options">
@@ -2441,7 +2389,8 @@
           name,
           amount: Number(amount),
           type: currentType,
-          reason: reason
+          reason: reason,
+          updatedAt: new Date().toISOString()
         };
       }
       render();
@@ -2457,7 +2406,8 @@
       amount: Number(amount),
       type: currentType,
       reason: reason,
-      when: new Date().toISOString()
+      when: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     requestPassword({
@@ -3022,8 +2972,8 @@
   function loadSyncConfig(){
     try{
       const raw = localStorage.getItem(SYNC_CONFIG_KEY);
-      return raw ? JSON.parse(raw) : { gistId: '', token: '', autoCheckOnOpen: true, autoPushOnSave: true };
-    }catch(err){ return { gistId: '', token: '', autoCheckOnOpen: true, autoPushOnSave: true }; }
+      return raw ? JSON.parse(raw) : { gistId: '', token: '', deviceName: '', autoCheckOnOpen: true, autoPushOnSave: true };
+    }catch(err){ return { gistId: '', token: '', deviceName: '', autoCheckOnOpen: true, autoPushOnSave: true }; }
   }
 
   function saveSyncConfig(cfg){
@@ -3051,17 +3001,12 @@
   function updateSyncBadgeUI(){
     const badgeBtn = document.getElementById('syncBadgeBtn');
     const badgeText = document.getElementById('syncBadgeText');
-    const alertBanner = document.getElementById('syncAlertBanner');
-    const sabTitle = document.getElementById('sabTitle');
-    const sabDesc = document.getElementById('sabDesc');
-    const sabActionBtn = document.getElementById('sabActionBtn');
 
     if(!badgeBtn || !badgeText) return;
 
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       badgeBtn.style.display = 'none';
-      if(alertBanner) alertBanner.style.display = 'none';
       return;
     }
 
@@ -3071,30 +3016,15 @@
     if(syncState.status === 'syncing'){
       badgeText.textContent = 'Syncing…';
     } else if(syncState.status === 'cloud_new'){
-      badgeText.textContent = 'Cloud Updated';
-      if(alertBanner){
-        sabTitle.textContent = '☁️ New Data in Cloud';
-        sabDesc.textContent = `${syncState.cloudEntriesCount || 'New'} entries in cloud. Tap Sync to update.`;
-        sabActionBtn.textContent = 'Sync Now';
-        alertBanner.style.display = 'flex';
-      }
+      badgeText.textContent = 'Updating…';
     } else if(syncState.status === 'local_new'){
       badgeText.textContent = 'Unsaved to Cloud';
-      if(alertBanner) alertBanner.style.display = 'none';
     } else if(syncState.status === 'conflict'){
-      badgeText.textContent = 'Sync Needed';
-      if(alertBanner){
-        sabTitle.textContent = '⚡ Multi-Device Changes';
-        sabDesc.textContent = 'Both cloud and this phone have new entries. Tap to merge.';
-        sabActionBtn.textContent = 'Smart Merge';
-        alertBanner.style.display = 'flex';
-      }
+      badgeText.textContent = 'Merging…';
     } else if(syncState.status === 'error'){
       badgeText.textContent = 'Sync Error';
-      if(alertBanner) alertBanner.style.display = 'none';
     } else {
       badgeText.textContent = 'In Sync';
-      if(alertBanner) alertBanner.style.display = 'none';
     }
   }
 
@@ -3117,7 +3047,8 @@
     }
 
     if(syncState.cloudLastModified){
-      cloudTimeEl.textContent = `Updated: ${formatRelativeTime(syncState.cloudLastModified)}`;
+      const byDevice = syncState.cloudDeviceTag ? ` (${escapeHtml(syncState.cloudDeviceTag)})` : '';
+      cloudTimeEl.textContent = `Updated: ${formatRelativeTime(syncState.cloudLastModified)}${byDevice}`;
     } else {
       cloudTimeEl.textContent = 'Not checked yet';
     }
@@ -3213,6 +3144,7 @@
             cloudCount = cloudEntries.length;
             cloudTime = parsed.lastModified || gist.updated_at || new Date().toISOString();
             cloudDeletedIds = Array.isArray(parsed.deletedIds) ? parsed.deletedIds : [];
+            syncState.cloudDeviceTag = parsed.deviceTag || null;
           }
         }catch(e){}
       }
@@ -3241,8 +3173,8 @@
       updateSyncBadgeUI();
       updateSubpageStateCard();
 
-      // If cloud has new data and local has no unpushed edits (or empty local list): auto-sync!
-      if(syncState.status === 'cloud_new' && (!isLocalNewer || entries.length === 0)){
+      // Whenever cloud has new updates or changes, auto-merge seamlessly in background!
+      if(isCloudNewer || (isLocalNewer && cfg.autoPushOnSave !== false)){
         smartSync(true);
       }
     }catch(err){
@@ -3318,11 +3250,17 @@
             entryMap.set(ce.id, ce);
           } else {
             const localE = entryMap.get(ce.id);
-            entryMap.set(ce.id, {
-              ...ce,
-              ...localE,
-              reason: localE.reason || ce.reason || ''
-            });
+            const cloudUpdated = ce.updatedAt || ce.when || '';
+            const localUpdated = localE.updatedAt || localE.when || '';
+            if(cloudUpdated > localUpdated){
+              entryMap.set(ce.id, ce);
+            } else {
+              entryMap.set(ce.id, {
+                ...ce,
+                ...localE,
+                reason: localE.reason || ce.reason || ''
+              });
+            }
           }
         }
       });
@@ -3333,11 +3271,12 @@
 
       // 4. Push merged state back to cloud so both devices match 100%
       const nowIso = new Date().toISOString();
+      const myDeviceTag = cfg.deviceName || (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop');
       const payload = {
         version: 2,
         lastModified: nowIso,
         entriesCount: entries.length,
-        deviceTag: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+        deviceTag: myDeviceTag,
         entries: entries,
         deletedIds: mergedDeleted
       };
@@ -3523,13 +3462,14 @@
   document.getElementById('saveSyncBtn').addEventListener('click', () => {
     const gistId = document.getElementById('gistId').value.trim();
     const token = document.getElementById('gistToken').value.trim();
+    const deviceName = document.getElementById('deviceName').value.trim();
     const autoCheckOnOpen = document.getElementById('autoCheckCloudOnOpen').checked;
     const autoPushOnSave = document.getElementById('autoPushOnSave').checked;
     if(!gistId || !token){
       setSyncStatus('Enter both Gist ID and Token to save.', 'err');
       return;
     }
-    saveSyncConfig({ gistId, token, autoCheckOnOpen, autoPushOnSave });
+    saveSyncConfig({ gistId, token, deviceName, autoCheckOnOpen, autoPushOnSave });
     setSyncStatus('Sync settings saved on this device.', 'ok');
     checkCloudStatus(false, true);
   });
@@ -3537,19 +3477,8 @@
   document.getElementById('smartSyncBtn').addEventListener('click', () => smartSync(false));
   document.getElementById('sscRefreshBtn').addEventListener('click', () => checkCloudStatus(false, true));
   document.getElementById('syncBadgeBtn').addEventListener('click', () => {
-    if(syncState.status === 'cloud_new' || syncState.status === 'conflict' || syncState.status === 'local_new'){
-      smartSync(false);
-    } else {
-      // Open cloud sync subpage
-      document.getElementById('openCloudSyncSubpageBtn').click();
-    }
-  });
-
-  document.getElementById('sabActionBtn').addEventListener('click', () => {
-    smartSync(false);
-  });
-  document.getElementById('sabCloseBtn').addEventListener('click', () => {
-    document.getElementById('syncAlertBanner').style.display = 'none';
+    // Open cloud sync subpage
+    document.getElementById('openCloudSyncSubpageBtn').click();
   });
 
   document.getElementById('syncAdvancedToggle').addEventListener('click', () => {
@@ -4377,6 +4306,7 @@
     const cfg = loadSyncConfig();
     if(cfg.gistId) document.getElementById('gistId').value = cfg.gistId;
     if(cfg.token) document.getElementById('gistToken').value = cfg.token;
+    if(cfg.deviceName) document.getElementById('deviceName').value = cfg.deviceName;
     if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = cfg.autoCheckOnOpen !== false;
     if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = cfg.autoPushOnSave !== false;
     updateSubpageStateCard();
@@ -4477,6 +4407,7 @@
   const initSyncCfg = loadSyncConfig();
   if(initSyncCfg.gistId) document.getElementById('gistId').value = initSyncCfg.gistId;
   if(initSyncCfg.token) document.getElementById('gistToken').value = initSyncCfg.token;
+  if(initSyncCfg.deviceName) document.getElementById('deviceName').value = initSyncCfg.deviceName;
   if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = initSyncCfg.autoCheckOnOpen !== false;
   if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = initSyncCfg.autoPushOnSave !== false;
   updateSyncBadgeUI();
