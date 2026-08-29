@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paisa Hisaab</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#B1B2FF">
+<meta name="theme-color" content="#5B3DF5">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,23 +17,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{
-    --bg: #EEF1FF;
+    --bg: #F3F4FA;
     --card: #FFFFFF;
-    --text: #1E204A;
-    --text-soft: #636894;
-    --grad1: #7C7EFF;
-    --grad2: #B1B2FF;
-    --grad3: #AAC4FF;
-    --accent: #B1B2FF;
-    --accent-light: #D2DAFF;
-    --accent-bg: #EEF1FF;
-    --green: #10B981;
-    --green-bg: #E6F8F0;
-    --red: #F43F5E;
-    --red-bg: #FEE8EC;
-    --line: #D2DAFF;
-    --shadow: 0 4px 18px rgba(177, 178, 255, 0.22);
-    --shadow-lg: 0 12px 32px rgba(124, 126, 255, 0.28);
+    --text: #14162B;
+    --text-soft: #6B6E85;
+    --grad1: #5B3DF5;
+    --grad2: #7C5CFF;
+    --grad3: #B26BFF;
+    --green: #12A454;
+    --green-bg: #E4F7EC;
+    --red: #E3483F;
+    --red-bg: #FDEAE9;
+    --line: #ECEDF5;
+    --shadow: 0 8px 24px rgba(20,22,43,0.06);
+    --shadow-lg: 0 16px 40px rgba(91,61,245,0.22);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   body{
@@ -78,7 +75,6 @@
     padding:6px 10px;
     border-radius:20px;
     box-shadow: var(--shadow);
-    border: 1px solid var(--line);
   }
   header .backup-trigger{
     font-family:'Inter', sans-serif;
@@ -88,7 +84,7 @@
   }
 
   .balance-card{
-    background: linear-gradient(135deg, #7C7EFF 0%, #989BFF 50%, #B1B2FF 100%);
+    background: linear-gradient(135deg, var(--grad1), var(--grad2) 55%, var(--grad3));
     border-radius: 24px;
     padding: 26px 24px 22px;
     color: #fff;
@@ -96,7 +92,6 @@
     position:relative;
     overflow:hidden;
     margin-bottom: 16px;
-    border: 1px solid rgba(255,255,255,0.4);
   }
   .balance-card::after{
     content:'';
@@ -215,7 +210,7 @@
   }
   .entry .del:hover{ color: var(--red); }
 
-  /* Date Group Header Divider - Theme Matched */
+  /* Date Group Header Divider - Balanced & Refined Color */
   .txn-date-divider{
     display:flex;
     align-items:center;
@@ -232,15 +227,15 @@
     content:'';
     flex:1;
     height:1.5px;
-    background: #D2DAFF;
+    background: #E1DEF5;
     border-radius: 1px;
   }
   .txn-date-divider span{
     font-family:'Poppins', sans-serif;
-    font-size:12px;
+    font-size:12.5px;
     font-weight:600;
-    color: #3E42A8;
-    background: #D2DAFF;
+    color: #5533EB;
+    background: #EAE7FB;
     padding: 4px 14px;
     border-radius: 20px;
     letter-spacing: 0.01em;
@@ -593,11 +588,10 @@
     font-weight:600;
     color: var(--text-soft);
     cursor:pointer;
-    transition: all 0.12s ease;
   }
   .filter-chip.active{
-    background: #6265D4;
-    border-color: #6265D4;
+    background: var(--text);
+    border-color: var(--text);
     color: #fff;
   }
   .filter-chip.active.added{ background: var(--green); border-color: var(--green); }
@@ -607,8 +601,8 @@
     display:flex;
     align-items:center;
     gap:5px;
-    color: #6265D4;
-    border-color: var(--line);
+    color: var(--grad1);
+    border-color: var(--grad1);
   }
 
   /* PDF Export Modal / Bottom Sheet */
@@ -1350,15 +1344,15 @@
     color: var(--text-soft);
     line-height:1.5;
     padding:10px 14px;
-    background: #F4F6FF;
+    background:#F8F8FD;
     border-radius:12px;
     border-left: 3.5px solid var(--line);
     word-break: break-word;
   }
   .txn-card-reason.has-reason{
-    border-left-color: #8C8EFF;
+    border-left-color: var(--grad1);
     color: var(--text);
-    background: #F4F6FF;
+    background: #F4F2FF;
     font-size: 14.5px;
     font-weight: 500;
     line-height: 1.55;
@@ -1371,14 +1365,13 @@
     left:0;
     right:0;
     height:64px;
-    background: linear-gradient(135deg, #7C7EFF 0%, #9396FF 50%, #B1B2FF 100%);
+    background: linear-gradient(135deg, #5B3DF5 0%, #6E56E0 50%, #8B5CF6 100%);
     display:flex;
     align-items:center;
     justify-content:center;
     z-index:90;
-    box-shadow: 0 -4px 20px rgba(177, 178, 255, 0.35);
+    box-shadow: 0 -4px 20px rgba(91,61,245,0.25);
     max-width:100%;
-    border-top: 1px solid rgba(255,255,255,0.25);
   }
   .bottom-nav-inner{
     display:flex;
@@ -1395,7 +1388,7 @@
     padding:8px 18px;
     border:none;
     background:none;
-    color:rgba(255,255,255,0.65);
+    color:rgba(255,255,255,0.55);
     font-family:'Inter', sans-serif;
     font-size:10.5px;
     font-weight:600;
@@ -1718,26 +1711,26 @@
     gap: 4px;
     padding: 2.5px 8px;
     border-radius: 7px;
-    background: #D2DAFF;
-    color: #3E42A8;
+    background: #EDEBF8;
+    color: #4C2FD1;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.2;
-    border: 1px solid #B1B2FF;
+    border: 1px solid #D8D4F5;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .ssc-device-pill.cloud{
-    background: #E6F8F0;
-    color: #0E8040;
-    border-color: #A7F3D0;
+    background: #E8F5E9;
+    color: #1B5E20;
+    border-color: #C8E6C9;
   }
   .ssc-device-pill.cloud.active{
-    background: #D2DAFF;
-    color: #3E42A8;
-    border-color: #B1B2FF;
+    background: #EDE8FF;
+    color: #5527D6;
+    border-color: #D3C4FF;
   }
   .ssc-time{
     font-size: 10.5px;
@@ -1749,11 +1742,11 @@
   }
 
   .backup-action.smart-sync{
-    background: linear-gradient(135deg, #7C7EFF, #B1B2FF);
+    background: linear-gradient(135deg, #5B3DF5, #7C5CFF);
     color: #fff;
     font-size: 14.5px;
     font-weight: 700;
-    box-shadow: 0 4px 16px rgba(124,126,255,0.32);
+    box-shadow: 0 4px 16px rgba(91,61,245,0.28);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1835,7 +1828,7 @@
     box-shadow: 0 2px 5px rgba(20,22,43,0.2);
   }
   .ios-switch input:checked + .ios-slider{
-    background: linear-gradient(135deg, #7C7EFF, #B1B2FF);
+    background: linear-gradient(135deg, #5B3DF5, #7D40FF);
   }
   .ios-switch input:checked + .ios-slider:before{
     transform: translateX(19px);
@@ -1866,8 +1859,8 @@
     width: 36px;
     height: 36px;
     border-radius: 11px;
-    background: #D2DAFF;
-    color: #3E42A8;
+    background: #F3EEFF;
+    color: var(--grad1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2518,7 +2511,7 @@
     return datePart + ' · ' + timePart;
   }
 
-  const avatarColors = ['#7C7EFF','#10B981','#F43F5E','#F59E0B','#06B6D4','#8B5CF6','#3B82F6'];
+  const avatarColors = ['#5B3DF5','#12A454','#E3483F','#F5A623','#0EA5B7','#C0399C','#3E6BFF'];
   function colorFor(name){
     let hash = 0;
     for(let i=0;i<name.length;i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
