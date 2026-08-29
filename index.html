@@ -2616,12 +2616,17 @@
     document.querySelectorAll('.entries .entry').forEach(row => {
       row.addEventListener('click', () => openDetail(row.dataset.id));
     });
+
+    if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
+      renderTxnList();
+    }
   }
 
   function loadEntries(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      entries = raw ? JSON.parse(raw) : [];
+      const list = raw ? JSON.parse(raw) : [];
+      entries = Array.isArray(list) ? list.map(normalizeImportedEntry) : [];
     }catch(err){
       entries = [];
     }
@@ -3132,11 +3137,12 @@
   function normalizeImportedEntry(e){
     return {
       id: (e.id && typeof e.id === 'string') ? e.id : genId(),
-      name: e.name,
-      amount: Number(e.amount),
-      type: e.type,
-      reason: e.reason || '',
-      when: e.when
+      name: String(e.name || '').trim(),
+      amount: Number(e.amount) || 0,
+      type: e.type === 'spent' ? 'spent' : 'received',
+      reason: e.reason ? String(e.reason).trim() : '',
+      when: e.when || new Date().toISOString(),
+      updatedAt: e.updatedAt || e.when || new Date().toISOString()
     };
   }
 
@@ -3232,7 +3238,7 @@
       if(!isSyncInProgress){
         smartSync(true); // silent = true
       }
-    }, 2000);
+    }, 600);
   }
 
   function loadSyncConfig(){
@@ -3518,11 +3524,12 @@
       const entryMap = new Map();
       entries.forEach(e => {
         if(!mergedDeleted.includes(e.id)){
-          entryMap.set(e.id, e);
+          entryMap.set(e.id, normalizeImportedEntry(e));
         }
       });
 
       let newFromCloud = 0;
+      let editedFromCloud = 0;
       normalizedCloud.forEach(ce => {
         if(!mergedDeleted.includes(ce.id)){
           if(!entryMap.has(ce.id)){
@@ -3530,16 +3537,13 @@
             entryMap.set(ce.id, ce);
           } else {
             const localE = entryMap.get(ce.id);
-            const cloudUpdated = ce.updatedAt || ce.when || '';
-            const localUpdated = localE.updatedAt || localE.when || '';
-            if(cloudUpdated > localUpdated){
+            const cloudUpdatedMs = new Date(ce.updatedAt || ce.when || 0).getTime();
+            const localUpdatedMs = new Date(localE.updatedAt || localE.when || 0).getTime();
+            if(cloudUpdatedMs >= localUpdatedMs){
+              if(cloudUpdatedMs > localUpdatedMs) editedFromCloud++;
               entryMap.set(ce.id, ce);
             } else {
-              entryMap.set(ce.id, {
-                ...ce,
-                ...localE,
-                reason: localE.reason || ce.reason || ''
-              });
+              entryMap.set(ce.id, localE);
             }
           }
         }
@@ -4752,22 +4756,22 @@
   updateSyncLastText();
 
   if(initSyncCfg.gistId && initSyncCfg.token && initSyncCfg.autoCheckOnOpen !== false){
-    checkCloudStatus(true);
+    checkCloudStatus(true, true);
   }
 
   window.addEventListener('focus', () => {
     const cfg = loadSyncConfig();
-    if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true);
+    if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true, true);
   });
   document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'visible'){
       const cfg = loadSyncConfig();
-      if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true);
+      if(cfg.gistId && cfg.token && cfg.autoCheckOnOpen !== false) checkCloudStatus(true, true);
     }
   });
   window.addEventListener('online', () => {
     const cfg = loadSyncConfig();
-    if(cfg.gistId && cfg.token) checkCloudStatus(true);
+    if(cfg.gistId && cfg.token) checkCloudStatus(true, true);
   });
 
   // If no PIN is set yet, prompt user to create one
