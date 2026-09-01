@@ -56,6 +56,10 @@
     font-family:'Inter', sans-serif;
     min-height:100vh;
     padding-bottom: 100px;
+    transition: background-color 0.22s ease, color 0.22s ease;
+  }
+  .entry, .txn-card, .sheet, .settings-overlay, .txn-list-overlay, .settings-subpage, .settings-item, .reason-tags-box, .bottom-nav{
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
   }
   .wrap{
     max-width: 480px;
@@ -97,6 +101,62 @@
     border:none;
     cursor:pointer;
     color: var(--grad1);
+  }
+  .header-right-actions{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .quick-theme-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .quick-theme-btn:active{
+    transform: scale(0.92);
+    background: var(--line);
+  }
+  .theme-picker-row{
+    display: flex;
+    gap: 8px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 5px;
+  }
+  .theme-chip{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .theme-chip.active{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.3);
+  }
+  .theme-chip-icon{
+    font-size: 15px;
   }
 
   .balance-card{
@@ -2190,6 +2250,296 @@
     line-height: 1.4;
     font-weight: 500;
   }
+
+  /* ── Ultra-Premium OLED Midnight Dark Theme ── */
+  body.dark-mode{
+    --bg: #0B0D18;
+    --card: #141727;
+    --text: #F1F3FD;
+    --text-soft: #8D90AB;
+    --grad1: #6842FF;
+    --grad2: #8465FF;
+    --grad3: #BD83FF;
+    --green: #22C55E;
+    --green-bg: rgba(34, 197, 94, 0.16);
+    --red: #F87171;
+    --red-bg: rgba(248, 113, 113, 0.16);
+    --line: #22253B;
+    --shadow: 0 8px 24px rgba(0,0,0,0.42);
+    --shadow-lg: 0 16px 40px rgba(104,66,255,0.32);
+  }
+
+  body.dark-mode .entry{
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  body.dark-mode .entry:active{
+    background: #1B1E32;
+  }
+  body.dark-mode .balance-card{
+    box-shadow: 0 16px 40px rgba(104,66,255,0.32), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  }
+  body.dark-mode .sheet,
+  body.dark-mode .pin-sheet,
+  body.dark-mode .detail-sheet,
+  body.dark-mode .dt-sheet,
+  body.dark-mode .confirm-sheet,
+  body.dark-mode .pdf-export-sheet{
+    background: #141727;
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  body.dark-mode .sheet .handle{
+    background: #2A2E47;
+  }
+  body.dark-mode .sheet-close,
+  body.dark-mode .settings-back-btn,
+  body.dark-mode .txn-list-close{
+    background: #1E2238;
+    color: var(--text-soft);
+  }
+  body.dark-mode .sheet-close:active,
+  body.dark-mode .settings-back-btn:active,
+  body.dark-mode .txn-list-close:active{
+    background: #272B46;
+    color: var(--text);
+  }
+  body.dark-mode .type-toggle{
+    background: #1B1E32;
+  }
+  body.dark-mode .type-toggle button.active.received,
+  body.dark-mode .type-toggle button.active.spent{
+    background: #242944;
+  }
+  body.dark-mode .field input,
+  body.dark-mode .dt-field-col input{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .field input:focus,
+  body.dark-mode .dt-field-col input:focus{
+    background: #22263F;
+    border-color: var(--grad1);
+  }
+  body.dark-mode .reason-tags-box{
+    background: #1B1E32;
+    border-color: var(--line);
+  }
+  body.dark-mode .reason-tags-box:focus-within{
+    background: #22263F;
+    border-color: var(--grad1);
+  }
+  body.dark-mode .reason-tag-chip{
+    background: #231C4D;
+    border-color: rgba(189,131,255,0.32);
+    color: #D8B4FE;
+  }
+  body.dark-mode .rtc-remove{
+    background: rgba(189,131,255,0.22);
+    color: #BD83FF;
+  }
+  body.dark-mode .reason-tag-input{
+    color: var(--text);
+  }
+  body.dark-mode .filter-chip{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  body.dark-mode .filter-chip.active{
+    background: #EDEBFD;
+    color: #0B0D18;
+    border-color: #EDEBFD;
+  }
+  body.dark-mode .inline-date-bar{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .inline-date-bar input{
+    background: transparent;
+    color: var(--text);
+  }
+  body.dark-mode .cal-summary{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .cal-summary .cell{
+    border-color: var(--line);
+  }
+  body.dark-mode .txn-date-divider span{
+    background: #221D47;
+    color: #BD83FF;
+  }
+  body.dark-mode .txn-date-divider::before,
+  body.dark-mode .txn-date-divider::after{
+    background: var(--line);
+  }
+  body.dark-mode .detail-amt-row{
+    background: #1B1E32;
+  }
+  body.dark-mode .detail-tag-chip{
+    background: #231C4D;
+    border-color: rgba(189,131,255,0.3);
+    color: #D8B4FE;
+  }
+  body.dark-mode .dt-entry-preview{
+    background: #1B1E32;
+    border-color: var(--line);
+  }
+  body.dark-mode .dt-preset-chip,
+  body.dark-mode .pdf-preset-chip{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  body.dark-mode .dt-preset-chip:active,
+  body.dark-mode .pdf-preset-chip:active{
+    background: #231C4D;
+    color: #D8B4FE;
+    border-color: var(--grad1);
+  }
+  body.dark-mode .pdf-preset-chip.active{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    border-color: transparent;
+    color: #fff;
+  }
+  body.dark-mode .pdf-preview-box{
+    background: #1B1E32;
+    border-color: var(--line);
+  }
+  body.dark-mode .pdf-preview-meta{
+    border-color: var(--line);
+  }
+  body.dark-mode .pdf-btn.cancel{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .confirm-btn.cancel{
+    background: #1E2238;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .pin-keypad button{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .pin-keypad button:active{
+    background: #242944;
+  }
+  body.dark-mode .pin-dots .pd{
+    border-color: #353A5A;
+  }
+  body.dark-mode .pin-dots .pd.filled{
+    background: var(--grad1);
+    border-color: var(--grad1);
+    box-shadow: 0 0 12px rgba(104,66,255,0.6);
+  }
+  body.dark-mode .settings-overlay,
+  body.dark-mode .txn-list-overlay,
+  body.dark-mode .settings-subpage{
+    background: var(--bg);
+    color: var(--text);
+  }
+  body.dark-mode .settings-header,
+  body.dark-mode .txn-list-header,
+  body.dark-mode .settings-subpage-header{
+    background: rgba(11, 13, 24, 0.94);
+    border-color: var(--line);
+  }
+  body.dark-mode .txn-search-box{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .txn-search-input{
+    color: var(--text);
+  }
+  body.dark-mode .txn-filter-chip{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  body.dark-mode .txn-filter-chip.active{
+    background: #EDEBFD;
+    color: #0B0D18;
+    border-color: #EDEBFD;
+  }
+  body.dark-mode .txn-card{
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  body.dark-mode .txn-card:active{
+    background: #1B1E32;
+  }
+  body.dark-mode .txn-card-reason{
+    background: #1B1E32;
+    color: var(--text-soft);
+  }
+  body.dark-mode .txn-pdf-btn{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .settings-item{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .settings-item:active{
+    background: #1B1E32;
+  }
+  body.dark-mode .sync-state-card{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .ssc-body{
+    background: #1B1E32;
+  }
+  body.dark-mode .ssc-device-pill.local{
+    background: #25224A;
+    color: #D8B4FE;
+  }
+  body.dark-mode .ssc-device-pill.cloud{
+    background: #1C2038;
+    color: #8E92B2;
+  }
+  body.dark-mode .ssc-device-pill.cloud.active{
+    background: #2E1B5B;
+    color: #C084FC;
+    border-color: #7C5CFF;
+  }
+  body.dark-mode .sync-nav-tile{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .sync-nav-tile:active{
+    background: #1B1E32;
+  }
+  body.dark-mode .snt-icon{
+    background: #231C4D;
+    color: #BD83FF;
+  }
+  body.dark-mode .bottom-nav{
+    background: rgba(20, 23, 39, 0.94);
+    border-color: var(--line);
+  }
+  body.dark-mode .quick-theme-btn{
+    background: #141727;
+    border-color: var(--line);
+    color: #BD83FF;
+  }
+  body.dark-mode .theme-picker-row{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .theme-chip{
+    color: var(--text-soft);
+  }
+  body.dark-mode .theme-chip.active{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(104,66,255,0.35);
+  }
 </style>
 </head>
 <body>
@@ -2197,11 +2547,16 @@
 <div class="wrap">
   <header>
     <h1><span class="dot"></span>Paisa Hisaab</h1>
-    <button type="button" class="sync-badge-btn" id="syncBadgeBtn" title="Cloud Sync Status" style="display:none;">
-      <span class="sync-badge-dot"></span>
-      <span class="sync-badge-icon">☁️</span>
-      <span class="sync-badge-text" id="syncBadgeText">In Sync</span>
-    </button>
+    <div class="header-right-actions">
+      <button type="button" class="quick-theme-btn" id="quickThemeBtn" title="Toggle Dark/Light Mode">
+        <span id="quickThemeIcon">🌙</span>
+      </button>
+      <button type="button" class="sync-badge-btn" id="syncBadgeBtn" title="Cloud Sync Status" style="display:none;">
+        <span class="sync-badge-dot"></span>
+        <span class="sync-badge-icon">☁️</span>
+        <span class="sync-badge-text" id="syncBadgeText">In Sync</span>
+      </button>
+    </div>
   </header>
 
   <div class="balance-card">
@@ -2409,6 +2764,24 @@
     <h2>⚙️ Settings</h2>
   </div>
   <div class="settings-body">
+
+    <div class="settings-section">
+      <p class="settings-section-title">Appearance & Theme</p>
+      <div class="theme-picker-row">
+        <button type="button" class="theme-chip active" data-theme="light" id="themeLightBtn">
+          <span class="theme-chip-icon">☀️</span>
+          <span>Light</span>
+        </button>
+        <button type="button" class="theme-chip" data-theme="dark" id="themeDarkBtn">
+          <span class="theme-chip-icon">🌙</span>
+          <span>Dark</span>
+        </button>
+        <button type="button" class="theme-chip" data-theme="auto" id="themeAutoBtn">
+          <span class="theme-chip-icon">📱</span>
+          <span>System</span>
+        </button>
+      </div>
+    </div>
 
     <div class="settings-section" id="securitySettingsSection">
       <p class="settings-section-title">Security</p>
@@ -2744,6 +3117,68 @@
 </nav>
 
 <script>
+  /* ── Theme Engine (Light / Dark / System Auto) ── */
+  const THEME_KEY = 'paisa-hisaab-theme';
+  let currentThemeSetting = localStorage.getItem(THEME_KEY) || 'light';
+
+  function applyTheme(mode, save = true){
+    currentThemeSetting = mode;
+    if(save){
+      try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+    }
+
+    let isDark = false;
+    if(mode === 'dark'){
+      isDark = true;
+    } else if(mode === 'light'){
+      isDark = false;
+    } else { // 'auto'
+      isDark = Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
+    document.body.classList.toggle('dark-mode', isDark);
+
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if(metaThemeColor){
+      metaThemeColor.setAttribute('content', isDark ? '#0B0D18' : '#5B3DF5');
+    }
+
+    const quickThemeIcon = document.getElementById('quickThemeIcon');
+    if(quickThemeIcon){
+      quickThemeIcon.textContent = isDark ? '☀️' : '🌙';
+    }
+
+    document.querySelectorAll('.theme-chip').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === mode);
+    });
+  }
+
+  const quickThemeBtnEl = document.getElementById('quickThemeBtn');
+  if(quickThemeBtnEl){
+    quickThemeBtnEl.addEventListener('click', () => {
+      const isCurrentlyDark = document.body.classList.contains('dark-mode');
+      applyTheme(isCurrentlyDark ? 'light' : 'dark', true);
+    });
+  }
+
+  document.querySelectorAll('.theme-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyTheme(btn.dataset.theme, true);
+    });
+  });
+
+  if(window.matchMedia){
+    try{
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if(currentThemeSetting === 'auto'){
+          applyTheme('auto', false);
+        }
+      });
+    }catch(e){}
+  }
+
+  applyTheme(currentThemeSetting, false);
+
   let entries = [];
   let currentType = 'received';
   let editingId = null;
