@@ -298,20 +298,21 @@
   }
   .fab:active{ transform: translateX(212px) scale(0.94); }
   .fab.fab-clear{
-    bottom: 154px;
-    width: 48px;
-    height: 48px;
     background: linear-gradient(135deg, #FF6B6B, #E3483F);
-    box-shadow: 0 6px 20px rgba(227,72,63,0.32);
-    font-size: 19px;
-    color: #fff;
+    box-shadow: 0 8px 24px rgba(227,72,63,0.35);
+    font-size: 22px;
+    z-index: 85;
   }
-  .fab.fab-clear:active{ transform: translateX(212px) scale(0.92); }
+  .fab.fab-clear svg{
+    width: 24px;
+    height: 24px;
+  }
+  .fab.fab-clear:active{ transform: translateX(212px) scale(0.94); }
   @media (max-width: 520px){
     .fab{ right: 24px; transform:none; }
     .fab:active{ transform: scale(0.94); }
-    .fab.fab-clear{ right: 24px; transform:none; bottom: 154px; }
-    .fab.fab-clear:active{ transform: scale(0.92); }
+    .fab.fab-clear{ right: 24px; transform:none; }
+    .fab.fab-clear:active{ transform: scale(0.94); }
   }
 
   .overlay{
@@ -896,28 +897,6 @@
     font-weight:600;
     font-size:14px;
     cursor:pointer;
-  }
-  .detail-time-btn{
-    width:100%;
-    margin-top:10px;
-    padding:13px;
-    border:1.5px solid var(--line);
-    background: #F8F8FD;
-    color: var(--text);
-    border-radius:14px;
-    font-family:'Inter', sans-serif;
-    font-weight:600;
-    font-size:13.5px;
-    cursor:pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.12s;
-  }
-  .detail-time-btn:active{
-    background: #EDEBFB;
-    border-color: var(--grad1);
   }
   .detail-del{
     width:100%;
@@ -2268,7 +2247,6 @@
       <span class="v" id="detailTime"></span>
     </div>
     <button type="button" class="detail-edit" id="detailEdit">Edit this entry</button>
-    <button type="button" class="detail-time-btn" id="detailChangeTimeBtn">🕒 Change Date & Time</button>
     <button type="button" class="detail-del" id="detailDelete">Delete this entry</button>
   </div>
 </div>
@@ -2896,7 +2874,7 @@
 
     const clearFab = document.getElementById('clearAllFab');
     if(clearFab){
-      clearFab.style.display = (entries.length > 0 && activeTab === 'home') ? 'flex' : 'none';
+      clearFab.style.display = (entries.length > 0 && activeTab === 'settings') ? 'flex' : 'none';
     }
 
     if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
@@ -3411,12 +3389,6 @@
         openEditForm(e);
       }
     });
-  });
-
-  document.getElementById('detailChangeTimeBtn').addEventListener('click', () => {
-    if(!currentDetailId) return;
-    detailOverlay.classList.remove('show');
-    openDateTimeEditor(currentDetailId);
   });
 
   /* ── Change Date & Time Feature (Long-press or Detail Sheet) ── */
@@ -5153,7 +5125,7 @@
     const clearFab = document.getElementById('clearAllFab');
     if(newTab === 'home'){
       fabBtn.style.display = 'flex';
-      if(clearFab) clearFab.style.display = entries.length > 0 ? 'flex' : 'none';
+      if(clearFab) clearFab.style.display = 'none';
       if(prevOverlay){
         prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay show slide-out-right' : 'settings-overlay show slide-out-right');
         setTimeout(() => {
@@ -5165,8 +5137,12 @@
       }
     } else {
       fabBtn.style.display = 'none';
-      if(clearFab) clearFab.style.display = 'none';
-      if(newTab === 'transactions'){
+      if(newTab === 'settings'){
+        if(clearFab) clearFab.style.display = entries.length > 0 ? 'flex' : 'none';
+        resetBackupSheet();
+        updateSecuritySettingsUI();
+      } else if(newTab === 'transactions'){
+        if(clearFab) clearFab.style.display = 'none';
         txnListFilter = 'all';
         document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
         document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');
@@ -5176,9 +5152,6 @@
           if(txnReasonSearchClear) txnReasonSearchClear.style.display = 'none';
         }
         renderTxnList();
-      } else if(newTab === 'settings'){
-        resetBackupSheet();
-        updateSecuritySettingsUI();
       }
 
       if(prevTab === 'home'){
