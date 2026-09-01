@@ -2687,6 +2687,33 @@
   body.dark-mode .pin-keypad button:active{
     background: #242944;
   }
+  body.dark-mode .pin-keypad button.ghost{
+    background: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    pointer-events: none;
+  }
+  body.dark-mode .pin-keypad button.backspace{
+    background: none;
+    border-color: transparent;
+    color: var(--text-soft);
+  }
+  body.dark-mode .pin-keypad button.backspace:active{
+    background: #242944;
+  }
+  body.dark-mode .pin-cancel{
+    background: #1E2238;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .pin-cancel:hover{
+    background: #262B46;
+    border-color: var(--grad1);
+    color: #fff;
+  }
+  body.dark-mode .pin-cancel:active{
+    background: #2C3252;
+  }
   body.dark-mode .pin-dots .pd{
     border-color: #353A5A;
   }
