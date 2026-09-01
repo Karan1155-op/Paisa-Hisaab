@@ -163,8 +163,16 @@
     gap:12px;
     box-shadow: var(--shadow);
     cursor:pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .entry:active{ background: #FAFAFD; }
+  .entry.long-pressing, .txn-card.long-pressing{
+    transform: scale(0.96) !important;
+    box-shadow: 0 0 0 2px var(--grad1), 0 8px 24px rgba(91,61,245,0.28) !important;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s ease !important;
+  }
   .avatar{
     width:44px; height:44px;
     border-radius:14px;
@@ -858,6 +866,28 @@
     font-size:14px;
     cursor:pointer;
   }
+  .detail-time-btn{
+    width:100%;
+    margin-top:10px;
+    padding:13px;
+    border:1.5px solid var(--line);
+    background: #F8F8FD;
+    color: var(--text);
+    border-radius:14px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    cursor:pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.12s;
+  }
+  .detail-time-btn:active{
+    background: #EDEBFB;
+    border-color: var(--grad1);
+  }
   .detail-del{
     width:100%;
     margin-top:10px;
@@ -870,6 +900,147 @@
     font-weight:600;
     font-size:14px;
     cursor:pointer;
+  }
+
+  /* ── Date & Time Change Bottom Sheet ── */
+  #dateTimeOverlay{ z-index: 150; }
+  .dt-sheet{
+    text-align: left;
+  }
+  .dt-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .dt-icon-wrap{
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #F3F0FF;
+    color: var(--grad1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .dt-header h2{
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .dt-sub{
+    font-size: 12px;
+    color: var(--text-soft);
+    margin: 2px 0 0;
+  }
+  .dt-entry-preview{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F8F8FD;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 11px 13px;
+    margin-bottom: 16px;
+  }
+  .dt-preview-info{
+    flex: 1;
+    min-width: 0;
+  }
+  .dt-preview-name{
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dt-preview-reason{
+    font-size: 11.5px;
+    color: var(--text-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .dt-preview-amt{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+  .dt-preview-amt.received{ color: var(--green); }
+  .dt-preview-amt.spent{ color: var(--red); }
+  .dt-fields-row{
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .dt-field-col{
+    flex: 1;
+    margin-bottom: 0;
+  }
+  .dt-field-col label{
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+  }
+  .dt-field-col input{
+    width: 100%;
+    padding: 11px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    border: 1.5px solid var(--line);
+    border-radius: 13px;
+    background: #FAFAFD;
+    outline: none;
+  }
+  .dt-field-col input:focus{
+    border-color: var(--grad1);
+    background: #fff;
+  }
+  .dt-presets-label{
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-soft);
+    margin: 14px 0 8px;
+  }
+  .dt-presets-row{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .dt-preset-chip{
+    padding: 6.5px 12px;
+    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .dt-preset-chip:active{
+    transform: scale(0.95);
+    background: #F3F0FF;
+    border-color: var(--grad1);
+    color: var(--grad1);
+  }
+  .dt-save-btn{
+    margin-top: 4px;
   }
 
   /* Backup & Restore */
@@ -1294,11 +1465,12 @@
     margin-bottom:10px;
     box-shadow: var(--shadow);
     cursor: pointer;
-    transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.12s;
   }
   .txn-card:active{
     background: #FAFAFD;
-    transform: scale(0.985);
   }
   .txn-card-top{
     display:flex;
@@ -2058,7 +2230,56 @@
       <span class="v" id="detailTime"></span>
     </div>
     <button type="button" class="detail-edit" id="detailEdit">Edit this entry</button>
+    <button type="button" class="detail-time-btn" id="detailChangeTimeBtn">🕒 Change Date & Time</button>
     <button type="button" class="detail-del" id="detailDelete">Delete this entry</button>
+  </div>
+</div>
+
+<!-- Date & Time Change Bottom Sheet (Triggered by 2s Long-Press or Detail Sheet) -->
+<div class="overlay" id="dateTimeOverlay">
+  <div class="sheet dt-sheet">
+    <button type="button" class="sheet-close" id="closeDateTimeSheet" title="Close">✕</button>
+    <div class="handle"></div>
+    <div class="dt-header">
+      <div class="dt-icon-wrap">🕒</div>
+      <div>
+        <h2>Change Date & Time</h2>
+        <p class="dt-sub">Backdate or adjust this transaction's timing</p>
+      </div>
+    </div>
+
+    <!-- Mini summary of target entry -->
+    <div class="dt-entry-preview" id="dtEntryPreview">
+      <div class="avatar" id="dtAvatar" style="background:#5B3DF5">K</div>
+      <div class="dt-preview-info">
+        <div class="dt-preview-name" id="dtName">Karan</div>
+        <div class="dt-preview-reason" id="dtReason">Chai & snacks</div>
+      </div>
+      <div class="dt-preview-amt" id="dtAmt">₹250</div>
+    </div>
+
+    <form id="dateTimeForm">
+      <div class="dt-fields-row">
+        <div class="field dt-field-col">
+          <label for="dtDateInput">Date</label>
+          <input type="date" id="dtDateInput" required>
+        </div>
+        <div class="field dt-field-col">
+          <label for="dtTimeInput">Time</label>
+          <input type="time" id="dtTimeInput" step="60" required>
+        </div>
+      </div>
+
+      <!-- Quick Preset Chips -->
+      <div class="dt-presets-label">Quick Adjustments</div>
+      <div class="dt-presets-row">
+        <button type="button" class="dt-preset-chip" id="dtPresetNow">⚡ Right Now</button>
+        <button type="button" class="dt-preset-chip" id="dtPreset1h">⏪ 1 hr ago</button>
+        <button type="button" class="dt-preset-chip" id="dtPresetYesterday">📅 Yesterday</button>
+      </div>
+
+      <button type="submit" class="save-btn dt-save-btn" id="saveDateTimeBtn">Update Date & Time</button>
+    </form>
   </div>
 </div>
 
@@ -2614,7 +2835,12 @@
     });
 
     document.querySelectorAll('.entries .entry').forEach(row => {
-      row.addEventListener('click', () => openDetail(row.dataset.id));
+      const id = row.dataset.id;
+      attachLongPress(
+        row,
+        () => openDetail(id),
+        () => openDateTimeEditor(id)
+      );
     });
 
     if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
@@ -3014,6 +3240,206 @@
       }
     });
   });
+
+  document.getElementById('detailChangeTimeBtn').addEventListener('click', () => {
+    if(!currentDetailId) return;
+    detailOverlay.classList.remove('show');
+    openDateTimeEditor(currentDetailId);
+  });
+
+  /* ── Change Date & Time Feature (Long-press or Detail Sheet) ── */
+  const dateTimeOverlay = document.getElementById('dateTimeOverlay');
+  let currentDateTimeId = null;
+
+  function openDateTimeEditor(id){
+    const e = entries.find(en => en.id === id);
+    if(!e) return;
+    currentDateTimeId = id;
+
+    const dtAvatar = document.getElementById('dtAvatar');
+    const dtName = document.getElementById('dtName');
+    const dtReason = document.getElementById('dtReason');
+    const dtAmt = document.getElementById('dtAmt');
+    const dtDateInput = document.getElementById('dtDateInput');
+    const dtTimeInput = document.getElementById('dtTimeInput');
+
+    if(dtAvatar){
+      dtAvatar.style.background = colorFor(e.name);
+      dtAvatar.textContent = initials(e.name);
+    }
+    if(dtName) dtName.textContent = e.name;
+    if(dtReason) dtReason.textContent = e.reason ? e.reason : (e.type === 'received' ? 'Money Received' : 'Money Spent');
+    if(dtAmt){
+      dtAmt.textContent = (e.type === 'received' ? '+ ' : '− ') + formatRupee(e.amount);
+      dtAmt.className = 'dt-preview-amt ' + e.type;
+    }
+
+    const d = new Date(e.when);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+
+    if(dtDateInput) dtDateInput.value = `${yyyy}-${mm}-${dd}`;
+    if(dtTimeInput) dtTimeInput.value = `${hh}:${min}`;
+
+    dateTimeOverlay.classList.add('show');
+    ensureNavHistory();
+  }
+
+  document.getElementById('closeDateTimeSheet').addEventListener('click', () => {
+    dateTimeOverlay.classList.remove('show');
+  });
+
+  dateTimeOverlay.addEventListener('click', (e) => {
+    if(e.target === dateTimeOverlay){
+      dateTimeOverlay.classList.remove('show');
+    }
+  });
+
+  document.getElementById('dtPresetNow').addEventListener('click', () => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('dtTimeInput').value = `${hh}:${min}`;
+  });
+
+  document.getElementById('dtPreset1h').addEventListener('click', () => {
+    const d = new Date(Date.now() - 3600000);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('dtTimeInput').value = `${hh}:${min}`;
+  });
+
+  document.getElementById('dtPresetYesterday').addEventListener('click', () => {
+    const d = new Date(Date.now() - 86400000);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
+  });
+
+  document.getElementById('dateTimeForm').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    if(!currentDateTimeId) return;
+
+    const dtDateInput = document.getElementById('dtDateInput');
+    const dtTimeInput = document.getElementById('dtTimeInput');
+    if(!dtDateInput.value || !dtTimeInput.value) return;
+
+    const [y, m, d] = dtDateInput.value.split('-').map(Number);
+    const [hh, mm] = dtTimeInput.value.split(':').map(Number);
+    const newDateObj = new Date(y, m - 1, d, hh, mm, 0, 0);
+    const newIso = newDateObj.toISOString();
+
+    requestPassword({
+      title: 'Enter security password',
+      sub: 'Confirm to update transaction date & time',
+      onSuccess: () => {
+        const idx = entries.findIndex(en => en.id === currentDateTimeId);
+        if(idx !== -1){
+          entries[idx] = {
+            ...entries[idx],
+            when: newIso,
+            updatedAt: new Date().toISOString()
+          };
+
+          entries.sort((a,b) => new Date(b.when) - new Date(a.when));
+          render();
+          saveEntries();
+          if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
+            renderTxnList();
+          }
+
+          if(currentDetailId === currentDateTimeId){
+            const dtDate = document.getElementById('detailDate');
+            const dtTime = document.getElementById('detailTime');
+            if(dtDate) dtDate.textContent = newDateObj.toLocaleDateString('en-IN', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+            if(dtTime) dtTime.textContent = newDateObj.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+          }
+        }
+        dateTimeOverlay.classList.remove('show');
+      }
+    });
+  });
+
+  // Long-press detection helper (supports touch & desktop hold)
+  function attachLongPress(element, onClick, onLongPress, durationMs = 700){
+    let timer = null;
+    let startX = 0;
+    let startY = 0;
+    let isLongPress = false;
+    let touchStarted = false;
+
+    function start(e){
+      isLongPress = false;
+      touchStarted = true;
+      const touch = e.touches ? e.touches[0] : e;
+      startX = touch.clientX;
+      startY = touch.clientY;
+      element.classList.add('long-pressing');
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        isLongPress = true;
+        element.classList.remove('long-pressing');
+        if(navigator.vibrate) try{ navigator.vibrate(50); }catch(v){}
+        onLongPress();
+      }, durationMs);
+    }
+
+    function cancel(){
+      clearTimeout(timer);
+      element.classList.remove('long-pressing');
+    }
+
+    function move(e){
+      if(!timer) return;
+      const touch = e.touches ? e.touches[0] : e;
+      const diffX = Math.abs(touch.clientX - startX);
+      const diffY = Math.abs(touch.clientY - startY);
+      if(diffX > 10 || diffY > 10){
+        cancel();
+      }
+    }
+
+    element.addEventListener('touchstart', start, { passive: true });
+    element.addEventListener('touchmove', move, { passive: true });
+    element.addEventListener('touchend', (e) => {
+      cancel();
+      if(isLongPress){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+    element.addEventListener('touchcancel', cancel);
+
+    element.addEventListener('mousedown', (e) => {
+      if(e.button !== 0) return;
+      start(e);
+    });
+    element.addEventListener('mousemove', move);
+    element.addEventListener('mouseup', cancel);
+    element.addEventListener('mouseleave', cancel);
+
+    element.addEventListener('click', (e) => {
+      if(isLongPress){
+        e.preventDefault();
+        e.stopPropagation();
+        isLongPress = false;
+        return;
+      }
+      onClick();
+    });
+  }
 
   function openEditForm(e){
     editingId = e.id;
@@ -3837,6 +4263,7 @@
     const detailOverlay = document.getElementById('detailOverlay');
     const overlay = document.getElementById('overlay');
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
+    const dateTimeOverlay = document.getElementById('dateTimeOverlay');
     const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     const backupSubpage = document.getElementById('backupSubpageOverlay');
@@ -3846,6 +4273,7 @@
            (detailOverlay && detailOverlay.classList.contains('show')) ||
            (overlay && overlay.classList.contains('show')) ||
            (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
+           (dateTimeOverlay && dateTimeOverlay.classList.contains('show')) ||
            (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
@@ -3978,7 +4406,11 @@
         </div>
         <div class="txn-card-reason${hasReason}">${reasonText}</div>
       `;
-      card.addEventListener('click', () => openDetail(e.id));
+      attachLongPress(
+        card,
+        () => openDetail(e.id),
+        () => openDateTimeEditor(e.id)
+      );
       txnListBody.appendChild(card);
     });
   }
@@ -4709,7 +5141,15 @@
       return;
     }
 
-    // 4c. Advanced Sync subpage
+    // 4c. Date & Time Sheet
+    const dateTimeOverlay = document.getElementById('dateTimeOverlay');
+    if(dateTimeOverlay && dateTimeOverlay.classList.contains('show')){
+      dateTimeOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4d. Advanced Sync subpage
     if(syncAdvSubpage && syncAdvSubpage.classList.contains('show')){
       syncAdvSubpage.className = 'settings-subpage show slide-out-right';
       setTimeout(() => { syncAdvSubpage.className = 'settings-subpage'; }, 150);
