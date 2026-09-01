@@ -3613,8 +3613,11 @@
     importFileInput.value = '';
     pendingImportValid = [];
     const cfg = loadSyncConfig();
-    document.getElementById('gistId').value = cfg.gistId || '';
-    document.getElementById('gistToken').value = cfg.token || '';
+    if(document.getElementById('gistId')) document.getElementById('gistId').value = cfg.gistId || '';
+    if(document.getElementById('gistToken')) document.getElementById('gistToken').value = cfg.token || '';
+    if(document.getElementById('deviceName')) document.getElementById('deviceName').value = cfg.deviceName || '';
+    if(document.getElementById('autoCheckCloudOnOpen')) document.getElementById('autoCheckCloudOnOpen').checked = cfg.autoCheckOnOpen !== false;
+    if(document.getElementById('autoPushOnSave')) document.getElementById('autoPushOnSave').checked = cfg.autoPushOnSave !== false;
     updateSyncLastText();
   }
 
@@ -4250,11 +4253,12 @@
     setSyncBadgeSyncing(true);
     try{
       const nowIso = new Date().toISOString();
+      const myDeviceTag = cfg.deviceName || (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop');
       const payload = {
         version: 2,
         lastModified: nowIso,
         entriesCount: entries.length,
-        deviceTag: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+        deviceTag: myDeviceTag,
         entries: entries,
         deletedIds: loadDeletedIds()
       };
