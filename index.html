@@ -294,9 +294,24 @@
     cursor:pointer;
     display:flex; align-items:center; justify-content:center;
     z-index:50;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
+  .fab:active{ transform: translateX(212px) scale(0.94); }
+  .fab.fab-clear{
+    bottom: 154px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #FF6B6B, #E3483F);
+    box-shadow: 0 6px 20px rgba(227,72,63,0.32);
+    font-size: 19px;
+    color: #fff;
+  }
+  .fab.fab-clear:active{ transform: translateX(212px) scale(0.92); }
   @media (max-width: 520px){
     .fab{ right: 24px; transform:none; }
+    .fab:active{ transform: scale(0.94); }
+    .fab.fab-clear{ right: 24px; transform:none; bottom: 154px; }
+    .fab.fab-clear:active{ transform: scale(0.92); }
   }
 
   .overlay{
@@ -2119,7 +2134,6 @@
 
   <div class="section-title">
     <span>Recent activity</span>
-    <button class="clear-all" id="clearAll">clear all</button>
   </div>
 
   <div class="filter-row">
@@ -2156,6 +2170,14 @@
   </div>
 </div>
 
+<button class="fab fab-clear" id="clearAllFab" title="Clear all transactions" style="display:none;">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+</button>
 <button class="fab" id="openSheet">+</button>
 
 <div class="overlay" id="overlay">
@@ -2859,11 +2881,7 @@
     document.querySelectorAll('.del').forEach(btn => {
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        requestPassword({
-          title: 'Enter security password',
-          sub: 'Confirm to delete this transaction',
-          onSuccess: () => deleteEntry(btn.dataset.id)
-        });
+        promptDeleteEntry(btn.dataset.id);
       });
     });
 
@@ -2875,6 +2893,11 @@
         () => openDateTimeEditor(id)
       );
     });
+
+    const clearFab = document.getElementById('clearAllFab');
+    if(clearFab){
+      clearFab.style.display = (entries.length > 0 && activeTab === 'home') ? 'flex' : 'none';
+    }
 
     if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
       renderTxnList();
@@ -2983,19 +3006,62 @@
     saveEntries();
   }
 
-  document.getElementById('clearAll').addEventListener('click', () => {
-    if(!entries.length) return;
-    requestPassword({
-      title: 'Enter security password',
-      sub: 'Confirm to clear all entries',
-      onSuccess: () => {
-        markDeleted(entries.map(e => e.id));
-        entries = [];
-        render();
-        saveEntries();
+  async function promptDeleteEntry(id){
+    const e = entries.find(en => en.id === id);
+    if(!e) return;
+
+    const confirmed = await showCustomConfirm({
+      icon: '🗑️',
+      title: 'Delete transaction?',
+      msg: `Are you sure you want to delete this ${e.type === 'received' ? 'income' : 'expense'} entry for ${escapeHtml(e.name)} (${formatRupee(e.amount)})?`,
+      okText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      isDanger: true
+    });
+
+    if(confirmed){
+      requestPassword({
+        title: 'Enter security password',
+        sub: 'Confirm to delete this transaction',
+        onSuccess: () => {
+          deleteEntry(id);
+        }
+      });
+    }
+  }
+
+  const clearAllFabEl = document.getElementById('clearAllFab');
+  if(clearAllFabEl){
+    clearAllFabEl.addEventListener('click', async () => {
+      if(!entries.length) return;
+      const count = entries.length;
+
+      const confirmed = await showCustomConfirm({
+        icon: '🗑️',
+        title: 'Clear all transactions?',
+        msg: `Are you sure you want to permanently delete all ${count} ${count === 1 ? 'entry' : 'entries'}? This will also sync and clear on all connected devices.`,
+        okText: 'Yes, Clear All',
+        cancelText: 'Cancel',
+        isDanger: true
+      });
+
+      if(confirmed){
+        requestPassword({
+          title: 'Enter security password',
+          sub: 'Confirm to clear all transactions',
+          onSuccess: () => {
+            markDeleted(entries.map(e => e.id));
+            entries = [];
+            render();
+            saveEntries();
+            if(typeof renderTxnList === 'function' && document.getElementById('txnListOverlay') && document.getElementById('txnListOverlay').classList.contains('show')){
+              renderTxnList();
+            }
+          }
+        });
       }
     });
-  });
+  }
 
   /* PIN pad engine */
   const pinOverlay = document.getElementById('pinOverlay');
@@ -3308,15 +3374,30 @@
     }
   });
 
-  document.getElementById('detailDelete').addEventListener('click', () => {
-    requestPassword({
-      title: 'Enter security password',
-      sub: 'Confirm to delete this transaction',
-      onSuccess: () => {
-        deleteEntry(currentDetailId);
-        detailOverlay.classList.remove('show');
-      }
+  document.getElementById('detailDelete').addEventListener('click', async () => {
+    if(!currentDetailId) return;
+    const e = entries.find(en => en.id === currentDetailId);
+    if(!e) return;
+
+    const confirmed = await showCustomConfirm({
+      icon: '🗑️',
+      title: 'Delete transaction?',
+      msg: `Are you sure you want to delete this ${e.type === 'received' ? 'income' : 'expense'} entry for ${escapeHtml(e.name)} (${formatRupee(e.amount)})?`,
+      okText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      isDanger: true
     });
+
+    if(confirmed){
+      requestPassword({
+        title: 'Enter security password',
+        sub: 'Confirm to delete this transaction',
+        onSuccess: () => {
+          deleteEntry(currentDetailId);
+          detailOverlay.classList.remove('show');
+        }
+      });
+    }
   });
 
   document.getElementById('detailEdit').addEventListener('click', () => {
@@ -5069,8 +5150,10 @@
     const prevOverlay = overlayMap[prevTab];
     const newOverlay = overlayMap[newTab];
 
+    const clearFab = document.getElementById('clearAllFab');
     if(newTab === 'home'){
       fabBtn.style.display = 'flex';
+      if(clearFab) clearFab.style.display = entries.length > 0 ? 'flex' : 'none';
       if(prevOverlay){
         prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay show slide-out-right' : 'settings-overlay show slide-out-right');
         setTimeout(() => {
@@ -5082,6 +5165,7 @@
       }
     } else {
       fabBtn.style.display = 'none';
+      if(clearFab) clearFab.style.display = 'none';
       if(newTab === 'transactions'){
         txnListFilter = 'all';
         document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
