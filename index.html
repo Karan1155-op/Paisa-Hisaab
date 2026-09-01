@@ -418,6 +418,100 @@
   }
   .reason-field{ display:block; }
 
+  /* ── Interactive Tags Input for Reason ── */
+  .reason-tags-box{
+    width: 100%;
+    min-height: 50px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: #FAFAFD;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    cursor: text;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  }
+  .reason-tags-box:focus-within{
+    border-color: var(--grad1);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(91,61,245,0.12);
+  }
+  .reason-tags-list{
+    display: contents;
+  }
+  .reason-tag-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #F1EEFF;
+    border: 1px solid rgba(91,61,245,0.25);
+    color: #4024CE;
+    padding: 4px 10px;
+    border-radius: 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    animation: popIn 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  @keyframes popIn{
+    from{ transform: scale(0.7); opacity: 0; }
+    to{ transform: scale(1); opacity: 1; }
+  }
+  .rtc-text{
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rtc-remove{
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: rgba(91,61,245,0.12);
+    border: none;
+    color: #5533EB;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.12s, color 0.12s;
+  }
+  .rtc-remove:active{
+    background: var(--red);
+    color: #fff;
+  }
+  .reason-tag-input{
+    flex: 1;
+    min-width: 120px;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    padding: 4px 6px !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px !important;
+    color: var(--text);
+  }
+  .reason-tag-input::placeholder{
+    color: #9D9FA9;
+    font-size: 13px;
+  }
+  .reason-tags-hint{
+    font-size: 11.2px;
+    color: var(--text-soft);
+    margin-top: 6px;
+    padding-left: 2px;
+  }
+  .reason-tags-hint strong{
+    color: var(--grad1);
+  }
+
   .auto-note{
     font-size:12px;
     color: var(--text-soft);
@@ -872,6 +966,7 @@
   .detail-row{
     display:flex;
     justify-content:space-between;
+    align-items: center;
     gap:12px;
     padding:12px 2px;
     border-bottom:1px solid var(--line);
@@ -879,6 +974,24 @@
   .detail-row:last-of-type{ border-bottom:none; }
   .detail-row .k{ font-size:13px; color: var(--text-soft); flex-shrink:0; }
   .detail-row .v{ font-size:13.5px; font-weight:600; text-align:right; word-break:break-word; }
+  .detail-tags-wrap{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
+    max-width: 250px;
+  }
+  .detail-tag-chip{
+    display: inline-flex;
+    align-items: center;
+    background: #F3F0FF;
+    border: 1px solid rgba(91,61,245,0.2);
+    color: var(--grad1);
+    padding: 3px 8.5px;
+    border-radius: 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
 
   .detail-edit{
     width:100%;
@@ -2176,8 +2289,12 @@
       </div>
 
       <div class="field reason-field" id="reasonField">
-        <label for="reason" id="reasonLabel">Reason (what was it received for)</label>
-        <input type="text" id="reason" placeholder="e.g. Salary, Gift, Loan return">
+        <label for="reasonTagInput" id="reasonLabel">Reason (what was it received for)</label>
+        <div class="reason-tags-box" id="reasonTagsBox">
+          <div class="reason-tags-list" id="reasonTagsList"></div>
+          <input type="text" id="reasonTagInput" class="reason-tag-input" placeholder="Type items (e.g. Chai, Samosa)...">
+        </div>
+        <div class="reason-tags-hint">💡 Press <strong>comma ( , )</strong> or <strong>Enter</strong> to create tags</div>
       </div>
 
       <p class="auto-note"><span class="ic">🕒</span> Date & time will be filled in automatically</p>
@@ -2663,11 +2780,91 @@
   const calSummary = document.getElementById('calSummary');
   const dateClear = document.getElementById('dateClear');
 
+  let currentReasonTags = [];
+  const reasonTagsBox = document.getElementById('reasonTagsBox');
+  const reasonTagsList = document.getElementById('reasonTagsList');
+  const reasonTagInput = document.getElementById('reasonTagInput');
+
+  function renderReasonTags(){
+    if(!reasonTagsList) return;
+    reasonTagsList.innerHTML = '';
+    currentReasonTags.forEach((tag, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'reason-tag-chip';
+      chip.innerHTML = `
+        <span class="rtc-text">${escapeHtml(tag)}</span>
+        <button type="button" class="rtc-remove" data-idx="${idx}" title="Remove tag">✕</button>
+      `;
+      reasonTagsList.appendChild(chip);
+    });
+
+    reasonTagsList.querySelectorAll('.rtc-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = Number(btn.dataset.idx);
+        currentReasonTags.splice(idx, 1);
+        renderReasonTags();
+      });
+    });
+  }
+
+  function addReasonTag(rawText){
+    if(!rawText) return;
+    const parts = rawText.split(',').map(s => s.trim()).filter(Boolean);
+    parts.forEach(part => {
+      if(part && !currentReasonTags.includes(part)){
+        currentReasonTags.push(part);
+      }
+    });
+    renderReasonTags();
+  }
+
+  if(reasonTagsBox && reasonTagInput){
+    reasonTagsBox.addEventListener('click', () => {
+      reasonTagInput.focus();
+    });
+
+    reasonTagInput.addEventListener('keydown', (e) => {
+      if(e.key === ',' || e.key === 'Enter'){
+        e.preventDefault();
+        const val = reasonTagInput.value.trim();
+        if(val){
+          addReasonTag(val);
+          reasonTagInput.value = '';
+        }
+      } else if(e.key === 'Backspace' && reasonTagInput.value === '' && currentReasonTags.length > 0){
+        currentReasonTags.pop();
+        renderReasonTags();
+      }
+    });
+
+    reasonTagInput.addEventListener('input', () => {
+      if(reasonTagInput.value.includes(',')){
+        const val = reasonTagInput.value;
+        const parts = val.split(',');
+        const lastPart = parts.pop();
+        parts.forEach(p => addReasonTag(p));
+        reasonTagInput.value = lastPart.trimStart();
+      }
+    });
+
+    reasonTagInput.addEventListener('blur', () => {
+      const val = reasonTagInput.value.trim();
+      if(val){
+        addReasonTag(val);
+        reasonTagInput.value = '';
+      }
+    });
+  }
+
   function resetToAddMode(){
     editingId = null;
     formTitle.textContent = 'Add entry';
     saveBtn.textContent = 'Save entry';
     document.getElementById('entryForm').reset();
+    currentReasonTags = [];
+    renderReasonTags();
+    if(reasonTagInput) reasonTagInput.value = '';
     setType('received');
   }
 
@@ -2739,13 +2936,12 @@
     btnReceived.classList.toggle('active', type === 'received');
     btnSpent.classList.toggle('active', type === 'spent');
     const reasonLabel = document.getElementById('reasonLabel');
-    const reasonInput = document.getElementById('reason');
     if(type === 'received'){
       if(reasonLabel) reasonLabel.textContent = 'Reason (what was it received for)';
-      if(reasonInput) reasonInput.placeholder = 'e.g. Salary, Gift, Loan return, Freelance';
+      if(reasonTagInput) reasonTagInput.placeholder = 'Add items (e.g. Salary, Gift, Bonus)...';
     } else {
       if(reasonLabel) reasonLabel.textContent = 'Reason (what was it spent on)';
-      if(reasonInput) reasonInput.placeholder = 'e.g. Snacks for the party, Groceries';
+      if(reasonTagInput) reasonTagInput.placeholder = 'Add items (e.g. Chai, Samosa, Taxi)...';
     }
   }
 
@@ -2895,7 +3091,13 @@
     ev.preventDefault();
     const name = document.getElementById('name').value.trim();
     const amount = document.getElementById('amount').value;
-    const reason = document.getElementById('reason').value.trim();
+    
+    // Commit any trailing text in reason tag input
+    if(reasonTagInput && reasonTagInput.value.trim()){
+      addReasonTag(reasonTagInput.value.trim());
+      reasonTagInput.value = '';
+    }
+    const reason = currentReasonTags.join(', ').trim();
     if(!name || !amount) return;
 
     if(editingId){
@@ -3323,7 +3525,17 @@
     amt.textContent = (e.type === 'received' ? '+ ' : '− ') + formatRupee(e.amount);
     amt.className = 'amt ' + e.type;
 
-    document.getElementById('detailReason').textContent = e.reason ? e.reason : '—';
+    const detailReasonEl = document.getElementById('detailReason');
+    if(e.reason && e.reason.trim()){
+      const parts = e.reason.split(',').map(s => s.trim()).filter(Boolean);
+      if(parts.length > 1){
+        detailReasonEl.innerHTML = `<div class="detail-tags-wrap">${parts.map(t => `<span class="detail-tag-chip">${escapeHtml(t)}</span>`).join('')}</div>`;
+      } else {
+        detailReasonEl.textContent = e.reason;
+      }
+    } else {
+      detailReasonEl.textContent = '—';
+    }
 
     const d = new Date(e.when);
     document.getElementById('detailDate').textContent = d.toLocaleDateString('en-IN', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
@@ -3579,7 +3791,9 @@
     setType(e.type);
     document.getElementById('name').value = e.name;
     document.getElementById('amount').value = e.amount;
-    document.getElementById('reason').value = e.reason || '';
+    currentReasonTags = (e.reason || '').split(',').map(s => s.trim()).filter(Boolean);
+    renderReasonTags();
+    if(reasonTagInput) reasonTagInput.value = '';
     overlay.classList.add('show');
   }
 
