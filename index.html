@@ -968,6 +968,188 @@
     height: 17px;
   }
 
+  /* ── Custom Date Pill (Universal In-App Date Field Trigger) ── */
+  .custom-date-pill{
+    width: 100%;
+    padding: 12px 14px;
+    background: #FAFAFD;
+    border: 1.5px solid var(--line);
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .custom-date-pill:active{
+    background: #F0EFFB;
+    border-color: var(--grad1);
+  }
+  .custom-date-pill .cdp-icon{
+    font-size: 15px;
+    color: var(--grad1);
+    flex-shrink: 0;
+  }
+  .custom-date-pill .cdp-label{
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Custom In-App Calendar Modal ── */
+  #customCalendarOverlay{ z-index: 220; }
+  .cal-modal-sheet{
+    text-align: left;
+    padding-bottom: 24px;
+  }
+  .cal-modal-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .cal-modal-title-wrap h2{
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .cal-nav-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F5F4FD;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    padding: 6px 8px;
+    margin-bottom: 14px;
+  }
+  .cal-nav-btn{
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: transform 0.12s, background 0.12s;
+  }
+  .cal-nav-btn:active{
+    transform: scale(0.9);
+    background: var(--line);
+  }
+  .cal-month-year-label{
+    font-family: 'Poppins', sans-serif;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .cal-weekdays-row{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .cal-weekday{
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-soft);
+    padding: 4px 0;
+  }
+  .cal-days-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .cal-day-cell{
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.12s, background 0.12s;
+  }
+  .cal-day-cell:active{
+    transform: scale(0.92);
+  }
+  .cal-day-cell.other-month{
+    color: #B2B5C8;
+    opacity: 0.45;
+  }
+  .cal-day-cell.is-today{
+    border: 1.5px solid var(--grad1);
+  }
+  .cal-day-cell.is-selected{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2)) !important;
+    color: #fff !important;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.4) !important;
+  }
+  .cal-day-dots{
+    display: flex;
+    gap: 2.5px;
+    height: 4px;
+    margin-top: 2px;
+  }
+  .cal-dot{
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+  .cal-dot.income{ background: var(--green); }
+  .cal-dot.expense{ background: var(--red); }
+  .cal-dot.both{ background: var(--grad3); }
+  .cal-day-cell.is-selected .cal-dot{ background: #fff !important; }
+
+  .cal-shortcuts-row{
+    display: flex;
+    gap: 8px;
+  }
+  .cal-shortcut-chip{
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: #FAFAFD;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+  }
+  .cal-shortcut-chip:active{
+    transform: scale(0.95);
+    background: #EFEFFB;
+    border-color: var(--grad1);
+  }
+
   /* Detail sheet */
   .detail-sheet{ text-align:left; }
   .detail-top{
@@ -2540,6 +2722,61 @@
     color: #fff;
     box-shadow: 0 4px 14px rgba(104,66,255,0.35);
   }
+
+  /* Dark mode overrides for custom calendar & date pills */
+  body.dark-mode .custom-date-pill{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .custom-date-pill:active{
+    background: #232742;
+    border-color: var(--grad1);
+  }
+  body.dark-mode .cal-modal-sheet{
+    background: #141727;
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  body.dark-mode .cal-nav-bar{
+    background: #1B1E32;
+    border-color: var(--line);
+  }
+  body.dark-mode .cal-nav-btn{
+    background: #232845;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .cal-month-year-label{
+    color: var(--text);
+  }
+  body.dark-mode .cal-weekday{
+    color: var(--text-soft);
+  }
+  body.dark-mode .cal-day-cell{
+    color: var(--text);
+  }
+  body.dark-mode .cal-day-cell.other-month{
+    color: #4C5173;
+  }
+  body.dark-mode .cal-day-cell.is-today{
+    border-color: var(--grad3);
+  }
+  body.dark-mode .cal-day-cell.is-selected{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2)) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(104,66,255,0.45) !important;
+  }
+  body.dark-mode .cal-shortcut-chip{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  body.dark-mode .cal-shortcut-chip:active{
+    background: #252A4A;
+    border-color: var(--grad1);
+    color: #D8B4FE;
+  }
 </style>
 </head>
 <body>
@@ -2580,7 +2817,11 @@
   </div>
 
   <div class="inline-date-bar" id="inlineDateBar">
-    <input type="date" id="calDate">
+    <div class="custom-date-pill" id="customDatePillBtn">
+      <span class="cdp-icon">📅</span>
+      <span class="cdp-label" id="customDatePillLabel">Select Date</span>
+    </div>
+    <input type="hidden" id="calDate">
     <button type="button" class="date-clear" id="dateClear">✕</button>
   </div>
 
@@ -2737,8 +2978,12 @@
     <form id="dateTimeForm">
       <div class="dt-fields-row">
         <div class="field dt-field-col">
-          <label for="dtDateInput">Date</label>
-          <input type="date" id="dtDateInput" required>
+          <label for="dtDatePillBtn">Date</label>
+          <div class="custom-date-pill" id="dtDatePillBtn">
+            <span class="cdp-icon">📅</span>
+            <span class="cdp-label" id="dtDatePillLabel">Select Date</span>
+          </div>
+          <input type="hidden" id="dtDateInput" required>
         </div>
         <div class="field dt-field-col">
           <label for="dtTimeInput">Time</label>
@@ -3011,12 +3256,20 @@
       <div class="pdf-custom-dates" id="pdfCustomDates" style="display:none;">
         <div class="pdf-date-row">
           <div class="pdf-date-col">
-            <label for="pdfStartDate">From</label>
-            <input type="date" id="pdfStartDate">
+            <label>From</label>
+            <div class="custom-date-pill" id="pdfStartDatePill">
+              <span class="cdp-icon">📅</span>
+              <span class="cdp-label" id="pdfStartDateLabel">Select Date</span>
+            </div>
+            <input type="hidden" id="pdfStartDate">
           </div>
           <div class="pdf-date-col">
-            <label for="pdfEndDate">To</label>
-            <input type="date" id="pdfEndDate">
+            <label>To</label>
+            <div class="custom-date-pill" id="pdfEndDatePill">
+              <span class="cdp-icon">📅</span>
+              <span class="cdp-label" id="pdfEndDateLabel">Select Date</span>
+            </div>
+            <input type="hidden" id="pdfEndDate">
           </div>
         </div>
       </div>
@@ -3046,6 +3299,42 @@
         </svg>
         Download PDF
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Calendar Modal / Bottom Sheet -->
+<div class="overlay" id="customCalendarOverlay">
+  <div class="sheet cal-modal-sheet">
+    <button type="button" class="sheet-close" id="closeCalModalBtn" title="Close">✕</button>
+    <div class="handle"></div>
+    <div class="cal-modal-header">
+      <div class="cal-modal-title-wrap">
+        <h2 id="calModalTitle">Select Date</h2>
+      </div>
+    </div>
+
+    <div class="cal-nav-bar">
+      <button type="button" class="cal-nav-btn" id="calPrevMonthBtn" title="Previous Month">‹</button>
+      <span class="cal-month-year-label" id="calMonthYearLabel">September 2026</span>
+      <button type="button" class="cal-nav-btn" id="calNextMonthBtn" title="Next Month">›</button>
+    </div>
+
+    <div class="cal-weekdays-row">
+      <span class="cal-weekday">Sun</span>
+      <span class="cal-weekday">Mon</span>
+      <span class="cal-weekday">Tue</span>
+      <span class="cal-weekday">Wed</span>
+      <span class="cal-weekday">Thu</span>
+      <span class="cal-weekday">Fri</span>
+      <span class="cal-weekday">Sat</span>
+    </div>
+
+    <div class="cal-days-grid" id="calDaysGrid"></div>
+
+    <div class="cal-shortcuts-row">
+      <button type="button" class="cal-shortcut-chip" id="calShortcutToday">⚡ Today</button>
+      <button type="button" class="cal-shortcut-chip" id="calShortcutYesterday">⏪ Yesterday</button>
     </div>
   </div>
 </div>
@@ -3331,6 +3620,187 @@
     });
   });
 
+  /* ── In-App Custom Calendar Engine ── */
+  const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  let calendarCallback = null;
+  let currentCalYear = new Date().getFullYear();
+  let currentCalMonth = new Date().getMonth();
+  let currentSelectedCalDate = null;
+
+  function formatDatePillText(isoDateStr){
+    if(!isoDateStr) return 'Select Date';
+    const todayStr = toLocalDateStr(new Date().toISOString());
+    const yest = new Date();
+    yest.setDate(yest.getDate() - 1);
+    const yestStr = toLocalDateStr(yest.toISOString());
+
+    const parts = isoDateStr.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const dateText = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    if(isoDateStr === todayStr) return `Today · ${dateText}`;
+    if(isoDateStr === yestStr) return `Yesterday · ${dateText}`;
+    const weekday = d.toLocaleDateString('en-IN', { weekday: 'short' });
+    return `${weekday}, ${dateText}`;
+  }
+
+  function renderCustomCalendarGrid(){
+    const labelEl = document.getElementById('calMonthYearLabel');
+    const gridEl = document.getElementById('calDaysGrid');
+    if(!labelEl || !gridEl) return;
+
+    labelEl.textContent = `${MONTH_NAMES[currentCalMonth]} ${currentCalYear}`;
+    gridEl.innerHTML = '';
+
+    const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay();
+    const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(currentCalYear, currentCalMonth, 0).getDate();
+
+    const todayStr = toLocalDateStr(new Date().toISOString());
+
+    // Gather transaction dots per date
+    const txnDotsMap = new Map();
+    entries.forEach(e => {
+      const dStr = toLocalDateStr(e.when);
+      if(!txnDotsMap.has(dStr)){
+        txnDotsMap.set(dStr, e.type === 'received' ? 'income' : 'expense');
+      } else {
+        const prev = txnDotsMap.get(dStr);
+        if((prev === 'income' && e.type === 'spent') || (prev === 'expense' && e.type === 'received')){
+          txnDotsMap.set(dStr, 'both');
+        }
+      }
+    });
+
+    // 1. Previous month trailing days
+    for(let i = firstDayIndex - 1; i >= 0; i--){
+      const dayNum = daysInPrevMonth - i;
+      const prevMonth = currentCalMonth === 0 ? 11 : currentCalMonth - 1;
+      const prevYear = currentCalMonth === 0 ? currentCalYear - 1 : currentCalYear;
+      const mm = String(prevMonth + 1).padStart(2, '0');
+      const dd = String(dayNum).padStart(2, '0');
+      const dateStr = `${prevYear}-${mm}-${dd}`;
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-day-cell other-month';
+      cell.textContent = dayNum;
+      cell.addEventListener('click', () => {
+        currentCalMonth = prevMonth;
+        currentCalYear = prevYear;
+        selectCalendarDate(dateStr);
+      });
+      gridEl.appendChild(cell);
+    }
+
+    // 2. Current month days
+    for(let d = 1; d <= daysInMonth; d++){
+      const mm = String(currentCalMonth + 1).padStart(2, '0');
+      const dd = String(d).padStart(2, '0');
+      const dateStr = `${currentCalYear}-${mm}-${dd}`;
+
+      const cell = document.createElement('div');
+      let classes = 'cal-day-cell';
+      if(dateStr === todayStr) classes += ' is-today';
+      if(dateStr === currentSelectedCalDate) classes += ' is-selected';
+      cell.className = classes;
+
+      let dotsHtml = '';
+      if(txnDotsMap.has(dateStr)){
+        const dotKind = txnDotsMap.get(dateStr);
+        dotsHtml = `<div class="cal-day-dots"><span class="cal-dot ${dotKind}"></span></div>`;
+      }
+
+      cell.innerHTML = `<span>${d}</span>${dotsHtml}`;
+      cell.addEventListener('click', () => {
+        selectCalendarDate(dateStr);
+      });
+      gridEl.appendChild(cell);
+    }
+
+    // 3. Next month leading days to complete grid
+    const totalCells = firstDayIndex + daysInMonth;
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for(let d = 1; d <= remaining; d++){
+      const nextMonth = currentCalMonth === 11 ? 0 : currentCalMonth + 1;
+      const nextYear = currentCalMonth === 11 ? currentCalYear + 1 : currentCalYear;
+      const mm = String(nextMonth + 1).padStart(2, '0');
+      const dd = String(d).padStart(2, '0');
+      const dateStr = `${nextYear}-${mm}-${dd}`;
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-day-cell other-month';
+      cell.textContent = d;
+      cell.addEventListener('click', () => {
+        currentCalMonth = nextMonth;
+        currentCalYear = nextYear;
+        selectCalendarDate(dateStr);
+      });
+      gridEl.appendChild(cell);
+    }
+  }
+
+  function openCustomCalendar({ selectedDate, onSelect, title = 'Select Date' }){
+    currentSelectedCalDate = selectedDate ? selectedDate.slice(0, 10) : null;
+    const d = currentSelectedCalDate ? new Date(currentSelectedCalDate) : new Date();
+    currentCalYear = isNaN(d.getFullYear()) ? new Date().getFullYear() : d.getFullYear();
+    currentCalMonth = isNaN(d.getMonth()) ? new Date().getMonth() : d.getMonth();
+    calendarCallback = onSelect;
+
+    const titleEl = document.getElementById('calModalTitle');
+    if(titleEl) titleEl.textContent = title;
+    renderCustomCalendarGrid();
+    document.getElementById('customCalendarOverlay').classList.add('show');
+    ensureNavHistory();
+  }
+
+  function selectCalendarDate(isoDateStr){
+    if(calendarCallback){
+      calendarCallback(isoDateStr);
+    }
+    document.getElementById('customCalendarOverlay').classList.remove('show');
+  }
+
+  document.getElementById('calPrevMonthBtn').addEventListener('click', () => {
+    currentCalMonth--;
+    if(currentCalMonth < 0){
+      currentCalMonth = 11;
+      currentCalYear--;
+    }
+    renderCustomCalendarGrid();
+  });
+
+  document.getElementById('calNextMonthBtn').addEventListener('click', () => {
+    currentCalMonth++;
+    if(currentCalMonth > 11){
+      currentCalMonth = 0;
+      currentCalYear++;
+    }
+    renderCustomCalendarGrid();
+  });
+
+  document.getElementById('calShortcutToday').addEventListener('click', () => {
+    selectCalendarDate(toLocalDateStr(new Date().toISOString()));
+  });
+
+  document.getElementById('calShortcutYesterday').addEventListener('click', () => {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    selectCalendarDate(toLocalDateStr(y.toISOString()));
+  });
+
+  document.getElementById('closeCalModalBtn').addEventListener('click', () => {
+    document.getElementById('customCalendarOverlay').classList.remove('show');
+  });
+  document.getElementById('customCalendarOverlay').addEventListener('click', (e) => {
+    if(e.target === document.getElementById('customCalendarOverlay')){
+      document.getElementById('customCalendarOverlay').classList.remove('show');
+    }
+  });
+
+  function updateHomeDatePillLabel(){
+    const labelEl = document.getElementById('customDatePillLabel');
+    if(labelEl) labelEl.textContent = formatDatePillText(calDateInput.value);
+  }
+
   function toLocalDateStr(iso){
     const d = new Date(iso);
     const y = d.getFullYear();
@@ -3340,27 +3810,46 @@
   }
 
   dateFilterChip.addEventListener('click', () => {
-    currentFilter = 'date';
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    dateFilterChip.classList.add('active');
-    inlineDateBar.classList.add('show');
-    calSummary.classList.add('show');
-    if(!calDateInput.value) calDateInput.value = toLocalDateStr(new Date().toISOString());
-    render();
-    // open the native date picker immediately, like tapping the field
-    setTimeout(() => {
-      if(typeof calDateInput.showPicker === 'function'){
-        try{ calDateInput.showPicker(); }catch(e){ calDateInput.focus(); }
-      } else {
-        calDateInput.focus();
+    openCustomCalendar({
+      selectedDate: calDateInput.value || toLocalDateStr(new Date().toISOString()),
+      title: 'Filter by Date',
+      onSelect: (chosenDate) => {
+        calDateInput.value = chosenDate;
+        updateHomeDatePillLabel();
+        currentFilter = 'date';
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        dateFilterChip.classList.add('active');
+        inlineDateBar.classList.add('show');
+        calSummary.classList.add('show');
+        render();
       }
-    }, 50);
+    });
   });
 
-  calDateInput.addEventListener('change', () => { render(); });
+  const customDatePillBtn = document.getElementById('customDatePillBtn');
+  if(customDatePillBtn){
+    customDatePillBtn.addEventListener('click', () => {
+      openCustomCalendar({
+        selectedDate: calDateInput.value || toLocalDateStr(new Date().toISOString()),
+        title: 'Filter by Date',
+        onSelect: (chosenDate) => {
+          calDateInput.value = chosenDate;
+          updateHomeDatePillLabel();
+          render();
+        }
+      });
+    });
+  }
+
+  calDateInput.addEventListener('change', () => {
+    updateHomeDatePillLabel();
+    render();
+  });
 
   dateClear.addEventListener('click', () => {
     currentFilter = 'all';
+    calDateInput.value = '';
+    updateHomeDatePillLabel();
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
     document.querySelector('.filter-chip[data-filter="all"]').classList.add('active');
     inlineDateBar.classList.remove('show');
@@ -4066,9 +4555,30 @@
 
     if(dtDateInput) dtDateInput.value = `${yyyy}-${mm}-${dd}`;
     if(dtTimeInput) dtTimeInput.value = `${hh}:${min}`;
+    updateDtDatePillLabel();
 
     dateTimeOverlay.classList.add('show');
     ensureNavHistory();
+  }
+
+  function updateDtDatePillLabel(){
+    const label = document.getElementById('dtDatePillLabel');
+    const input = document.getElementById('dtDateInput');
+    if(label && input) label.textContent = formatDatePillText(input.value);
+  }
+
+  const dtDatePillBtn = document.getElementById('dtDatePillBtn');
+  if(dtDatePillBtn){
+    dtDatePillBtn.addEventListener('click', () => {
+      openCustomCalendar({
+        selectedDate: document.getElementById('dtDateInput').value || toLocalDateStr(new Date().toISOString()),
+        title: 'Select Transaction Date',
+        onSelect: (chosenDate) => {
+          document.getElementById('dtDateInput').value = chosenDate;
+          updateDtDatePillLabel();
+        }
+      });
+    });
   }
 
   document.getElementById('closeDateTimeSheet').addEventListener('click', () => {
@@ -4090,6 +4600,7 @@
     const min = String(now.getMinutes()).padStart(2, '0');
     document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
     document.getElementById('dtTimeInput').value = `${hh}:${min}`;
+    updateDtDatePillLabel();
   });
 
   document.getElementById('dtPreset1h').addEventListener('click', () => {
@@ -4101,6 +4612,7 @@
     const min = String(d.getMinutes()).padStart(2, '0');
     document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
     document.getElementById('dtTimeInput').value = `${hh}:${min}`;
+    updateDtDatePillLabel();
   });
 
   document.getElementById('dtPresetYesterday').addEventListener('click', () => {
@@ -4109,6 +4621,7 @@
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     document.getElementById('dtDateInput').value = `${yyyy}-${mm}-${dd}`;
+    updateDtDatePillLabel();
   });
 
   document.getElementById('dateTimeForm').addEventListener('submit', (ev) => {
@@ -5053,6 +5566,7 @@
     const overlay = document.getElementById('overlay');
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
     const dateTimeOverlay = document.getElementById('dateTimeOverlay');
+    const customCalOverlay = document.getElementById('customCalendarOverlay');
     const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     const backupSubpage = document.getElementById('backupSubpageOverlay');
@@ -5063,6 +5577,7 @@
            (overlay && overlay.classList.contains('show')) ||
            (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
            (dateTimeOverlay && dateTimeOverlay.classList.contains('show')) ||
+           (customCalOverlay && customCalOverlay.classList.contains('show')) ||
            (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
@@ -5341,10 +5856,50 @@
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     pdfStartDate.value = toLocalDateStr(thirtyDaysAgo.toISOString());
     pdfEndDate.value = todayStr;
+    updatePdfDatePillLabels();
 
     updatePdfPreview();
     pdfExportOverlay.classList.add('show');
     ensureNavHistory();
+  }
+
+  function updatePdfDatePillLabels(){
+    const sInput = document.getElementById('pdfStartDate');
+    const eInput = document.getElementById('pdfEndDate');
+    const sLabel = document.getElementById('pdfStartDateLabel');
+    const eLabel = document.getElementById('pdfEndDateLabel');
+    if(sLabel && sInput) sLabel.textContent = formatDatePillText(sInput.value);
+    if(eLabel && eInput) eLabel.textContent = formatDatePillText(eInput.value);
+  }
+
+  const pdfStartDatePill = document.getElementById('pdfStartDatePill');
+  if(pdfStartDatePill){
+    pdfStartDatePill.addEventListener('click', () => {
+      openCustomCalendar({
+        selectedDate: document.getElementById('pdfStartDate').value || toLocalDateStr(new Date().toISOString()),
+        title: 'Select Start Date',
+        onSelect: (chosenDate) => {
+          document.getElementById('pdfStartDate').value = chosenDate;
+          updatePdfDatePillLabels();
+          updatePdfPreview();
+        }
+      });
+    });
+  }
+
+  const pdfEndDatePill = document.getElementById('pdfEndDatePill');
+  if(pdfEndDatePill){
+    pdfEndDatePill.addEventListener('click', () => {
+      openCustomCalendar({
+        selectedDate: document.getElementById('pdfEndDate').value || toLocalDateStr(new Date().toISOString()),
+        title: 'Select End Date',
+        onSelect: (chosenDate) => {
+          document.getElementById('pdfEndDate').value = chosenDate;
+          updatePdfDatePillLabels();
+          updatePdfPreview();
+        }
+      });
+    });
   }
 
   function closePdfModal(){
@@ -5364,6 +5919,7 @@
       currentPdfPreset = chip.dataset.range;
       if(currentPdfPreset === 'custom'){
         pdfCustomDates.style.display = 'block';
+        updatePdfDatePillLabels();
       } else {
         pdfCustomDates.style.display = 'none';
       }
@@ -5371,8 +5927,14 @@
     });
   });
 
-  pdfStartDate.addEventListener('change', updatePdfPreview);
-  pdfEndDate.addEventListener('change', updatePdfPreview);
+  pdfStartDate.addEventListener('change', () => {
+    updatePdfDatePillLabels();
+    updatePdfPreview();
+  });
+  pdfEndDate.addEventListener('change', () => {
+    updatePdfDatePillLabels();
+    updatePdfPreview();
+  });
 
   document.querySelectorAll('.pdf-type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -5939,6 +6501,14 @@
     const dateTimeOverlay = document.getElementById('dateTimeOverlay');
     if(dateTimeOverlay && dateTimeOverlay.classList.contains('show')){
       dateTimeOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4cc. Custom Calendar Sheet
+    const customCalendarOverlay = document.getElementById('customCalendarOverlay');
+    if(customCalendarOverlay && customCalendarOverlay.classList.contains('show')){
+      customCalendarOverlay.classList.remove('show');
       if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
