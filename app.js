@@ -3243,6 +3243,25 @@
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').then((reg) => {
+        // Force check for fresh code from server on launch
+        reg.update().catch(() => {});
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if(!refreshing){
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      }).catch(() => {});
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible' && navigator.serviceWorker.controller){
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if(reg) reg.update().catch(() => {});
+        });
+      }
     });
   }
