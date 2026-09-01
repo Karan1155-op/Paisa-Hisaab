@@ -2305,13 +2305,30 @@
   </div>
   <div class="settings-body">
 
-    <div class="settings-section">
+    <div class="settings-section" id="securitySettingsSection">
       <p class="settings-section-title">Security</p>
-      <button type="button" class="settings-item" id="changePinBtn">
+      
+      <!-- When PIN is not set yet -->
+      <button type="button" class="settings-item" id="setPinBtn" style="display:none;">
         <div class="si-icon purple">🔒</div>
-        <div class="si-text">Change Password<div class="si-sub">Update your 4-digit security PIN</div></div>
+        <div class="si-text">Set Security Password<div class="si-sub">Optional: Protect entries with a 4-digit PIN</div></div>
         <span class="si-arrow">›</span>
       </button>
+
+      <!-- When PIN is already active -->
+      <div id="pinActiveGroup" style="display:none;">
+        <button type="button" class="settings-item" id="changePinBtn">
+          <div class="si-icon purple">🔑</div>
+          <div class="si-text">Change Password<div class="si-sub">Update your 4-digit security PIN</div></div>
+          <span class="si-arrow">›</span>
+        </button>
+
+        <button type="button" class="settings-item" id="removePinBtn" style="margin-top:10px;">
+          <div class="si-icon orange">🔓</div>
+          <div class="si-text">Remove Password<div class="si-sub">Turn off 4-digit PIN protection</div></div>
+          <span class="si-arrow">›</span>
+        </button>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -2994,8 +3011,7 @@
 
   function requestPassword({title, sub, onSuccess, onCancel}){
     if(!getStoredPinHash()){
-      pinCallbacks = {onSuccess, onCancel};
-      startSetPin();
+      if(onSuccess) onSuccess();
       return;
     }
     pinCallbacks = {onSuccess, onCancel};
@@ -3011,6 +3027,12 @@
   }
 
   function startSetPin(){
+    pinCallbacks = {
+      onSuccess: () => {
+        updateSecuritySettingsUI();
+      },
+      onCancel: () => {}
+    };
     pinMode = 'set';
     pinTitle.textContent = 'Set your password';
     pinSub.textContent = 'Choose a 4-digit password';
@@ -3023,7 +3045,12 @@
   }
 
   function startChangePin(){
-    pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
+    pinCallbacks = {
+      onSuccess: () => {
+        updateSecuritySettingsUI();
+      },
+      onCancel: () => {}
+    };
     pinMode = 'change-verify';
     pinTitle.textContent = 'Enter current password';
     pinSub.textContent = 'Verify your identity first';
@@ -3033,6 +3060,33 @@
     updatePinDots();
     pinOverlay.classList.add('show');
     ensureNavHistory();
+  }
+
+  function startRemovePin(){
+    pinCallbacks = {
+      onSuccess: () => {
+        updateSecuritySettingsUI();
+      },
+      onCancel: () => {}
+    };
+    pinMode = 'remove-verify';
+    pinTitle.textContent = 'Enter current password';
+    pinSub.textContent = 'Confirm to remove PIN protection';
+    pinValue = '';
+    pinError.textContent = '';
+    pendingNewPin = '';
+    updatePinDots();
+    pinOverlay.classList.add('show');
+    ensureNavHistory();
+  }
+
+  function updateSecuritySettingsUI(){
+    const setBtn = document.getElementById('setPinBtn');
+    const activeGroup = document.getElementById('pinActiveGroup');
+    const hasPin = Boolean(getStoredPinHash());
+
+    if(setBtn) setBtn.style.display = hasPin ? 'none' : 'flex';
+    if(activeGroup) activeGroup.style.display = hasPin ? 'block' : 'none';
   }
 
   function updatePinDots(){
@@ -3058,6 +3112,7 @@
         pinValue = '';
         pendingNewPin = '';
         updatePinDots();
+        updateSecuritySettingsUI();
         var cb = pinCallbacks;
         pinCallbacks = null;
         if(cb && cb.onSuccess) cb.onSuccess();
@@ -3085,6 +3140,29 @@
         pinCallbacks = null;
         pinValue = '';
         updatePinDots();
+        if(cb && cb.onSuccess) cb.onSuccess();
+      } else {
+        pinError.textContent = 'Invalid password. Try again.';
+        pinDotsWrap.classList.add('shake');
+        setTimeout(function(){
+          pinDotsWrap.classList.remove('shake');
+          pinValue = '';
+          updatePinDots();
+        }, 350);
+      }
+      return;
+    }
+    if(pinMode === 'remove-verify'){
+      var hash = await hashPin(pinValue);
+      if(hash === getStoredPinHash()){
+        localStorage.removeItem(PIN_HASH_KEY);
+        pinOverlay.classList.remove('show');
+        pinValue = '';
+        pendingNewPin = '';
+        updatePinDots();
+        updateSecuritySettingsUI();
+        var cb = pinCallbacks;
+        pinCallbacks = null;
         if(cb && cb.onSuccess) cb.onSuccess();
       } else {
         pinError.textContent = 'Invalid password. Try again.';
@@ -3135,6 +3213,7 @@
         pinValue = '';
         pendingNewPin = '';
         updatePinDots();
+        updateSecuritySettingsUI();
         var cb = pinCallbacks;
         pinCallbacks = null;
         if(cb && cb.onSuccess) cb.onSuccess();
@@ -3174,10 +3253,6 @@
   });
 
   document.getElementById('pinCancel').addEventListener('click', () => {
-    if((pinMode === 'set' || pinMode === 'set-confirm') && !getStoredPinHash()){
-      pinError.textContent = 'You must set a password to use the app.';
-      return;
-    }
     pinOverlay.classList.remove('show');
     pinValue = '';
     pendingNewPin = '';
@@ -3187,14 +3262,14 @@
     if(cb && cb.onCancel) cb.onCancel();
   });
 
-  document.getElementById('changePinBtn').addEventListener('click', () => {
-    if(!getStoredPinHash()){
-      pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
-      startSetPin();
-      return;
-    }
-    startChangePin();
-  });
+  const setPinBtnEl = document.getElementById('setPinBtn');
+  if(setPinBtnEl) setPinBtnEl.addEventListener('click', startSetPin);
+
+  const changePinBtnEl = document.getElementById('changePinBtn');
+  if(changePinBtnEl) changePinBtnEl.addEventListener('click', startChangePin);
+
+  const removePinBtnEl = document.getElementById('removePinBtn');
+  if(removePinBtnEl) removePinBtnEl.addEventListener('click', startRemovePin);
 
   /* Entry detail sheet */
   const detailOverlay = document.getElementById('detailOverlay');
@@ -5019,6 +5094,7 @@
         renderTxnList();
       } else if(newTab === 'settings'){
         resetBackupSheet();
+        updateSecuritySettingsUI();
       }
 
       if(prevTab === 'home'){
@@ -5230,11 +5306,8 @@
     if(cfg.gistId && cfg.token) checkCloudStatus(true, true);
   });
 
-  // If no PIN is set yet, prompt user to create one
-  if(!getStoredPinHash()){
-    pinCallbacks = {onSuccess: function(){}, onCancel: function(){}};
-    startSetPin();
-  }
+  // Initialize Security UI
+  updateSecuritySettingsUI();
 
   // Disable browser context menus / Touch to Search popups on non-input elements
   document.addEventListener('contextmenu', (e) => {
