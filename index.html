@@ -228,11 +228,6 @@
     color: var(--text-soft);
     margin-top:2px;
   }
-  .entry .del{
-    background:none; border:none; cursor:pointer;
-    color: #C7C9DA; font-size:15px; padding:2px 0 0 6px;
-  }
-  .entry .del:hover{ color: var(--red); }
 
   /* Date Group Header Divider - Balanced & Refined Color */
   .txn-date-divider{
@@ -2851,16 +2846,8 @@
           <div class="amt ${e.type}">${e.type === 'received' ? '+' : '−'} ${formatRupee(e.amount)}</div>
           <div class="when">${formatWhen(e.when)}</div>
         </div>
-        <button class="del" data-id="${e.id}" title="Delete">✕</button>
       `;
       entriesEl.appendChild(row);
-    });
-
-    document.querySelectorAll('.del').forEach(btn => {
-      btn.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        promptDeleteEntry(btn.dataset.id);
-      });
     });
 
     document.querySelectorAll('.entries .entry').forEach(row => {
