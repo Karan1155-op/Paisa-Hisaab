@@ -344,11 +344,24 @@
     height: 24px;
   }
   .fab.fab-clear:active{ transform: translateX(212px) scale(0.94); }
+  .fab.fab-pdf{
+    background: linear-gradient(135deg, var(--grad1), var(--grad3));
+    box-shadow: 0 8px 24px rgba(91,61,245,0.38);
+    font-size: 22px;
+    z-index: 85;
+  }
+  .fab.fab-pdf svg{
+    width: 24px;
+    height: 24px;
+  }
+  .fab.fab-pdf:active{ transform: translateX(212px) scale(0.94); }
   @media (max-width: 520px){
     .fab{ right: 24px; transform:none; }
     .fab:active{ transform: scale(0.94); }
     .fab.fab-clear{ right: 24px; transform:none; }
     .fab.fab-clear:active{ transform: scale(0.94); }
+    .fab.fab-pdf{ right: 24px; transform:none; }
+    .fab.fab-pdf:active{ transform: scale(0.94); }
   }
 
   .overlay{
@@ -851,6 +864,7 @@
   }
   .pdf-date-col{
     flex: 1;
+    min-width: 0;
   }
   .pdf-date-col label{
     display: block;
@@ -858,6 +872,15 @@
     font-weight: 600;
     color: var(--text-soft);
     margin-bottom: 4px;
+  }
+  .pdf-date-col .custom-date-pill{
+    padding: 9px 10px;
+    font-size: 12px;
+    border-radius: 11px;
+    gap: 6px;
+  }
+  .pdf-date-col .custom-date-pill .cdp-icon{
+    font-size: 13px;
   }
   .pdf-date-col input[type="date"]{
     width: 100%;
@@ -891,9 +914,22 @@
     transition: all 0.12s;
   }
   .pdf-type-btn.active{
+    font-weight: 700;
+  }
+  .pdf-type-btn.active[data-type="all"]{
     background: var(--text);
     border-color: var(--text);
-    color: #fff;
+    color: var(--card);
+  }
+  .pdf-type-btn.active[data-type="received"]{
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .pdf-type-btn.active[data-type="spent"]{
+    background: var(--red-bg);
+    border-color: var(--red);
+    color: var(--red);
   }
   .pdf-preview-box{
     background: #FAFAFD;
@@ -1518,7 +1554,7 @@
   }
   .cal-summary.show{ display:grid; }
   .cal-summary .cell{
-    background:#fff;
+    background: var(--card);
     padding:12px 8px;
     text-align:center;
   }
@@ -1534,9 +1570,11 @@
     font-family:'IBM Plex Mono', monospace;
     font-weight:700;
     font-size:15px;
+    color: var(--text);
   }
   .cal-summary .cell.recv .val{ color: var(--green); }
   .cal-summary .cell.spnt .val{ color: var(--red); }
+  .cal-summary .cell.net .val{ color: var(--grad1); }
 
   .save-btn{
     width:100%;
@@ -1552,18 +1590,17 @@
   }
   .save-btn:active{ transform: scale(0.98); }
   .backup-action.save-sync{
-    background: #F0F0F7;
-    color: var(--text);
-    border: 1.5px solid var(--line);
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: #fff !important;
+    border: none;
     margin-top: 6px;
+    box-shadow: 0 4px 14px rgba(91,61,245,0.25);
   }
   .backup-action.save-sync:hover{
-    background: #E5E5F2;
-    border-color: #D0D0E2;
+    opacity: 0.95;
   }
   .backup-action.save-sync:active{
     transform: scale(0.98);
-    background: #DADAE8;
   }
   .backup-action.fetch-cloud{
     background: linear-gradient(135deg, #0EA5B7 0%, #3E6BFF 100%);
@@ -1739,29 +1776,48 @@
     align-items:center;
     gap:8px;
   }
-  .txn-pdf-btn{
-    padding:6.5px 13px;
-    border-radius:20px;
-    background: linear-gradient(135deg, var(--grad1), var(--grad3));
-    border:none;
-    color:#fff;
-    font-family:'Inter', sans-serif;
-    font-size:12px;
-    font-weight:600;
-    display:flex;
-    align-items:center;
-    gap:5px;
-    cursor:pointer;
-    transition: transform 0.12s, box-shadow 0.12s;
-    box-shadow: 0 3px 10px rgba(91,61,245,0.22);
-    flex-shrink:0;
+  .txn-date-filter-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6.5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    flex-shrink: 0;
   }
-  .txn-pdf-btn:active{
-    transform: scale(0.94);
-    box-shadow: 0 1px 4px rgba(91,61,245,0.2);
+  .txn-date-filter-btn:active{
+    transform: scale(0.95);
   }
-  .txn-pdf-btn svg{
-    width:14px; height:14px;
+  .txn-date-filter-btn.active{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(91,61,245,0.28);
+  }
+  .txn-date-filter-btn .tdfb-icon{
+    font-size: 13px;
+  }
+  .txn-date-filter-btn .tdfb-clear{
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    margin-left: 2px;
+  }
+  .txn-date-filter-btn.active .tdfb-clear:active{
+    background: rgba(255,255,255,0.45);
   }
   .txn-filter-chip{
     padding:7px 14px;
@@ -2527,7 +2583,47 @@
     border-color: var(--line);
   }
   body.dark-mode .cal-summary .cell{
+    background: #141727;
     border-color: var(--line);
+  }
+  body.dark-mode .cal-summary .cell .lbl{
+    color: var(--text-soft);
+  }
+  body.dark-mode .cal-summary .cell.net .val{
+    color: #C084FC;
+  }
+  body.dark-mode .pdf-type-btn{
+    background: #1B1E32;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  body.dark-mode .pdf-type-btn.active[data-type="all"]{
+    background: #EDEBFD;
+    color: #0B0D18;
+    border-color: #EDEBFD;
+    font-weight: 700;
+  }
+  body.dark-mode .pdf-type-btn.active[data-type="received"]{
+    background: rgba(34, 197, 94, 0.22);
+    color: #22C55E;
+    border-color: #22C55E;
+    font-weight: 700;
+  }
+  body.dark-mode .pdf-type-btn.active[data-type="spent"]{
+    background: rgba(248, 113, 113, 0.22);
+    color: #F87171;
+    border-color: #F87171;
+    font-weight: 700;
+  }
+  body.dark-mode .txn-date-filter-btn{
+    background: #141727;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  body.dark-mode .txn-date-filter-btn.active{
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(104,66,255,0.4);
   }
   body.dark-mode .txn-date-divider span{
     background: #221D47;

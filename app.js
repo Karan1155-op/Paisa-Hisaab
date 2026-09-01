@@ -2232,6 +2232,7 @@
   const txnReasonSearchInput = document.getElementById('txnReasonSearchInput');
   const txnReasonSearchClear = document.getElementById('txnReasonSearchClear');
   let txnListFilter = 'all';
+  let txnSelectedDate = null;
   let txnReasonSearchQuery = '';
 
   function renderTxnList(){
@@ -2244,9 +2245,9 @@
       filtered = entries.filter(e => e.type === txnListFilter);
     }
 
-    // If date filter is active on main page, apply it here too
-    if(currentFilter === 'date' && calDateInput.value){
-      filtered = filtered.filter(e => toLocalDateStr(e.when) === calDateInput.value);
+    // Independent Date filter for All Transactions
+    if(txnSelectedDate){
+      filtered = filtered.filter(e => toLocalDateStr(e.when) === txnSelectedDate);
     }
 
     // Target ONLY reason field for search
@@ -2258,8 +2259,12 @@
     const sorted = [...filtered].sort((a,b) => new Date(b.when) - new Date(a.when));
     let lastDate = null;
 
-    if(q){
+    if(q && txnSelectedDate){
+      txnCountEl.textContent = `Found ${sorted.length} for "${txnReasonSearchQuery.trim()}" on ${formatCompactDate(txnSelectedDate)}`;
+    } else if(q){
       txnCountEl.textContent = `Found ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'} for "${txnReasonSearchQuery.trim()}"`;
+    } else if(txnSelectedDate){
+      txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'} on ${formatCompactDate(txnSelectedDate)}`;
     } else {
       txnCountEl.textContent = `Showing ${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
     }
@@ -2343,6 +2348,45 @@
       renderTxnList();
     });
   });
+
+  function updateTxnDateFilterUI(){
+    const chip = document.getElementById('txnDateFilterChip');
+    const textEl = document.getElementById('txnDateFilterText');
+    const clearEl = document.getElementById('txnDateFilterClear');
+    if(!chip || !textEl) return;
+
+    if(txnSelectedDate){
+      chip.classList.add('active');
+      textEl.textContent = formatCompactDate(txnSelectedDate);
+      if(clearEl) clearEl.style.display = 'inline-flex';
+    } else {
+      chip.classList.remove('active');
+      textEl.textContent = 'By date';
+      if(clearEl) clearEl.style.display = 'none';
+    }
+  }
+
+  const txnDateFilterChip = document.getElementById('txnDateFilterChip');
+  if(txnDateFilterChip){
+    txnDateFilterChip.addEventListener('click', (e) => {
+      if(e.target.closest('#txnDateFilterClear')){
+        e.stopPropagation();
+        txnSelectedDate = null;
+        updateTxnDateFilterUI();
+        renderTxnList();
+        return;
+      }
+      openCustomCalendar({
+        selectedDate: txnSelectedDate || toLocalDateStr(new Date().toISOString()),
+        title: 'Filter Txns by Date',
+        onSelect: (chosenDate) => {
+          txnSelectedDate = chosenDate;
+          updateTxnDateFilterUI();
+          renderTxnList();
+        }
+      });
+    });
+  }
 
   // ── PDF Export Modal & Black & White Generator ──
   const pdfExportOverlay = document.getElementById('pdfExportOverlay');
@@ -2455,13 +2499,23 @@
     ensureNavHistory();
   }
 
+  function formatCompactDate(isoDateStr){
+    if(!isoDateStr) return '';
+    const parts = isoDateStr.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = d.toLocaleDateString('en-IN', { month: 'short' });
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  }
+
   function updatePdfDatePillLabels(){
     const sInput = document.getElementById('pdfStartDate');
     const eInput = document.getElementById('pdfEndDate');
     const sLabel = document.getElementById('pdfStartDateLabel');
     const eLabel = document.getElementById('pdfEndDateLabel');
-    if(sLabel && sInput) sLabel.textContent = formatDatePillText(sInput.value);
-    if(eLabel && eInput) eLabel.textContent = formatDatePillText(eInput.value);
+    if(sLabel && sInput) sLabel.textContent = formatCompactDate(sInput.value) || 'Select Date';
+    if(eLabel && eInput) eLabel.textContent = formatCompactDate(eInput.value) || 'Select Date';
   }
 
   const pdfStartDatePill = document.getElementById('pdfStartDatePill');
@@ -2498,7 +2552,10 @@
     pdfExportOverlay.classList.remove('show');
   }
 
-  document.getElementById('downloadPdfBtn').addEventListener('click', openPdfModal);
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+  if(downloadPdfBtn) downloadPdfBtn.addEventListener('click', openPdfModal);
+  const pdfFab = document.getElementById('pdfFab');
+  if(pdfFab) pdfFab.addEventListener('click', openPdfModal);
   pdfCancelBtn.addEventListener('click', closePdfModal);
   pdfExportOverlay.addEventListener('click', (e) => {
     if(e.target === pdfExportOverlay) closePdfModal();
@@ -2922,9 +2979,11 @@
     const newOverlay = overlayMap[newTab];
 
     const clearFab = document.getElementById('clearAllFab');
+    const pdfFabBtn = document.getElementById('pdfFab');
     if(newTab === 'home'){
       fabBtn.style.display = 'flex';
       if(clearFab) clearFab.style.display = 'none';
+      if(pdfFabBtn) pdfFabBtn.style.display = 'none';
       if(prevOverlay){
         prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay show slide-out-right' : 'settings-overlay show slide-out-right');
         setTimeout(() => {
@@ -2938,10 +2997,12 @@
       fabBtn.style.display = 'none';
       if(newTab === 'settings'){
         if(clearFab) clearFab.style.display = entries.length > 0 ? 'flex' : 'none';
+        if(pdfFabBtn) pdfFabBtn.style.display = 'none';
         resetBackupSheet();
         updateSecuritySettingsUI();
       } else if(newTab === 'transactions'){
         if(clearFab) clearFab.style.display = 'none';
+        if(pdfFabBtn) pdfFabBtn.style.display = 'flex';
         txnListFilter = 'all';
         document.querySelectorAll('.txn-filter-chip').forEach(c => c.classList.remove('active'));
         document.querySelector('.txn-filter-chip[data-txnf="all"]').classList.add('active');

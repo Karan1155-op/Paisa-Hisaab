@@ -94,6 +94,13 @@
     <line x1="14" y1="11" x2="14" y2="17"></line>
   </svg>
 </button>
+<button class="fab fab-pdf" id="pdfFab" title="Download Statement (PDF)" style="display:none;">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+</button>
 <button class="fab" id="openSheet">+</button>
 
 <div class="overlay" id="overlay">
@@ -615,13 +622,10 @@
       <button type="button" class="txn-filter-chip" data-txnf="received">Received</button>
       <button type="button" class="txn-filter-chip" data-txnf="spent">Spent</button>
     </div>
-    <button type="button" class="txn-pdf-btn" id="downloadPdfBtn" title="Download PDF Statement">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      <span>PDF</span>
+    <button type="button" class="txn-date-filter-btn" id="txnDateFilterChip" title="Filter transactions by date">
+      <span class="tdfb-icon">📅</span>
+      <span class="tdfb-text" id="txnDateFilterText">By date</span>
+      <span class="tdfb-clear" id="txnDateFilterClear" title="Clear date filter" style="display:none;">✕</span>
     </button>
   </div>
   <div class="txn-list-body" id="txnListBody"></div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paisa-hisaab-v66';
+const CACHE_NAME = 'paisa-hisaab-v67';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
