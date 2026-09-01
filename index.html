@@ -421,22 +421,22 @@
   /* ── Interactive Tags Input for Reason ── */
   .reason-tags-box{
     width: 100%;
-    min-height: 50px;
-    padding: 8px 10px;
+    min-height: 64px;
+    padding: 10px 12px;
     border: 1.5px solid var(--line);
-    border-radius: 14px;
+    border-radius: 15px;
     background: #FAFAFD;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     cursor: text;
     transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
   }
   .reason-tags-box:focus-within{
     border-color: var(--grad1);
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(91,61,245,0.12);
+    box-shadow: 0 0 0 3.5px rgba(91,61,245,0.12);
   }
   .reason-tags-list{
     display: contents;
@@ -444,13 +444,13 @@
   .reason-tag-chip{
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 7px;
     background: #F1EEFF;
     border: 1px solid rgba(91,61,245,0.25);
     color: #4024CE;
-    padding: 4px 10px;
-    border-radius: 18px;
-    font-size: 12.5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13.5px;
     font-weight: 600;
     line-height: 1.3;
     animation: popIn 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28);
@@ -462,54 +462,48 @@
     to{ transform: scale(1); opacity: 1; }
   }
   .rtc-text{
-    max-width: 220px;
+    max-width: 240px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .rtc-remove{
-    width: 17px;
-    height: 17px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background: rgba(91,61,245,0.12);
+    background: rgba(91,61,245,0.14);
     border: none;
     color: #5533EB;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
     cursor: pointer;
     padding: 0;
-    transition: background 0.12s, color 0.12s;
+    margin-left: 2px;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s, transform 0.12s;
   }
   .rtc-remove:active{
     background: var(--red);
     color: #fff;
+    transform: scale(0.9);
   }
   .reason-tag-input{
     flex: 1;
-    min-width: 120px;
+    min-width: 140px;
     border: none !important;
     outline: none !important;
     background: transparent !important;
-    padding: 4px 6px !important;
+    padding: 6px 8px !important;
     font-family: 'Inter', sans-serif;
-    font-size: 14px !important;
+    font-size: 14.5px !important;
     color: var(--text);
   }
   .reason-tag-input::placeholder{
     color: #9D9FA9;
-    font-size: 13px;
-  }
-  .reason-tags-hint{
-    font-size: 11.2px;
-    color: var(--text-soft);
-    margin-top: 6px;
-    padding-left: 2px;
-  }
-  .reason-tags-hint strong{
-    color: var(--grad1);
+    font-size: 13.5px;
   }
 
   .auto-note{
@@ -2294,7 +2288,6 @@
           <div class="reason-tags-list" id="reasonTagsList"></div>
           <input type="text" id="reasonTagInput" class="reason-tag-input" placeholder="Type items (e.g. Chai, Samosa)...">
         </div>
-        <div class="reason-tags-hint">💡 Press <strong>comma ( , )</strong> or <strong>Enter</strong> to create tags</div>
       </div>
 
       <p class="auto-note"><span class="ic">🕒</span> Date & time will be filled in automatically</p>
