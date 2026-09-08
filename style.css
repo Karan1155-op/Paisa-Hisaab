@@ -3148,20 +3148,34 @@
     font-weight: bold;
     box-shadow: 0 2px 8px rgba(91, 61, 245, 0.35);
   }
-  .pc-hold-hint{
-    font-size: 18px;
+  .pc-hold-hint,
+  .pc-more-btn{
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
     color: var(--muted);
-    opacity: 0.35;
-    padding: 4px;
+    opacity: 0.55;
+    padding: 6px 8px;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.15s ease, color 0.15s ease;
+    border-radius: 8px;
+    transition: all 0.15s ease;
   }
+  .pc-more-btn:hover,
+  .profile-card:hover .pc-more-btn,
   .profile-card:hover .pc-hold-hint{
-    opacity: 0.85;
+    opacity: 1;
     color: var(--grad1);
+    background: rgba(91, 61, 245, 0.08);
+  }
+  .pc-more-btn:active{
+    transform: scale(0.92);
+  }
+  body.dark-mode .pc-more-btn:hover{
+    background: rgba(142, 122, 255, 0.15);
   }
   .pc-delete-btn{
     background: none;

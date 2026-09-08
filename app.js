@@ -66,13 +66,14 @@
   /* ── Multi-Profile / Multi-Khata Management System ── */
   const PROFILES_KEY = 'paisa-hisaab-profiles';
   const ACTIVE_PROFILE_KEY = 'paisa-hisaab-active-profile';
+  const DELETED_PROFILES_KEY = 'paisa-hisaab-deleted-profiles';
 
   const DEFAULT_PROFILE = {
     id: 'default',
     name: 'Dada Ji Hisaab',
     icon: '🕊️',
     syncFileName: 'paisa-hisaab-sync.json',
-    isProtected: true,
+    isProtected: false,
     createdAt: '2024-01-01T00:00:00.000Z'
   };
 
@@ -88,31 +89,50 @@
     return `paisa-hisaab-${slugifyProfileName(name)}.json`;
   }
 
+  function loadDeletedProfileIds(){
+    try{
+      const raw = localStorage.getItem(DELETED_PROFILES_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveDeletedProfileIds(ids){
+    try{
+      localStorage.setItem(DELETED_PROFILES_KEY, JSON.stringify(Array.from(new Set(ids))));
+    }catch(e){}
+  }
+
+  function addDeletedProfileId(id){
+    if(!id) return;
+    const current = loadDeletedProfileIds();
+    if(!current.includes(id)){
+      current.push(id);
+      saveDeletedProfileIds(current);
+    }
+  }
+
   function loadProfiles(){
     try{
       const raw = localStorage.getItem(PROFILES_KEY);
       let list = raw ? JSON.parse(raw) : [];
-      if(!Array.isArray(list) || list.length === 0){
-        list = [DEFAULT_PROFILE];
-        saveProfiles(list);
-      }
-      // Ensure default primary profile is ALWAYS preserved and protected
-      let hasDefault = false;
-      list = list.map(p => {
-        if(p.id === 'default'){
-          hasDefault = true;
-          return {
-            ...p,
-            name: p.name || 'Dada Ji Hisaab',
-            icon: p.icon || '🕊️',
-            syncFileName: 'paisa-hisaab-sync.json',
-            isProtected: true
-          };
-        }
-        return p;
-      });
-      if(!hasDefault){
-        list.unshift(DEFAULT_PROFILE);
+      const deletedIds = loadDeletedProfileIds();
+
+      // Filter out any profiles that have been deleted
+      list = (Array.isArray(list) ? list : []).filter(p => p && p.id && !deletedIds.includes(p.id));
+
+      if(list.length === 0){
+        const fallbackProfile = {
+          id: deletedIds.includes('default') ? ('p_' + Date.now().toString(36)) : 'default',
+          name: 'My Khata',
+          icon: '💰',
+          syncFileName: 'paisa-hisaab-sync.json',
+          isProtected: false,
+          createdAt: new Date().toISOString()
+        };
+        list = [fallbackProfile];
         saveProfiles(list);
       }
       return list;
@@ -129,26 +149,43 @@
     }
   }
 
-  function mergeRemoteProfiles(remoteProfiles){
-    if(!Array.isArray(remoteProfiles) || !remoteProfiles.length) return;
-    const local = loadProfiles();
+  function mergeRemoteProfiles(remoteData){
+    if(!remoteData) return;
+    let remoteProfiles = [];
+    let remoteDeleted = [];
+
+    if(Array.isArray(remoteData)){
+      remoteProfiles = remoteData;
+    } else if(typeof remoteData === 'object'){
+      remoteProfiles = Array.isArray(remoteData.profiles) ? remoteData.profiles : [];
+      remoteDeleted = Array.isArray(remoteData.deletedProfileIds) ? remoteData.deletedProfileIds : [];
+    }
+
+    const localDeleted = loadDeletedProfileIds();
+    const mergedDeleted = Array.from(new Set([...localDeleted, ...remoteDeleted]));
+    saveDeletedProfileIds(mergedDeleted);
+
+    let local = loadProfiles().filter(p => !mergedDeleted.includes(p.id));
     let updated = false;
+
     remoteProfiles.forEach(rp => {
-      if(rp && rp.id && !local.some(lp => lp.id === rp.id)){
+      if(rp && rp.id && !mergedDeleted.includes(rp.id) && !local.some(lp => lp.id === rp.id)){
         local.push({
           id: rp.id,
           name: rp.name || 'Khata',
           icon: rp.icon || '🐖',
           syncFileName: rp.syncFileName || generateProfileSyncFileName(rp.name || rp.id),
-          isProtected: !!rp.isProtected,
+          isProtected: false,
           createdAt: rp.createdAt || new Date().toISOString()
         });
         updated = true;
       }
     });
-    if(updated){
+
+    if(updated || local.length !== loadProfiles().length){
       saveProfiles(local);
-      if(typeof renderProfileList === 'function') renderProfileList();
+      if(typeof renderProfilePageList === 'function') renderProfilePageList();
+      if(typeof renderQuickSwitchList === 'function') renderQuickSwitchList();
     }
   }
 
@@ -2048,13 +2085,17 @@
         deletedIds: mergedDeleted
       };
 
-      const profilesManifest = loadProfiles().map(p => ({
-        id: p.id,
-        name: p.name,
-        icon: p.icon,
-        syncFileName: p.syncFileName,
-        isProtected: !!p.isProtected
-      }));
+      const profilesManifest = {
+        profiles: loadProfiles().map(p => ({
+          id: p.id,
+          name: p.name,
+          icon: p.icon,
+          syncFileName: p.syncFileName,
+          isProtected: false
+        })),
+        deletedProfileIds: loadDeletedProfileIds(),
+        lastUpdated: nowIso
+      };
 
       const patchFiles = {
         [activeSyncFile]: {
@@ -2210,13 +2251,17 @@
         deletedIds: loadDeletedIds()
       };
 
-      const profilesManifest = loadProfiles().map(p => ({
-        id: p.id,
-        name: p.name,
-        icon: p.icon,
-        syncFileName: p.syncFileName,
-        isProtected: !!p.isProtected
-      }));
+      const profilesManifest = {
+        profiles: loadProfiles().map(p => ({
+          id: p.id,
+          name: p.name,
+          icon: p.icon,
+          syncFileName: p.syncFileName,
+          isProtected: false
+        })),
+        deletedProfileIds: loadDeletedProfileIds(),
+        lastUpdated: nowIso
+      };
 
       const patchFiles = {
         [activeSyncFile]: {
@@ -3163,7 +3208,7 @@
   function getTabBaseClass(tab){
     if(tab === 'transactions') return 'txn-list-overlay';
     if(tab === 'settings') return 'settings-overlay';
-    if(tab === 'profiles') return 'profiles-overlay';
+    if(tab === 'profiles') return 'settings-overlay profiles-overlay';
     return '';
   }
 
@@ -3321,7 +3366,6 @@
   });
 
   navItems.forEach(item => {
-    if(item.id === 'navItemProfiles') return; // Handled specifically with pointer/long-press
     item.addEventListener('click', () => switchTab(item.dataset.nav));
   });
 
@@ -3683,9 +3727,18 @@
         </div>
         <div class="pc-right">
           ${isActive ? '<span class="pc-active-check" title="Active Account">✓</span>' : ''}
-          <span class="pc-hold-hint" title="Hold to manage">⋮</span>
+          <button type="button" class="pc-more-btn" data-more-id="${prof.id}" title="Manage profile (Edit / Delete)" aria-label="Manage profile">⋮</button>
         </div>
       `;
+
+      const moreBtn = card.querySelector('.pc-more-btn');
+      if(moreBtn){
+        moreBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          openProfileActionsSheet(prof.id);
+        });
+      }
 
       attachLongPress(
         card,
@@ -3711,6 +3764,10 @@
     const newId = 'p_' + slug + '_' + Date.now().toString(36).slice(-4);
     const syncFileName = generateProfileSyncFileName(name);
 
+    // Remove newId from deleted tombstones if present
+    const cleanDeleted = loadDeletedProfileIds().filter(id => id !== newId);
+    saveDeletedProfileIds(cleanDeleted);
+
     const newProfile = {
       id: newId,
       name: name,
@@ -3725,6 +3782,11 @@
 
     closeCreateProfileModal();
     switchProfile(newId);
+
+    const cfg = loadSyncConfig();
+    if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+      debouncedAutoSync();
+    }
   }
 
   async function promptDeleteProfile(profileId){
@@ -3758,6 +3820,10 @@
       title: 'Security Confirmation',
       sub: `Confirm to delete '${target.name}'`,
       onSuccess: () => {
+        // 1. Add to deleted tombstones so it can NEVER be resurrected
+        addDeletedProfileId(profileId);
+
+        // 2. Clear local cache and storage for this profile
         try{
           localStorage.removeItem(getEntriesStorageKey(profileId));
           localStorage.removeItem(getDeletedStorageKey(profileId));
@@ -3766,21 +3832,63 @@
           localStorage.removeItem(getLastSyncedCloudStorageKey(profileId));
         }catch(e){}
 
+        // 3. Save remaining profiles
         const remaining = profiles.filter(p => p.id !== profileId);
         saveProfiles(remaining);
 
-        const cfg = loadSyncConfig();
-        if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
-          debouncedAutoSync();
-        }
-
+        // 4. Switch or re-render
         if(getActiveProfileId() === profileId){
           switchProfile(remaining[0].id);
         } else {
           renderProfilePageList();
         }
+
+        // 5. Permanently sync deletion to GitHub Gist immediately
+        syncProfileDeletionToCloud(profileId, target.syncFileName, remaining);
       }
     });
+  }
+
+  async function syncProfileDeletionToCloud(deletedProfileId, deletedSyncFileName, remainingProfiles){
+    const cfg = loadSyncConfig();
+    if(!cfg.gistId || !cfg.token) return;
+
+    try{
+      const profilesManifest = {
+        profiles: remainingProfiles.map(p => ({
+          id: p.id,
+          name: p.name,
+          icon: p.icon,
+          syncFileName: p.syncFileName,
+          isProtected: false
+        })),
+        deletedProfileIds: loadDeletedProfileIds(),
+        lastUpdated: new Date().toISOString()
+      };
+
+      const patchFiles = {
+        'paisa-hisaab-profiles.json': {
+          content: JSON.stringify(profilesManifest, null, 2)
+        }
+      };
+
+      // In GitHub Gist PATCH API, setting a filename to null permanently deletes it from the Gist!
+      if(deletedSyncFileName && deletedSyncFileName !== 'paisa-hisaab-sync.json'){
+        patchFiles[deletedSyncFileName] = null;
+      }
+
+      await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `token ${cfg.token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ files: patchFiles })
+      });
+    }catch(err){
+      console.error('Could not sync profile deletion to cloud:', err);
+    }
   }
 
   function setupProfileEventListeners(){
@@ -3788,10 +3896,14 @@
     const navItemProfiles = document.getElementById('navItemProfiles');
     let profilesLongPressTimer = null;
     let isLongPressTriggered = false;
+    let startX = 0, startY = 0;
 
     function startPress(e){
       if(e.button !== undefined && e.button !== 0) return;
       isLongPressTriggered = false;
+      const t = e.touches ? e.touches[0] : e;
+      startX = t.clientX;
+      startY = t.clientY;
       clearTimeout(profilesLongPressTimer);
       profilesLongPressTimer = setTimeout(() => {
         isLongPressTriggered = true;
@@ -3804,31 +3916,38 @@
       clearTimeout(profilesLongPressTimer);
     }
 
-    if(navItemProfiles){
-      if(window.PointerEvent){
-        navItemProfiles.addEventListener('pointerdown', startPress);
-        navItemProfiles.addEventListener('pointerup', cancelPress);
-        navItemProfiles.addEventListener('pointercancel', cancelPress);
-        navItemProfiles.addEventListener('pointerleave', cancelPress);
-      } else {
-        navItemProfiles.addEventListener('touchstart', startPress, { passive: true });
-        navItemProfiles.addEventListener('touchend', cancelPress);
-        navItemProfiles.addEventListener('touchcancel', cancelPress);
-        navItemProfiles.addEventListener('mousedown', startPress);
-        navItemProfiles.addEventListener('mouseup', cancelPress);
-        navItemProfiles.addEventListener('mouseleave', cancelPress);
+    function movePress(e){
+      if(!profilesLongPressTimer) return;
+      const t = e.touches ? e.touches[0] : e;
+      if(Math.abs(t.clientX - startX) > 12 || Math.abs(t.clientY - startY) > 12){
+        clearTimeout(profilesLongPressTimer);
       }
+    }
 
+    if(navItemProfiles){
+      navItemProfiles.addEventListener('touchstart', startPress, { passive: true });
+      navItemProfiles.addEventListener('touchmove', movePress, { passive: true });
+      navItemProfiles.addEventListener('touchend', cancelPress);
+      navItemProfiles.addEventListener('touchcancel', cancelPress);
+
+      navItemProfiles.addEventListener('mousedown', (e) => {
+        if(e.button !== 0) return;
+        startPress(e);
+      });
+      navItemProfiles.addEventListener('mousemove', movePress);
+      navItemProfiles.addEventListener('mouseup', cancelPress);
+      navItemProfiles.addEventListener('mouseleave', cancelPress);
+
+      // Capture click to prevent tab switch ONLY if long-press was triggered
       navItemProfiles.addEventListener('click', (e) => {
         cancelPress();
         if(isLongPressTriggered){
           e.preventDefault();
-          e.stopPropagation();
+          e.stopImmediatePropagation();
           isLongPressTriggered = false;
           return;
         }
-        switchTab('profiles');
-      });
+      }, true);
     }
 
     // Quick switch modal events
