@@ -22,8 +22,15 @@
 
 <div class="wrap">
   <header>
-    <h1><span class="dot"></span>Paisa Hisaab</h1>
+    <div class="header-left">
+      <h1><span class="dot"></span>Paisa Hisaab</h1>
+    </div>
     <div class="header-right-actions">
+      <button type="button" class="profile-pill-btn" id="profilePillBtn" title="Switch Khata / Profile">
+        <span class="profile-pill-icon" id="profilePillIcon">🕊️</span>
+        <span class="profile-pill-name" id="profilePillName">Dada Ji Hisaab</span>
+        <span class="profile-pill-caret">▾</span>
+      </button>
       <button type="button" class="sync-badge-btn" id="syncBadgeBtn" title="Cloud Sync Status" style="display:none;">
         <span class="sync-badge-dot"></span>
         <span class="sync-badge-icon">☁️</span>
@@ -362,6 +369,12 @@
         <div class="ssc-indicator" id="sscIndicator">⚪ Not Connected</div>
         <button type="button" class="ssc-refresh-btn" id="sscRefreshBtn" title="Check Cloud Now">🔄 Check</button>
       </div>
+      <div class="ssc-profile-bar" id="sscProfileBar">
+        <span class="spb-icon" id="sscProfileIcon">🕊️</span>
+        <span class="spb-name" id="sscProfileName">Dada Ji Hisaab</span>
+        <span class="spb-sep">•</span>
+        <span class="spb-file" id="sscProfileFile">paisa-hisaab-sync.json</span>
+      </div>
       <div class="ssc-grid">
         <div class="ssc-col">
           <div class="ssc-label">THIS DEVICE</div>
@@ -592,6 +605,73 @@
       <button type="button" class="confirm-btn cancel" id="confirmCancelBtn">Cancel</button>
       <button type="button" class="confirm-btn ok" id="confirmOkBtn">Proceed</button>
     </div>
+  </div>
+</div>
+
+<!-- Profile / Khata Switcher Modal -->
+<div class="overlay" id="profileSheetOverlay">
+  <div class="sheet profile-sheet">
+    <button type="button" class="sheet-close" id="closeProfileSheetBtn" title="Close">✕</button>
+    <div class="handle"></div>
+    <div class="profile-sheet-header">
+      <div class="profile-sheet-title-wrap">
+        <h2>Khatas / Profiles</h2>
+        <p class="profile-sheet-subtitle">Apne hisaab books ke beech switch karein</p>
+      </div>
+    </div>
+    
+    <div class="profile-list" id="profileListContainer"></div>
+
+    <button type="button" class="add-profile-btn" id="openCreateProfileBtn">
+      <span class="apb-icon">➕</span>
+      <span class="apb-text">Naya Khata / Profile Banayein</span>
+    </button>
+  </div>
+</div>
+
+<!-- Create New Profile Modal -->
+<div class="overlay" id="createProfileOverlay">
+  <div class="sheet create-profile-sheet">
+    <button type="button" class="sheet-close" id="closeCreateProfileBtn" title="Close">✕</button>
+    <div class="handle"></div>
+    <div class="create-profile-header">
+      <h2>Naya Khata Banayein</h2>
+      <p class="create-profile-sub">Personal gullak ya khata shuru karein</p>
+    </div>
+
+    <form id="createProfileForm" onsubmit="return false;">
+      <div class="cp-form-group">
+        <label for="newProfileNameInput" class="cp-label">Khata Ka Naam</label>
+        <input type="text" id="newProfileNameInput" class="cp-input" placeholder="e.g. Mera Gullak, Savings, Personal..." maxlength="28" required autocomplete="off">
+        <div class="cp-cloud-preview" id="cpCloudPreview">
+          <span class="cp-cloud-icon">☁️</span>
+          <span class="cp-cloud-text">Cloud File: <code id="cpCloudFilename">paisa-hisaab-mera-gullak.json</code></span>
+        </div>
+      </div>
+
+      <div class="cp-form-group">
+        <label class="cp-label">Choose Icon / Emoji</label>
+        <div class="cp-emoji-grid" id="cpEmojiGrid">
+          <button type="button" class="cp-emoji-chip active" data-emoji="🐖">🐖</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="💰">💰</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🪙">🪙</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="💼">💼</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🏠">🏠</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🚗">🚗</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🎯">🎯</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="✈️">✈️</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🛒">🛒</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="📱">📱</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="🕊️">🕊️</button>
+          <button type="button" class="cp-emoji-chip" data-emoji="⭐">⭐</button>
+        </div>
+      </div>
+
+      <div class="cp-actions">
+        <button type="button" class="cp-btn cancel" id="cancelCreateProfileBtn">Cancel</button>
+        <button type="button" class="cp-btn submit" id="saveNewProfileBtn">Khata Banayein</button>
+      </div>
+    </form>
   </div>
 </div>
 

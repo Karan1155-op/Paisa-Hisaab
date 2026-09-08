@@ -63,7 +63,147 @@
   let entries = [];
   let currentType = 'received';
   let editingId = null;
-  const STORAGE_KEY = 'paisa-hisaab-entries';
+  /* ── Multi-Profile / Multi-Khata Management System ── */
+  const PROFILES_KEY = 'paisa-hisaab-profiles';
+  const ACTIVE_PROFILE_KEY = 'paisa-hisaab-active-profile';
+
+  const DEFAULT_PROFILE = {
+    id: 'default',
+    name: 'Dada Ji Hisaab',
+    icon: '🕊️',
+    syncFileName: 'paisa-hisaab-sync.json',
+    isProtected: true,
+    createdAt: '2024-01-01T00:00:00.000Z'
+  };
+
+  function slugifyProfileName(name){
+    let slug = (name || '').toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+    return slug || 'khata-' + Date.now().toString(36);
+  }
+
+  function generateProfileSyncFileName(name){
+    return `paisa-hisaab-${slugifyProfileName(name)}.json`;
+  }
+
+  function loadProfiles(){
+    try{
+      const raw = localStorage.getItem(PROFILES_KEY);
+      let list = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(list) || list.length === 0){
+        list = [DEFAULT_PROFILE];
+        saveProfiles(list);
+      }
+      // Ensure default primary profile is ALWAYS preserved and protected
+      let hasDefault = false;
+      list = list.map(p => {
+        if(p.id === 'default'){
+          hasDefault = true;
+          return {
+            ...p,
+            name: p.name || 'Dada Ji Hisaab',
+            icon: p.icon || '🕊️',
+            syncFileName: 'paisa-hisaab-sync.json',
+            isProtected: true
+          };
+        }
+        return p;
+      });
+      if(!hasDefault){
+        list.unshift(DEFAULT_PROFILE);
+        saveProfiles(list);
+      }
+      return list;
+    }catch(err){
+      return [DEFAULT_PROFILE];
+    }
+  }
+
+  function saveProfiles(list){
+    try{
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(list));
+    }catch(e){
+      console.error('Could not save profiles', e);
+    }
+  }
+
+  function mergeRemoteProfiles(remoteProfiles){
+    if(!Array.isArray(remoteProfiles) || !remoteProfiles.length) return;
+    const local = loadProfiles();
+    let updated = false;
+    remoteProfiles.forEach(rp => {
+      if(rp && rp.id && !local.some(lp => lp.id === rp.id)){
+        local.push({
+          id: rp.id,
+          name: rp.name || 'Khata',
+          icon: rp.icon || '🐖',
+          syncFileName: rp.syncFileName || generateProfileSyncFileName(rp.name || rp.id),
+          isProtected: !!rp.isProtected,
+          createdAt: rp.createdAt || new Date().toISOString()
+        });
+        updated = true;
+      }
+    });
+    if(updated){
+      saveProfiles(local);
+      if(typeof renderProfileList === 'function') renderProfileList();
+    }
+  }
+
+  function getActiveProfileId(){
+    return localStorage.getItem(ACTIVE_PROFILE_KEY) || 'default';
+  }
+
+  function setActiveProfileId(id){
+    localStorage.setItem(ACTIVE_PROFILE_KEY, id);
+  }
+
+  function getActiveProfile(){
+    const currentId = getActiveProfileId();
+    const profiles = loadProfiles();
+    return profiles.find(p => p.id === currentId) || DEFAULT_PROFILE;
+  }
+
+  function getActiveSyncFileName(){
+    return getActiveProfile().syncFileName || 'paisa-hisaab-sync.json';
+  }
+
+  /* Scoped LocalStorage Key Resolvers (Default maps to original keys for 100% backward compatibility) */
+  function getEntriesStorageKey(profileId = getActiveProfileId()){
+    return profileId === 'default' ? 'paisa-hisaab-entries' : `paisa-hisaab-entries-${profileId}`;
+  }
+  function getDeletedStorageKey(profileId = getActiveProfileId()){
+    return profileId === 'default' ? 'paisa-hisaab-deleted' : `paisa-hisaab-deleted-${profileId}`;
+  }
+  function getLocalModifiedStorageKey(profileId = getActiveProfileId()){
+    return profileId === 'default' ? 'paisa-hisaab-local-modified' : `paisa-hisaab-local-modified-${profileId}`;
+  }
+  function getLastSyncStorageKey(profileId = getActiveProfileId()){
+    return profileId === 'default' ? 'paisa-hisaab-last-sync' : `paisa-hisaab-last-sync-${profileId}`;
+  }
+  function getLastSyncedCloudStorageKey(profileId = getActiveProfileId()){
+    return profileId === 'default' ? 'paisa-hisaab-last-synced-cloud' : `paisa-hisaab-last-synced-cloud-${profileId}`;
+  }
+
+  function getProfileStats(profileId){
+    try{
+      const raw = localStorage.getItem(getEntriesStorageKey(profileId));
+      const list = raw ? JSON.parse(raw) : [];
+      let bal = 0;
+      if(Array.isArray(list)){
+        list.forEach(e => {
+          if(e.type === 'received') bal += Number(e.amount) || 0;
+          else bal -= Number(e.amount) || 0;
+        });
+        return { count: list.length, balance: bal };
+      }
+      return { count: 0, balance: 0 };
+    }catch(e){
+      return { count: 0, balance: 0 };
+    }
+  }
 
   const entriesEl = document.getElementById('entries');
   const emptyEl = document.getElementById('emptyState');
@@ -588,7 +728,7 @@
 
   function loadEntries(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(getEntriesStorageKey());
       const list = raw ? JSON.parse(raw) : [];
       entries = Array.isArray(list) ? list.map(normalizeImportedEntry) : [];
     }catch(err){
@@ -599,7 +739,7 @@
 
   function saveEntries(skipSync = false){
     try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      localStorage.setItem(getEntriesStorageKey(), JSON.stringify(entries));
     }catch(err){
       console.error('Could not save entries', err);
     }
@@ -667,17 +807,15 @@
     });
   });
 
-  const DELETED_KEY = 'paisa-hisaab-deleted';
-
   function loadDeletedIds(){
     try{
-      const raw = localStorage.getItem(DELETED_KEY);
+      const raw = localStorage.getItem(getDeletedStorageKey());
       return raw ? JSON.parse(raw) : [];
     }catch(err){ return []; }
   }
 
   function saveDeletedIds(ids){
-    try{ localStorage.setItem(DELETED_KEY, JSON.stringify(ids)); }
+    try{ localStorage.setItem(getDeletedStorageKey(), JSON.stringify(ids)); }
     catch(err){ console.error('Could not save deleted-ids', err); }
   }
 
@@ -1381,6 +1519,8 @@
   }
 
   document.getElementById('exportBtn').addEventListener('click', () => {
+    const activeProf = getActiveProfile();
+    const slug = slugifyProfileName(activeProf.name);
     const dataStr = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(entries, null, 2));
     const today = new Date();
     const y = today.getFullYear();
@@ -1388,11 +1528,11 @@
     const d = String(today.getDate()).padStart(2, '0');
     const a = document.createElement('a');
     a.href = dataStr;
-    a.download = `paisa-hisaab-backup-${y}-${m}-${d}.json`;
+    a.download = `paisa-hisaab-${slug}-backup-${y}-${m}-${d}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setBackupStatus(`Exported ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}.`, 'ok');
+    setBackupStatus(`Exported ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} (${activeProf.name}).`, 'ok');
   });
 
   document.getElementById('chooseFileBtn').addEventListener('click', () => {
@@ -1517,10 +1657,6 @@
 
   /* ── Enhanced Cloud Sync Engine with State Detection & Smart Merge ── */
   const SYNC_CONFIG_KEY = 'paisa-hisaab-sync-config';
-  const SYNC_FILE_NAME = 'paisa-hisaab-sync.json';
-  const LAST_SYNC_KEY = 'paisa-hisaab-last-sync';
-  const LOCAL_MODIFIED_KEY = 'paisa-hisaab-local-modified';
-  const LAST_SYNCED_CLOUD_KEY = 'paisa-hisaab-last-synced-cloud';
 
   let isSyncInProgress = false;
   let lastCloudCheckMs = 0;
@@ -1535,12 +1671,12 @@
   };
 
   function getLocalModifiedTime(){
-    return localStorage.getItem(LOCAL_MODIFIED_KEY) || localStorage.getItem(LAST_SYNC_KEY) || new Date().toISOString();
+    return localStorage.getItem(getLocalModifiedStorageKey()) || localStorage.getItem(getLastSyncStorageKey()) || new Date().toISOString();
   }
 
   function markLocalModified(){
     if(isSyncInProgress) return;
-    localStorage.setItem(LOCAL_MODIFIED_KEY, new Date().toISOString());
+    localStorage.setItem(getLocalModifiedStorageKey(), new Date().toISOString());
     updateSyncBadgeUI();
     updateSubpageStateCard();
     // Auto-sync if enabled
@@ -1633,6 +1769,14 @@
     const cfg = loadSyncConfig();
     const myDevice = cfg.deviceName ? cfg.deviceName : (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'This PC');
 
+    const activeProf = getActiveProfile();
+    const profIconEl = document.getElementById('sscProfileIcon');
+    const profNameEl = document.getElementById('sscProfileName');
+    const profFileEl = document.getElementById('sscProfileFile');
+    if(profIconEl) profIconEl.textContent = activeProf.icon || '🕊️';
+    if(profNameEl) profNameEl.textContent = activeProf.name || 'Khata';
+    if(profFileEl) profFileEl.textContent = getActiveSyncFileName();
+
     if(localEntriesEl) localEntriesEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
     if(localTimeEl) localTimeEl.textContent = `Modified: ${formatRelativeTime(getLocalModifiedTime())}`;
     if(localDeviceEl) localDeviceEl.textContent = `📱 ${myDevice}`;
@@ -1678,7 +1822,7 @@
 
   function updateSyncLastText(){
     const el = document.getElementById('syncLast');
-    const iso = localStorage.getItem(LAST_SYNC_KEY);
+    const iso = localStorage.getItem(getLastSyncStorageKey());
     if(!iso){ if(el) el.textContent = 'Never synced yet.'; return; }
     const d = new Date(iso);
     if(el){
@@ -1731,7 +1875,15 @@
       }
 
       const gist = await res.json();
-      const file = gist.files && gist.files[SYNC_FILE_NAME];
+      if(gist.files && gist.files['paisa-hisaab-profiles.json'] && gist.files['paisa-hisaab-profiles.json'].content){
+        try{
+          const parsedRemote = JSON.parse(gist.files['paisa-hisaab-profiles.json'].content);
+          mergeRemoteProfiles(parsedRemote);
+        }catch(e){}
+      }
+
+      const activeSyncFile = getActiveSyncFileName();
+      const file = gist.files && gist.files[activeSyncFile];
       let cloudTime = null;
       let cloudCount = 0;
       let cloudEntries = [];
@@ -1759,7 +1911,7 @@
       syncState.cloudRawData = cloudEntries;
       syncState.cloudDeletedIds = cloudDeletedIds;
 
-      const lastSyncedCloud = localStorage.getItem(LAST_SYNCED_CLOUD_KEY);
+      const lastSyncedCloud = localStorage.getItem(getLastSyncedCloudStorageKey());
       const localModified = getLocalModifiedTime();
 
       const isCloudNewer = cloudTime && (!lastSyncedCloud || new Date(cloudTime).getTime() > new Date(lastSyncedCloud).getTime() + 1000);
@@ -1815,7 +1967,17 @@
       });
       if(!res.ok) throw new Error('Fetch failed: ' + res.status);
       const gist = await res.json();
-      const file = gist.files && gist.files[SYNC_FILE_NAME];
+
+      // Check and merge any remote profiles from manifest
+      if(gist.files && gist.files['paisa-hisaab-profiles.json'] && gist.files['paisa-hisaab-profiles.json'].content){
+        try{
+          const parsedRemote = JSON.parse(gist.files['paisa-hisaab-profiles.json'].content);
+          mergeRemoteProfiles(parsedRemote);
+        }catch(e){}
+      }
+
+      const activeSyncFile = getActiveSyncFileName();
+      const file = gist.files && gist.files[activeSyncFile];
       let cloudEntries = [];
       let cloudDeletedIds = [];
 
@@ -1875,13 +2037,34 @@
       // 4. Push merged state back to cloud so both devices match 100%
       const nowIso = new Date().toISOString();
       const myDeviceTag = cfg.deviceName || (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop');
+      const currentProf = getActiveProfile();
       const payload = {
         version: 2,
+        profileId: currentProf.id,
+        profileName: currentProf.name,
+        profileIcon: currentProf.icon,
         lastModified: nowIso,
         entriesCount: entries.length,
         deviceTag: myDeviceTag,
         entries: entries,
         deletedIds: mergedDeleted
+      };
+
+      const profilesManifest = loadProfiles().map(p => ({
+        id: p.id,
+        name: p.name,
+        icon: p.icon,
+        syncFileName: p.syncFileName,
+        isProtected: !!p.isProtected
+      }));
+
+      const patchFiles = {
+        [activeSyncFile]: {
+          content: JSON.stringify(payload, null, 2)
+        },
+        'paisa-hisaab-profiles.json': {
+          content: JSON.stringify(profilesManifest, null, 2)
+        }
       };
 
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
@@ -1891,20 +2074,14 @@
           'Accept': 'application/vnd.github+json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          files: {
-            [SYNC_FILE_NAME]: {
-              content: JSON.stringify(payload, null, 2)
-            }
-          }
-        })
+        body: JSON.stringify({ files: patchFiles })
       });
 
       if(!putRes.ok) throw new Error('Push failed: ' + putRes.status);
 
-      localStorage.setItem(LAST_SYNC_KEY, nowIso);
-      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, nowIso);
-      localStorage.setItem(LOCAL_MODIFIED_KEY, nowIso);
+      localStorage.setItem(getLastSyncStorageKey(), nowIso);
+      localStorage.setItem(getLastSyncedCloudStorageKey(), nowIso);
+      localStorage.setItem(getLocalModifiedStorageKey(), nowIso);
 
       syncState.status = 'synced';
       syncState.cloudLastModified = nowIso;
@@ -1951,7 +2128,15 @@
       });
       if(!getRes.ok) throw new Error('fetch-failed-' + getRes.status);
       const gist = await getRes.json();
-      const file = gist.files && gist.files[SYNC_FILE_NAME];
+      if(gist.files && gist.files['paisa-hisaab-profiles.json'] && gist.files['paisa-hisaab-profiles.json'].content){
+        try{
+          const parsedRemote = JSON.parse(gist.files['paisa-hisaab-profiles.json'].content);
+          mergeRemoteProfiles(parsedRemote);
+        }catch(e){}
+      }
+
+      const activeSyncFile = getActiveSyncFileName();
+      const file = gist.files && gist.files[activeSyncFile];
       let rawData = [];
       let cloudTime = gist.updated_at || new Date().toISOString();
       let cloudDeletedIds = [];
@@ -1973,9 +2158,9 @@
       saveEntries(true); // skipSync = true
       render();
 
-      localStorage.setItem(LAST_SYNC_KEY, cloudTime);
-      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, cloudTime);
-      localStorage.setItem(LOCAL_MODIFIED_KEY, cloudTime);
+      localStorage.setItem(getLastSyncStorageKey(), cloudTime);
+      localStorage.setItem(getLastSyncedCloudStorageKey(), cloudTime);
+      localStorage.setItem(getLocalModifiedStorageKey(), cloudTime);
 
       syncState.status = 'synced';
       syncState.cloudLastModified = cloudTime;
@@ -2013,13 +2198,35 @@
     try{
       const nowIso = new Date().toISOString();
       const myDeviceTag = cfg.deviceName || (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop');
+      const activeSyncFile = getActiveSyncFileName();
+      const currentProf = getActiveProfile();
       const payload = {
         version: 2,
+        profileId: currentProf.id,
+        profileName: currentProf.name,
+        profileIcon: currentProf.icon,
         lastModified: nowIso,
         entriesCount: entries.length,
         deviceTag: myDeviceTag,
         entries: entries,
         deletedIds: loadDeletedIds()
+      };
+
+      const profilesManifest = loadProfiles().map(p => ({
+        id: p.id,
+        name: p.name,
+        icon: p.icon,
+        syncFileName: p.syncFileName,
+        isProtected: !!p.isProtected
+      }));
+
+      const patchFiles = {
+        [activeSyncFile]: {
+          content: JSON.stringify(payload, null, 2)
+        },
+        'paisa-hisaab-profiles.json': {
+          content: JSON.stringify(profilesManifest, null, 2)
+        }
       };
 
       const putRes = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
@@ -2029,19 +2236,13 @@
           'Accept': 'application/vnd.github+json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          files: {
-            [SYNC_FILE_NAME]: {
-              content: JSON.stringify(payload, null, 2)
-            }
-          }
-        })
+        body: JSON.stringify({ files: patchFiles })
       });
       if(!putRes.ok) throw new Error('push-failed-' + putRes.status);
 
-      localStorage.setItem(LAST_SYNC_KEY, nowIso);
-      localStorage.setItem(LAST_SYNCED_CLOUD_KEY, nowIso);
-      localStorage.setItem(LOCAL_MODIFIED_KEY, nowIso);
+      localStorage.setItem(getLastSyncStorageKey(), nowIso);
+      localStorage.setItem(getLastSyncedCloudStorageKey(), nowIso);
+      localStorage.setItem(getLocalModifiedStorageKey(), nowIso);
 
       syncState.status = 'synced';
       syncState.cloudLastModified = nowIso;
@@ -2159,6 +2360,8 @@
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
     const dateTimeOverlay = document.getElementById('dateTimeOverlay');
     const customCalOverlay = document.getElementById('customCalendarOverlay');
+    const profileSheet = document.getElementById('profileSheetOverlay');
+    const createProfileModal = document.getElementById('createProfileOverlay');
     const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
     const backupSubpage = document.getElementById('backupSubpageOverlay');
@@ -2170,6 +2373,8 @@
            (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
            (dateTimeOverlay && dateTimeOverlay.classList.contains('show')) ||
            (customCalOverlay && customCalOverlay.classList.contains('show')) ||
+           (createProfileModal && createProfileModal.classList.contains('show')) ||
+           (profileSheet && profileSheet.classList.contains('show')) ||
            (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
@@ -2643,7 +2848,8 @@
         doc.setTextColor(0, 0, 0);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(16);
-        doc.text('PAISA HISAAB', 14, 19);
+        const activeProf = getActiveProfile();
+        doc.text(`PAISA HISAAB — ${(activeProf.name || 'Account').toUpperCase()}`, 14, 19);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
@@ -2801,8 +3007,9 @@
           doc.text('Page ' + i + ' of ' + totalPages, pageW - 14, pageH - 7, { align: 'right' });
         }
 
+        const profSlug = slugifyProfileName(activeProf.name);
         const dateTag = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
-        const fileName = 'PaisaHisaab_Statement_' + dateTag + '.pdf';
+        const fileName = 'PaisaHisaab_Statement_' + profSlug + '_' + dateTag + '.pdf';
         doc.save(fileName);
         closePdfModal();
       } catch(err) {
@@ -3166,6 +3373,22 @@
       return;
     }
 
+    // 4cd. Create Profile Modal
+    const createProfileModal = document.getElementById('createProfileOverlay');
+    if(createProfileModal && createProfileModal.classList.contains('show')){
+      createProfileModal.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4ce. Profile Switcher Sheet
+    const profileSheet = document.getElementById('profileSheetOverlay');
+    if(profileSheet && profileSheet.classList.contains('show')){
+      profileSheet.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
     // 4d. Advanced Sync subpage
     if(syncAdvSubpage && syncAdvSubpage.classList.contains('show')){
       syncAdvSubpage.className = 'settings-subpage show slide-out-right';
@@ -3198,6 +3421,269 @@
       return;
     }
   });
+
+  /* ── Multi-Profile / Multi-Khata UI Controller ── */
+  let selectedProfileEmoji = '🐖';
+
+  function updateHeaderProfileUI(){
+    const activeProf = getActiveProfile();
+    const pillIcon = document.getElementById('profilePillIcon');
+    const pillName = document.getElementById('profilePillName');
+    if(pillIcon) pillIcon.textContent = activeProf.icon || '🕊️';
+    if(pillName) pillName.textContent = activeProf.name || 'Khata';
+
+    const profIconEl = document.getElementById('sscProfileIcon');
+    const profNameEl = document.getElementById('sscProfileName');
+    const profFileEl = document.getElementById('sscProfileFile');
+    if(profIconEl) profIconEl.textContent = activeProf.icon || '🕊️';
+    if(profNameEl) profNameEl.textContent = activeProf.name || 'Khata';
+    if(profFileEl) profFileEl.textContent = getActiveSyncFileName();
+  }
+
+  function openProfileSheet(){
+    renderProfileList();
+    const overlay = document.getElementById('profileSheetOverlay');
+    if(overlay){
+      overlay.classList.add('show');
+      ensureNavHistory();
+    }
+  }
+
+  function closeProfileSheet(){
+    const overlay = document.getElementById('profileSheetOverlay');
+    if(overlay) overlay.classList.remove('show');
+  }
+
+  function openCreateProfileModal(){
+    const modal = document.getElementById('createProfileOverlay');
+    const input = document.getElementById('newProfileNameInput');
+    const preview = document.getElementById('cpCloudFilename');
+    if(!modal || !input) return;
+
+    input.value = '';
+    selectedProfileEmoji = '🐖';
+    document.querySelectorAll('.cp-emoji-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.emoji === selectedProfileEmoji);
+    });
+    if(preview) preview.textContent = generateProfileSyncFileName('');
+
+    closeProfileSheet();
+    modal.classList.add('show');
+    ensureNavHistory();
+    setTimeout(() => input.focus(), 150);
+  }
+
+  function closeCreateProfileModal(){
+    const modal = document.getElementById('createProfileOverlay');
+    if(modal) modal.classList.remove('show');
+  }
+
+  function switchProfile(profileId){
+    if(!profileId) return;
+    setActiveProfileId(profileId);
+    updateHeaderProfileUI();
+    loadEntries(); // loads entries for newly active profile & renders
+    updateSubpageStateCard();
+    updateSyncBadgeUI();
+    updateSyncLastText();
+    closeProfileSheet();
+
+    // Check cloud status for newly active profile
+    const cfg = loadSyncConfig();
+    if(cfg.gistId && cfg.token){
+      checkCloudStatus(true, true);
+    }
+  }
+
+  function renderProfileList(){
+    const container = document.getElementById('profileListContainer');
+    if(!container) return;
+    const profiles = loadProfiles();
+    const activeId = getActiveProfileId();
+
+    container.innerHTML = '';
+    profiles.forEach(prof => {
+      const card = document.createElement('div');
+      const isActive = prof.id === activeId;
+      card.className = 'profile-card' + (isActive ? ' active' : '');
+      card.dataset.id = prof.id;
+
+      const stats = getProfileStats(prof.id);
+      const balFormatted = (stats.balance >= 0 ? '₹' : '-₹') + Math.abs(stats.balance).toLocaleString('en-IN');
+      const balClass = stats.balance > 0 ? 'pc-bal positive' : 'pc-bal';
+
+      card.innerHTML = `
+        <div class="pc-left">
+          <div class="pc-avatar">${prof.icon || '🕊️'}</div>
+          <div class="pc-info">
+            <div class="pc-title-row">
+              <span class="pc-name">${escapeHtml(prof.name)}</span>
+              ${prof.isProtected ? '<span class="pc-badge-tag protected">Primary</span>' : ''}
+            </div>
+            <div class="pc-stats">
+              <span class="pc-txns">${stats.count} ${stats.count === 1 ? 'entry' : 'entries'}</span>
+              <span class="pc-dot">•</span>
+              <span class="${balClass}">Balance: ${balFormatted}</span>
+            </div>
+            <div class="pc-file-hint">☁️ ${prof.syncFileName || 'paisa-hisaab-sync.json'}</div>
+          </div>
+        </div>
+        <div class="pc-right">
+          ${isActive ? '<span class="pc-active-check" title="Active">✓</span>' : ''}
+          ${!prof.isProtected ? `<button type="button" class="pc-delete-btn" title="Delete Khata" data-del-id="${prof.id}">🗑️</button>` : ''}
+        </div>
+      `;
+
+      card.addEventListener('click', (ev) => {
+        if(ev.target.closest('.pc-delete-btn')) return;
+        switchProfile(prof.id);
+      });
+
+      const delBtn = card.querySelector('.pc-delete-btn');
+      if(delBtn){
+        delBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          promptDeleteProfile(prof.id);
+        });
+      }
+
+      container.appendChild(card);
+    });
+  }
+
+  function saveNewProfile(){
+    const input = document.getElementById('newProfileNameInput');
+    const name = input ? input.value.trim() : '';
+    if(!name){
+      if(input) input.focus();
+      return;
+    }
+
+    const slug = slugifyProfileName(name);
+    const profiles = loadProfiles();
+    const newId = 'p_' + slug + '_' + Date.now().toString(36).slice(-4);
+    const syncFileName = generateProfileSyncFileName(name);
+
+    const newProfile = {
+      id: newId,
+      name: name,
+      icon: selectedProfileEmoji || '🐖',
+      syncFileName: syncFileName,
+      isProtected: false,
+      createdAt: new Date().toISOString()
+    };
+
+    profiles.push(newProfile);
+    saveProfiles(profiles);
+
+    closeCreateProfileModal();
+    switchProfile(newId);
+  }
+
+  async function promptDeleteProfile(profileId){
+    const profiles = loadProfiles();
+    const target = profiles.find(p => p.id === profileId);
+    if(!target) return;
+    if(target.isProtected || target.id === 'default'){
+      return;
+    }
+
+    const confirmed = await showCustomConfirm({
+      icon: '🗑️',
+      title: `Delete '${target.name}'?`,
+      msg: `Kya aap sach me '${target.name}' khata delete karna chahte hain? Iska sara local data aur entries permanently delete ho jayenge.`,
+      okText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      isDanger: true
+    });
+
+    if(!confirmed) return;
+
+    requestPassword({
+      title: 'Enter security password',
+      sub: `Confirm to delete '${target.name}'`,
+      onSuccess: () => {
+        try{
+          localStorage.removeItem(getEntriesStorageKey(profileId));
+          localStorage.removeItem(getDeletedStorageKey(profileId));
+          localStorage.removeItem(getLocalModifiedStorageKey(profileId));
+          localStorage.removeItem(getLastSyncStorageKey(profileId));
+          localStorage.removeItem(getLastSyncedCloudStorageKey(profileId));
+        }catch(e){}
+
+        const remaining = profiles.filter(p => p.id !== profileId);
+        saveProfiles(remaining);
+
+        if(getActiveProfileId() === profileId){
+          switchProfile('default');
+        } else {
+          renderProfileList();
+        }
+      }
+    });
+  }
+
+  function setupProfileEventListeners(){
+    const pillBtn = document.getElementById('profilePillBtn');
+    if(pillBtn) pillBtn.addEventListener('click', openProfileSheet);
+
+    const closeSheetBtn = document.getElementById('closeProfileSheetBtn');
+    if(closeSheetBtn) closeSheetBtn.addEventListener('click', closeProfileSheet);
+
+    const sheetOverlay = document.getElementById('profileSheetOverlay');
+    if(sheetOverlay){
+      sheetOverlay.addEventListener('click', (e) => {
+        if(e.target === sheetOverlay) closeProfileSheet();
+      });
+    }
+
+    const openCreateBtn = document.getElementById('openCreateProfileBtn');
+    if(openCreateBtn) openCreateBtn.addEventListener('click', openCreateProfileModal);
+
+    const closeCreateBtn = document.getElementById('closeCreateProfileBtn');
+    if(closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreateProfileModal);
+
+    const cancelCreateBtn = document.getElementById('cancelCreateProfileBtn');
+    if(cancelCreateBtn) cancelCreateBtn.addEventListener('click', closeCreateProfileModal);
+
+    const createOverlay = document.getElementById('createProfileOverlay');
+    if(createOverlay){
+      createOverlay.addEventListener('click', (e) => {
+        if(e.target === createOverlay) closeCreateProfileModal();
+      });
+    }
+
+    const nameInput = document.getElementById('newProfileNameInput');
+    if(nameInput){
+      nameInput.addEventListener('input', () => {
+        const preview = document.getElementById('cpCloudFilename');
+        if(preview){
+          preview.textContent = generateProfileSyncFileName(nameInput.value);
+        }
+      });
+      nameInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          saveNewProfile();
+        }
+      });
+    }
+
+    document.querySelectorAll('.cp-emoji-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.cp-emoji-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        selectedProfileEmoji = chip.dataset.emoji || '🐖';
+      });
+    });
+
+    const saveBtn = document.getElementById('saveNewProfileBtn');
+    if(saveBtn) saveBtn.addEventListener('click', saveNewProfile);
+  }
+
+  // Initialize Profiles UI
+  updateHeaderProfileUI();
+  setupProfileEventListeners();
 
   loadEntries();
 
