@@ -3154,14 +3154,21 @@
   // ── Bottom Navbar Logic ──
   const fabBtn = document.getElementById('openSheet');
   const navItems = document.querySelectorAll('.nav-item[data-nav]');
-  const tabOrder = { 'home': 0, 'transactions': 1, 'settings': 2 };
+  const tabOrder = { 'home': 0, 'transactions': 1, 'settings': 2, 'profiles': 3 };
   let activeTab = 'home';
   let isTabAnimating = false;
+
+  function getTabBaseClass(tab){
+    if(tab === 'transactions') return 'txn-list-overlay';
+    if(tab === 'settings') return 'settings-overlay';
+    if(tab === 'profiles') return 'profiles-overlay';
+    return '';
+  }
 
   function switchTab(newTab){
     if(newTab === activeTab || isTabAnimating) return;
     const prevTab = activeTab;
-    const isGoingRight = tabOrder[newTab] > tabOrder[prevTab];
+    const isGoingRight = (tabOrder[newTab] ?? 99) > (tabOrder[prevTab] ?? 0);
     activeTab = newTab;
     isTabAnimating = true;
 
@@ -3193,9 +3200,10 @@
       if(clearFab) clearFab.style.display = 'none';
       if(pdfFabBtn) pdfFabBtn.style.display = 'none';
       if(prevOverlay){
-        prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay show slide-out-right' : 'settings-overlay show slide-out-right');
+        const prevBase = getTabBaseClass(prevTab);
+        prevOverlay.className = prevBase + ' show slide-out-right';
         setTimeout(() => {
-          prevOverlay.className = (prevTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay');
+          prevOverlay.className = prevBase;
           isTabAnimating = false;
         }, 150);
       } else {
@@ -3226,15 +3234,15 @@
         renderProfilePageList();
       }
 
+      const newBase = getTabBaseClass(newTab);
       if(prevTab === 'home'){
-        newOverlay.className = (newTab === 'transactions' ? 'txn-list-overlay show slide-in-right' : 'settings-overlay show slide-in-right');
+        newOverlay.className = newBase + ' show slide-in-right';
         setTimeout(() => {
-          newOverlay.className = (newTab === 'transactions' ? 'txn-list-overlay show' : 'settings-overlay show');
+          newOverlay.className = newBase + ' show';
           isTabAnimating = false;
         }, 150);
       } else {
-        const prevBase = prevTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay';
-        const newBase = newTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay';
+        const prevBase = getTabBaseClass(prevTab);
         if(isGoingRight){
           prevOverlay.style.zIndex = '80';
           newOverlay.style.zIndex = '82';
@@ -3311,6 +3319,7 @@
   });
 
   navItems.forEach(item => {
+    if(item.id === 'navItemProfiles') return; // Handled specifically with pointer/long-press
     item.addEventListener('click', () => switchTab(item.dataset.nav));
   });
 
@@ -3445,9 +3454,6 @@
 
   function updateHeaderProfileUI(){
     const activeProf = getActiveProfile();
-
-    const navProfIcon = document.getElementById('navProfileIcon');
-    if(navProfIcon) navProfIcon.textContent = activeProf.icon || '🕊️';
 
     const profIconEl = document.getElementById('sscProfileIcon');
     const profNameEl = document.getElementById('sscProfileName');
@@ -3740,43 +3746,50 @@
   }
 
   function setupProfileEventListeners(){
-    // Instagram-style Long-press on Profiles Tab
+    // Instagram-style Long-press + Single Tap on Profiles Tab
     const navItemProfiles = document.getElementById('navItemProfiles');
     let profilesLongPressTimer = null;
-    let isProfilesLongPressTriggered = false;
+    let isLongPressTriggered = false;
 
-    function startProfilesLongPress(){
-      isProfilesLongPressTriggered = false;
+    function startPress(e){
+      if(e.button !== undefined && e.button !== 0) return;
+      isLongPressTriggered = false;
       clearTimeout(profilesLongPressTimer);
       profilesLongPressTimer = setTimeout(() => {
-        isProfilesLongPressTriggered = true;
-        if(navigator.vibrate) try{ navigator.vibrate(40); }catch(e){}
+        isLongPressTriggered = true;
+        if(navigator.vibrate) try{ navigator.vibrate(40); }catch(err){}
         openQuickSwitchModal();
       }, 450);
     }
 
-    function cancelProfilesLongPress(){
+    function cancelPress(){
       clearTimeout(profilesLongPressTimer);
     }
 
     if(navItemProfiles){
-      navItemProfiles.addEventListener('touchstart', startProfilesLongPress, { passive: true });
-      navItemProfiles.addEventListener('touchend', cancelProfilesLongPress);
-      navItemProfiles.addEventListener('touchmove', cancelProfilesLongPress);
-
-      navItemProfiles.addEventListener('mousedown', (e) => {
-        if(e.button === 0) startProfilesLongPress();
-      });
-      navItemProfiles.addEventListener('mouseup', cancelProfilesLongPress);
-      navItemProfiles.addEventListener('mouseleave', cancelProfilesLongPress);
+      if(window.PointerEvent){
+        navItemProfiles.addEventListener('pointerdown', startPress);
+        navItemProfiles.addEventListener('pointerup', cancelPress);
+        navItemProfiles.addEventListener('pointercancel', cancelPress);
+        navItemProfiles.addEventListener('pointerleave', cancelPress);
+      } else {
+        navItemProfiles.addEventListener('touchstart', startPress, { passive: true });
+        navItemProfiles.addEventListener('touchend', cancelPress);
+        navItemProfiles.addEventListener('touchcancel', cancelPress);
+        navItemProfiles.addEventListener('mousedown', startPress);
+        navItemProfiles.addEventListener('mouseup', cancelPress);
+        navItemProfiles.addEventListener('mouseleave', cancelPress);
+      }
 
       navItemProfiles.addEventListener('click', (e) => {
-        if(isProfilesLongPressTriggered){
+        cancelPress();
+        if(isLongPressTriggered){
           e.preventDefault();
           e.stopPropagation();
-          isProfilesLongPressTriggered = false;
+          isLongPressTriggered = false;
           return;
         }
+        switchTab('profiles');
       });
     }
 

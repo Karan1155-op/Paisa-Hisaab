@@ -39,7 +39,7 @@
     padding-bottom: 100px;
     transition: background-color 0.22s ease, color 0.22s ease;
   }
-  .entry, .txn-card, .sheet, .settings-overlay, .txn-list-overlay, .settings-subpage, .settings-item, .reason-tags-box, .bottom-nav{
+  .entry, .txn-card, .sheet, .settings-overlay, .profiles-overlay, .txn-list-overlay, .settings-subpage, .settings-item, .reason-tags-box, .bottom-nav{
     transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
   }
   .wrap{
@@ -1994,8 +1994,9 @@
     padding-bottom: 80px;
   }
 
-  /* Settings Overlay */
-  .settings-overlay{
+  /* Settings & Profiles Overlays */
+  .settings-overlay,
+  .profiles-overlay{
     position:fixed;
     inset:0;
     bottom:64px;
@@ -2004,7 +2005,8 @@
     display:none;
     flex-direction:column;
   }
-  .settings-overlay.show{ display:flex; }
+  .settings-overlay.show,
+  .profiles-overlay.show{ display:flex; }
   .settings-header{
     display:flex;
     align-items:center;
@@ -2769,6 +2771,7 @@
     box-shadow: 0 0 12px rgba(104,66,255,0.6);
   }
   body.dark-mode .settings-overlay,
+  body.dark-mode .profiles-overlay,
   body.dark-mode .txn-list-overlay,
   body.dark-mode .settings-subpage{
     background: var(--bg);
