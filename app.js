@@ -73,6 +73,7 @@
     name: 'Dada Ji Hisaab',
     icon: '🕊️',
     syncFileName: 'paisa-hisaab-sync.json',
+    cloudSync: true,
     isProtected: false,
     createdAt: '2024-01-01T00:00:00.000Z'
   };
@@ -120,8 +121,11 @@
       let list = raw ? JSON.parse(raw) : [];
       const deletedIds = loadDeletedProfileIds();
 
-      // Filter out any profiles that have been deleted
-      list = (Array.isArray(list) ? list : []).filter(p => p && p.id && !deletedIds.includes(p.id));
+      // Filter out any profiles that have been deleted and normalize cloudSync
+      list = (Array.isArray(list) ? list : []).filter(p => p && p.id && !deletedIds.includes(p.id)).map(p => ({
+        ...p,
+        cloudSync: (p.cloudSync !== undefined ? !!p.cloudSync : (p.id === 'default'))
+      }));
 
       if(list.length === 0){
         const fallbackProfile = {
@@ -129,6 +133,7 @@
           name: 'My Khata',
           icon: '💰',
           syncFileName: 'paisa-hisaab-sync.json',
+          cloudSync: true,
           isProtected: false,
           createdAt: new Date().toISOString()
         };
@@ -175,6 +180,7 @@
           name: rp.name || 'Khata',
           icon: rp.icon || '🐖',
           syncFileName: rp.syncFileName || generateProfileSyncFileName(rp.name || rp.id),
+          cloudSync: true, // If it comes from cloud Gist, it is a cloud profile
           isProtected: false,
           createdAt: rp.createdAt || new Date().toISOString()
         });
@@ -1766,6 +1772,14 @@
     const badgeBtn = document.getElementById('syncBadgeBtn');
     if(!badgeBtn) return;
 
+    const activeProf = getActiveProfile();
+    if(activeProf && activeProf.cloudSync === false){
+      badgeBtn.style.display = 'inline-flex';
+      badgeBtn.className = 'sync-badge-btn private';
+      badgeBtn.title = 'Private Profile (Device Only — not uploaded to Gist)';
+      return;
+    }
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       badgeBtn.style.display = 'none';
@@ -1810,11 +1824,23 @@
     const profFileEl = document.getElementById('sscProfileFile');
     if(profIconEl) profIconEl.textContent = activeProf.icon || '🕊️';
     if(profNameEl) profNameEl.textContent = activeProf.name || 'Khata';
-    if(profFileEl) profFileEl.textContent = getActiveSyncFileName();
+    if(profFileEl) profFileEl.textContent = activeProf.cloudSync !== false ? getActiveSyncFileName() : '🔒 Local Only';
 
     if(localEntriesEl) localEntriesEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
     if(localTimeEl) localTimeEl.textContent = `Modified: ${formatRelativeTime(getLocalModifiedTime())}`;
     if(localDeviceEl) localDeviceEl.textContent = `📱 ${myDevice}`;
+
+    if(activeProf.cloudSync === false){
+      ind.className = 'ssc-indicator private';
+      ind.textContent = '🔒 Private (This Device Only)';
+      if(cloudEntriesEl) cloudEntriesEl.textContent = 'Not uploaded';
+      if(cloudTimeEl) cloudTimeEl.textContent = 'Private to this phone';
+      if(cloudDeviceEl){
+        cloudDeviceEl.textContent = '🔒 Local Only';
+        cloudDeviceEl.className = 'ssc-device-pill';
+      }
+      return;
+    }
 
     if(syncState.cloudEntriesCount !== null){
       if(cloudEntriesEl) cloudEntriesEl.textContent = `${syncState.cloudEntriesCount} ${syncState.cloudEntriesCount === 1 ? 'entry' : 'entries'}`;
@@ -1875,6 +1901,14 @@
   }
 
   async function checkCloudStatus(silent = false, forceCheck = false){
+    const activeProf = getActiveProfile();
+    if(activeProf && activeProf.cloudSync === false){
+      syncState.status = 'private';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      return;
+    }
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       syncState.status = 'no_config';
@@ -1981,6 +2015,25 @@
     isSyncInProgress = true;
     clearTimeout(autoSyncTimer);
 
+    const currentProf = getActiveProfile();
+    if(currentProf && currentProf.cloudSync === false){
+      isSyncInProgress = false;
+      setSyncBadgeSyncing(false);
+      syncState.status = 'private';
+      updateSyncBadgeUI();
+      updateSubpageStateCard();
+      if(!silent){
+        showCustomConfirm({
+          icon: '🔒',
+          title: 'Private Profile',
+          msg: `'${currentProf.name}' is set to Private (This Device Only). It is not synced to GitHub Gist, so your personal records stay strictly on this phone.`,
+          okText: 'Understood',
+          cancelText: ''
+        });
+      }
+      return;
+    }
+
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
       isSyncInProgress = false;
@@ -2086,13 +2139,15 @@
       };
 
       const profilesManifest = {
-        profiles: loadProfiles().map(p => ({
-          id: p.id,
-          name: p.name,
-          icon: p.icon,
-          syncFileName: p.syncFileName,
-          isProtected: false
-        })),
+        profiles: loadProfiles()
+          .filter(p => p.cloudSync !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            icon: p.icon,
+            syncFileName: p.syncFileName,
+            isProtected: false
+          })),
         deletedProfileIds: loadDeletedProfileIds(),
         lastUpdated: nowIso
       };
@@ -2148,6 +2203,14 @@
     if(isSyncInProgress) return;
     isSyncInProgress = true;
     clearTimeout(autoSyncTimer);
+
+    const currentProf = getActiveProfile();
+    if(currentProf && currentProf.cloudSync === false){
+      isSyncInProgress = false;
+      setSyncBadgeSyncing(false);
+      if(!silent) setSyncStatus('Cannot fetch: This profile is Private (This Device Only).', 'err');
+      return;
+    }
 
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
@@ -2239,6 +2302,13 @@
       const myDeviceTag = cfg.deviceName || (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop');
       const activeSyncFile = getActiveSyncFileName();
       const currentProf = getActiveProfile();
+      if(currentProf && currentProf.cloudSync === false){
+        isSyncInProgress = false;
+        setSyncBadgeSyncing(false);
+        if(!silent) setSyncStatus('Cannot push: This profile is Private (This Device Only).', 'err');
+        return;
+      }
+
       const payload = {
         version: 2,
         profileId: currentProf.id,
@@ -2252,13 +2322,15 @@
       };
 
       const profilesManifest = {
-        profiles: loadProfiles().map(p => ({
-          id: p.id,
-          name: p.name,
-          icon: p.icon,
-          syncFileName: p.syncFileName,
-          isProtected: false
-        })),
+        profiles: loadProfiles()
+          .filter(p => p.cloudSync !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            icon: p.icon,
+            syncFileName: p.syncFileName,
+            isProtected: false
+          })),
         deletedProfileIds: loadDeletedProfileIds(),
         lastUpdated: nowIso
       };
@@ -3514,7 +3586,34 @@
     const profFileEl = document.getElementById('sscProfileFile');
     if(profIconEl) profIconEl.textContent = activeProf.icon || '🕊️';
     if(profNameEl) profNameEl.textContent = activeProf.name || 'Account';
-    if(profFileEl) profFileEl.textContent = getActiveSyncFileName();
+    if(profFileEl) profFileEl.textContent = activeProf.cloudSync !== false ? getActiveSyncFileName() : '🔒 Local Only';
+  }
+
+  function updateCreateSyncToggleUI(isCloud){
+    const titleEl = document.getElementById('createSyncToggleTitle');
+    const descEl = document.getElementById('createSyncToggleDesc');
+    const preview = document.getElementById('cpCloudPreview');
+    if(isCloud){
+      if(titleEl) titleEl.textContent = '☁️ Shared Cloud (GitHub Gist)';
+      if(descEl) descEl.textContent = 'Syncs to GitHub Gist so family can access this profile on their devices.';
+      if(preview) preview.style.display = 'flex';
+    } else {
+      if(titleEl) titleEl.textContent = '🔒 Private (This Device Only)';
+      if(descEl) descEl.textContent = 'Safe & private on this phone. Won\'t upload to GitHub Gist or show on other devices.';
+      if(preview) preview.style.display = 'none';
+    }
+  }
+
+  function updateEditSyncToggleUI(isCloud){
+    const titleEl = document.getElementById('editSyncToggleTitle');
+    const descEl = document.getElementById('editSyncToggleDesc');
+    if(isCloud){
+      if(titleEl) titleEl.textContent = '☁️ Shared Cloud (GitHub Gist)';
+      if(descEl) descEl.textContent = 'Syncs to GitHub Gist so family can access this profile on their devices.';
+    } else {
+      if(titleEl) titleEl.textContent = '🔒 Private (This Device Only)';
+      if(descEl) descEl.textContent = 'Safe & private on this phone. Won\'t upload to GitHub Gist or show on other devices.';
+    }
   }
 
   function openCreateProfileModal(){
@@ -3529,6 +3628,12 @@
       chip.classList.toggle('active', chip.dataset.emoji === selectedProfileEmoji);
     });
     if(preview) preview.textContent = generateProfileSyncFileName('');
+
+    const cloudToggle = document.getElementById('createProfileCloudSyncToggle');
+    if(cloudToggle){
+      cloudToggle.checked = false; // Option A: Default to Private (This Device Only)
+      updateCreateSyncToggleUI(false);
+    }
 
     closeQuickSwitchModal();
     modal.classList.add('show');
@@ -3573,7 +3678,10 @@
         <div class="qs-item-left">
           <div class="qs-avatar">${prof.icon || '🕊️'}</div>
           <div>
-            <div class="qs-name">${escapeHtml(prof.name)}</div>
+            <div class="qs-name">
+              ${escapeHtml(prof.name)}
+              <span style="font-size:11px; margin-left:4px; opacity:0.8;">${prof.cloudSync !== false ? '☁️' : '🔒'}</span>
+            </div>
             <div class="qs-bal">${stats.count} ${stats.count === 1 ? 'entry' : 'entries'} • Balance: ${balFormatted}</div>
           </div>
         </div>
@@ -3635,6 +3743,13 @@
     nameInput.value = target.name;
     editingProfileEmoji = target.icon || '🐖';
 
+    const cloudToggle = document.getElementById('editProfileCloudSyncToggle');
+    if(cloudToggle){
+      const isCloud = target.cloudSync !== false;
+      cloudToggle.checked = isCloud;
+      updateEditSyncToggleUI(isCloud);
+    }
+
     document.querySelectorAll('#editProfileEmojiGrid .cp-emoji-chip').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.emoji === editingProfileEmoji);
     });
@@ -3656,22 +3771,38 @@
     const newName = nameInput ? nameInput.value.trim() : '';
     if(!id || !newName) return;
 
+    const cloudToggle = document.getElementById('editProfileCloudSyncToggle');
+    const isCloud = cloudToggle ? cloudToggle.checked : false;
+
     const profiles = loadProfiles();
     const idx = profiles.findIndex(p => p.id === id);
     if(idx !== -1){
+      const wasCloud = profiles[idx].cloudSync !== false;
       profiles[idx] = {
         ...profiles[idx],
         name: newName,
-        icon: editingProfileEmoji || profiles[idx].icon || '🐖'
+        icon: editingProfileEmoji || profiles[idx].icon || '🐖',
+        cloudSync: isCloud
       };
       saveProfiles(profiles);
       updateHeaderProfileUI();
       renderProfilePageList();
       closeEditProfileModal();
 
-      const cfg = loadSyncConfig();
-      if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
-        debouncedAutoSync();
+      if(getActiveProfileId() === id){
+        updateSubpageStateCard();
+        updateSyncBadgeUI();
+      }
+
+      // If switched from Cloud to Private: remove from Gist manifest and delete cloud file
+      if(wasCloud && !isCloud){
+        const remainingCloud = profiles.filter(p => p.cloudSync !== false);
+        syncProfileDeletionToCloud(id, profiles[idx].syncFileName, remainingCloud);
+      } else if(isCloud){
+        const cfg = loadSyncConfig();
+        if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+          debouncedAutoSync();
+        }
       }
     }
   }
@@ -3722,7 +3853,9 @@
               <span class="pc-dot">•</span>
               <span class="${balClass}">Balance: ${balFormatted}</span>
             </div>
-            <div class="pc-file-hint">☁️ ${prof.syncFileName || 'paisa-hisaab-sync.json'}</div>
+            <div class="pc-sync-badge ${prof.cloudSync !== false ? 'cloud' : 'private'}">
+              ${prof.cloudSync !== false ? '☁️ Shared Cloud' : '🔒 Private (Device Only)'}
+            </div>
           </div>
         </div>
         <div class="pc-right">
@@ -3759,6 +3892,9 @@
       return;
     }
 
+    const cloudToggle = document.getElementById('createProfileCloudSyncToggle');
+    const isCloud = cloudToggle ? cloudToggle.checked : false;
+
     const slug = slugifyProfileName(name);
     const profiles = loadProfiles();
     const newId = 'p_' + slug + '_' + Date.now().toString(36).slice(-4);
@@ -3773,6 +3909,7 @@
       name: name,
       icon: selectedProfileEmoji || '🐖',
       syncFileName: syncFileName,
+      cloudSync: isCloud,
       isProtected: false,
       createdAt: new Date().toISOString()
     };
@@ -3783,9 +3920,11 @@
     closeCreateProfileModal();
     switchProfile(newId);
 
-    const cfg = loadSyncConfig();
-    if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
-      debouncedAutoSync();
+    if(isCloud){
+      const cfg = loadSyncConfig();
+      if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+        debouncedAutoSync();
+      }
     }
   }
 
@@ -3843,8 +3982,11 @@
           renderProfilePageList();
         }
 
-        // 5. Permanently sync deletion to GitHub Gist immediately
-        syncProfileDeletionToCloud(profileId, target.syncFileName, remaining);
+        // 5. Permanently sync deletion to GitHub Gist immediately if it was a cloud profile
+        if(target.cloudSync !== false){
+          const remainingCloud = remaining.filter(p => p.cloudSync !== false);
+          syncProfileDeletionToCloud(profileId, target.syncFileName, remainingCloud);
+        }
       }
     });
   }
@@ -3855,13 +3997,15 @@
 
     try{
       const profilesManifest = {
-        profiles: remainingProfiles.map(p => ({
-          id: p.id,
-          name: p.name,
-          icon: p.icon,
-          syncFileName: p.syncFileName,
-          isProtected: false
-        })),
+        profiles: remainingProfiles
+          .filter(p => p.cloudSync !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            icon: p.icon,
+            syncFileName: p.syncFileName,
+            isProtected: false
+          })),
         deletedProfileIds: loadDeletedProfileIds(),
         lastUpdated: new Date().toISOString()
       };
@@ -4072,6 +4216,20 @@
         editingProfileEmoji = chip.dataset.emoji || '🐖';
       });
     });
+
+    const createToggle = document.getElementById('createProfileCloudSyncToggle');
+    if(createToggle){
+      createToggle.addEventListener('change', () => {
+        updateCreateSyncToggleUI(createToggle.checked);
+      });
+    }
+
+    const editToggle = document.getElementById('editProfileCloudSyncToggle');
+    if(editToggle){
+      editToggle.addEventListener('change', () => {
+        updateEditSyncToggleUI(editToggle.checked);
+      });
+    }
   }
 
   // Initialize Profiles UI

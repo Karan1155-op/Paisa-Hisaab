@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
-<link rel="stylesheet" href="style.css?v=76">
+<link rel="stylesheet" href="style.css?v=77">
 </head>
 <body>
 
@@ -633,7 +633,23 @@
       <div class="cp-form-group">
         <label for="newProfileNameInput" class="cp-label">Profile Name</label>
         <input type="text" id="newProfileNameInput" class="cp-input" placeholder="e.g. My Savings, Personal, Trip..." maxlength="28" required autocomplete="off">
-        <div class="cp-cloud-preview" id="cpCloudPreview">
+      </div>
+
+      <div class="cp-form-group">
+        <label class="cp-label">Cloud Sharing & Privacy</label>
+        <div class="sync-toggle-card" style="margin:0;">
+          <div class="sync-toggle-row">
+            <div class="sync-toggle-info">
+              <div class="sync-toggle-title" id="createSyncToggleTitle">🔒 Private (This Device Only)</div>
+              <div class="sync-toggle-desc" id="createSyncToggleDesc">Safe & private on this phone. Won't upload to GitHub Gist or show on other devices.</div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="createProfileCloudSyncToggle">
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="cp-cloud-preview" id="cpCloudPreview" style="display:none; margin-top:8px;">
           <span class="cp-cloud-icon">☁️</span>
           <span class="cp-cloud-text">Cloud File: <code id="cpCloudFilename">paisa-hisaab-my-savings.json</code></span>
         </div>
@@ -680,6 +696,22 @@
       <div class="cp-form-group">
         <label for="editProfileNameInput" class="cp-label">Profile Name</label>
         <input type="text" id="editProfileNameInput" class="cp-input" placeholder="e.g. My Savings, Personal..." maxlength="28" required autocomplete="off">
+      </div>
+
+      <div class="cp-form-group">
+        <label class="cp-label">Cloud Sharing & Privacy</label>
+        <div class="sync-toggle-card" style="margin:0;">
+          <div class="sync-toggle-row">
+            <div class="sync-toggle-info">
+              <div class="sync-toggle-title" id="editSyncToggleTitle">🔒 Private (This Device Only)</div>
+              <div class="sync-toggle-desc" id="editSyncToggleDesc">Safe & private on this phone. Won't upload to GitHub Gist or show on other devices.</div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="editProfileCloudSyncToggle">
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="cp-form-group">
@@ -810,6 +842,6 @@
   </div>
 </nav>
 
-<script src="app.js?v=76"></script>
+<script src="app.js?v=77"></script>
 </body>
 </html>
