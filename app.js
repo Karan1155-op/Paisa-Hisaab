@@ -3589,31 +3589,28 @@
     if(profFileEl) profFileEl.textContent = activeProf.cloudSync !== false ? getActiveSyncFileName() : '🔒 Local Only';
   }
 
-  function updateCreateSyncToggleUI(isCloud){
-    const titleEl = document.getElementById('createSyncToggleTitle');
-    const descEl = document.getElementById('createSyncToggleDesc');
+  function setCreateSyncMode(mode){
+    const input = document.getElementById('createProfileSyncMode');
+    if(input) input.value = mode;
+    const privBtn = document.getElementById('createModePrivateBtn');
+    const cloudBtn = document.getElementById('createModeCloudBtn');
     const preview = document.getElementById('cpCloudPreview');
-    if(isCloud){
-      if(titleEl) titleEl.textContent = '☁️ Shared Cloud (GitHub Gist)';
-      if(descEl) descEl.textContent = 'Syncs to GitHub Gist so family can access this profile on their devices.';
-      if(preview) preview.style.display = 'flex';
-    } else {
-      if(titleEl) titleEl.textContent = '🔒 Private (This Device Only)';
-      if(descEl) descEl.textContent = 'Safe & private on this phone. Won\'t upload to GitHub Gist or show on other devices.';
-      if(preview) preview.style.display = 'none';
-    }
+    const isCloud = mode === 'cloud';
+
+    if(privBtn) privBtn.classList.toggle('active', !isCloud);
+    if(cloudBtn) cloudBtn.classList.toggle('active', isCloud);
+    if(preview) preview.style.display = isCloud ? 'flex' : 'none';
   }
 
-  function updateEditSyncToggleUI(isCloud){
-    const titleEl = document.getElementById('editSyncToggleTitle');
-    const descEl = document.getElementById('editSyncToggleDesc');
-    if(isCloud){
-      if(titleEl) titleEl.textContent = '☁️ Shared Cloud (GitHub Gist)';
-      if(descEl) descEl.textContent = 'Syncs to GitHub Gist so family can access this profile on their devices.';
-    } else {
-      if(titleEl) titleEl.textContent = '🔒 Private (This Device Only)';
-      if(descEl) descEl.textContent = 'Safe & private on this phone. Won\'t upload to GitHub Gist or show on other devices.';
-    }
+  function setEditSyncMode(mode){
+    const input = document.getElementById('editProfileSyncMode');
+    if(input) input.value = mode;
+    const privBtn = document.getElementById('editModePrivateBtn');
+    const cloudBtn = document.getElementById('editModeCloudBtn');
+    const isCloud = mode === 'cloud';
+
+    if(privBtn) privBtn.classList.toggle('active', !isCloud);
+    if(cloudBtn) cloudBtn.classList.toggle('active', isCloud);
   }
 
   function openCreateProfileModal(){
@@ -3629,11 +3626,7 @@
     });
     if(preview) preview.textContent = generateProfileSyncFileName('');
 
-    const cloudToggle = document.getElementById('createProfileCloudSyncToggle');
-    if(cloudToggle){
-      cloudToggle.checked = false; // Option A: Default to Private (This Device Only)
-      updateCreateSyncToggleUI(false);
-    }
+    setCreateSyncMode('private'); // Option A: Defaults to Private
 
     closeQuickSwitchModal();
     modal.classList.add('show');
@@ -3743,12 +3736,7 @@
     nameInput.value = target.name;
     editingProfileEmoji = target.icon || '🐖';
 
-    const cloudToggle = document.getElementById('editProfileCloudSyncToggle');
-    if(cloudToggle){
-      const isCloud = target.cloudSync !== false;
-      cloudToggle.checked = isCloud;
-      updateEditSyncToggleUI(isCloud);
-    }
+    setEditSyncMode(target.cloudSync !== false ? 'cloud' : 'private');
 
     document.querySelectorAll('#editProfileEmojiGrid .cp-emoji-chip').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.emoji === editingProfileEmoji);
@@ -3771,8 +3759,8 @@
     const newName = nameInput ? nameInput.value.trim() : '';
     if(!id || !newName) return;
 
-    const cloudToggle = document.getElementById('editProfileCloudSyncToggle');
-    const isCloud = cloudToggle ? cloudToggle.checked : false;
+    const modeInput = document.getElementById('editProfileSyncMode');
+    const isCloud = modeInput ? modeInput.value === 'cloud' : false;
 
     const profiles = loadProfiles();
     const idx = profiles.findIndex(p => p.id === id);
@@ -3892,8 +3880,8 @@
       return;
     }
 
-    const cloudToggle = document.getElementById('createProfileCloudSyncToggle');
-    const isCloud = cloudToggle ? cloudToggle.checked : false;
+    const modeInput = document.getElementById('createProfileSyncMode');
+    const isCloud = modeInput ? modeInput.value === 'cloud' : false;
 
     const slug = slugifyProfileName(name);
     const profiles = loadProfiles();
@@ -4217,19 +4205,15 @@
       });
     });
 
-    const createToggle = document.getElementById('createProfileCloudSyncToggle');
-    if(createToggle){
-      createToggle.addEventListener('change', () => {
-        updateCreateSyncToggleUI(createToggle.checked);
-      });
-    }
+    const cPrivBtn = document.getElementById('createModePrivateBtn');
+    const cCloudBtn = document.getElementById('createModeCloudBtn');
+    if(cPrivBtn) cPrivBtn.addEventListener('click', () => setCreateSyncMode('private'));
+    if(cCloudBtn) cCloudBtn.addEventListener('click', () => setCreateSyncMode('cloud'));
 
-    const editToggle = document.getElementById('editProfileCloudSyncToggle');
-    if(editToggle){
-      editToggle.addEventListener('change', () => {
-        updateEditSyncToggleUI(editToggle.checked);
-      });
-    }
+    const ePrivBtn = document.getElementById('editModePrivateBtn');
+    const eCloudBtn = document.getElementById('editModeCloudBtn');
+    if(ePrivBtn) ePrivBtn.addEventListener('click', () => setEditSyncMode('private'));
+    if(eCloudBtn) eCloudBtn.addEventListener('click', () => setEditSyncMode('cloud'));
   }
 
   // Initialize Profiles UI

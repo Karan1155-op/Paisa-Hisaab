@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
-<link rel="stylesheet" href="style.css?v=77">
+<link rel="stylesheet" href="style.css?v=78">
 </head>
 <body>
 
@@ -636,19 +636,31 @@
       </div>
 
       <div class="cp-form-group">
-        <label class="cp-label">Cloud Sharing & Privacy</label>
-        <div class="sync-toggle-card" style="margin:0;">
-          <div class="sync-toggle-row">
-            <div class="sync-toggle-info">
-              <div class="sync-toggle-title" id="createSyncToggleTitle">🔒 Private (This Device Only)</div>
-              <div class="sync-toggle-desc" id="createSyncToggleDesc">Safe & private on this phone. Won't upload to GitHub Gist or show on other devices.</div>
+        <label class="cp-label">Account Type / Sync Mode</label>
+        <div class="sync-mode-selector" id="createSyncModeSelector">
+          <button type="button" class="sync-mode-card active" data-mode="private" id="createModePrivateBtn">
+            <div class="smc-top">
+              <div class="smc-icon-title">
+                <span class="smc-icon">🔒</span>
+                <span class="smc-title">Private</span>
+              </div>
+              <span class="smc-radio">✓</span>
             </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="createProfileCloudSyncToggle">
-              <span class="ios-slider"></span>
-            </label>
-          </div>
+            <div class="smc-desc">This device only. Won't upload to Gist or show on family phones.</div>
+          </button>
+
+          <button type="button" class="sync-mode-card" data-mode="cloud" id="createModeCloudBtn">
+            <div class="smc-top">
+              <div class="smc-icon-title">
+                <span class="smc-icon">☁️</span>
+                <span class="smc-title">Cloud Sync</span>
+              </div>
+              <span class="smc-radio">✓</span>
+            </div>
+            <div class="smc-desc">Shared on GitHub Gist so family can access this profile.</div>
+          </button>
         </div>
+        <input type="hidden" id="createProfileSyncMode" value="private">
         <div class="cp-cloud-preview" id="cpCloudPreview" style="display:none; margin-top:8px;">
           <span class="cp-cloud-icon">☁️</span>
           <span class="cp-cloud-text">Cloud File: <code id="cpCloudFilename">paisa-hisaab-my-savings.json</code></span>
@@ -699,19 +711,31 @@
       </div>
 
       <div class="cp-form-group">
-        <label class="cp-label">Cloud Sharing & Privacy</label>
-        <div class="sync-toggle-card" style="margin:0;">
-          <div class="sync-toggle-row">
-            <div class="sync-toggle-info">
-              <div class="sync-toggle-title" id="editSyncToggleTitle">🔒 Private (This Device Only)</div>
-              <div class="sync-toggle-desc" id="editSyncToggleDesc">Safe & private on this phone. Won't upload to GitHub Gist or show on other devices.</div>
+        <label class="cp-label">Account Type / Sync Mode</label>
+        <div class="sync-mode-selector" id="editSyncModeSelector">
+          <button type="button" class="sync-mode-card active" data-mode="private" id="editModePrivateBtn">
+            <div class="smc-top">
+              <div class="smc-icon-title">
+                <span class="smc-icon">🔒</span>
+                <span class="smc-title">Private</span>
+              </div>
+              <span class="smc-radio">✓</span>
             </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="editProfileCloudSyncToggle">
-              <span class="ios-slider"></span>
-            </label>
-          </div>
+            <div class="smc-desc">This device only. Won't upload to Gist or show on family phones.</div>
+          </button>
+
+          <button type="button" class="sync-mode-card" data-mode="cloud" id="editModeCloudBtn">
+            <div class="smc-top">
+              <div class="smc-icon-title">
+                <span class="smc-icon">☁️</span>
+                <span class="smc-title">Cloud Sync</span>
+              </div>
+              <span class="smc-radio">✓</span>
+            </div>
+            <div class="smc-desc">Shared on GitHub Gist so family can access this profile.</div>
+          </button>
         </div>
+        <input type="hidden" id="editProfileSyncMode" value="private">
       </div>
 
       <div class="cp-form-group">
@@ -842,6 +866,6 @@
   </div>
 </nav>
 
-<script src="app.js?v=77"></script>
+<script src="app.js?v=78"></script>
 </body>
 </html>
