@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
-<link rel="stylesheet" href="style.css?v=79">
+<link rel="stylesheet" href="style.css?v=80">
 </head>
 <body>
 
@@ -445,7 +445,7 @@
     </div>
 
     <button type="button" class="backup-action save-sync" id="saveSyncBtn">Save sync settings</button>
-    <p class="backup-status" id="cloudSyncStatus"></p>
+    <p class="backup-status" id="cloudSyncStatus" style="display:none;"></p>
     <p class="sync-last" id="syncLast"></p>
   </div>
 </div>
@@ -845,6 +845,9 @@
   <div class="txn-list-body" id="txnListBody"></div>
 </div>
 
+<!-- Global Toast Notifications -->
+<div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
     <button class="nav-item active" data-nav="home">
@@ -866,6 +869,6 @@
   </div>
 </nav>
 
-<script src="app.js?v=79"></script>
+<script src="app.js?v=80"></script>
 </body>
 </html>

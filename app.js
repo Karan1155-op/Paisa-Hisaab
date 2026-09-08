@@ -1536,14 +1536,80 @@
   const importFileInput = document.getElementById('importFile');
   let pendingImportValid = [];
 
+  let toastTimer = null;
+  function showToast(text, kind = '', duration = null){
+    if(!text) return;
+    const container = document.getElementById('toastContainer');
+    if(!container) return;
+
+    if(toastTimer){
+      clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+
+    container.innerHTML = '';
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg' + (kind ? (' ' + kind) : '');
+
+    let iconHtml = '';
+    const isSpin = !kind && (text.includes('…') || text.includes('...') || text.toLowerCase().includes('syncing') || text.toLowerCase().includes('fetching') || text.toLowerCase().includes('pushing'));
+    if(kind === 'ok'){
+      iconHtml = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    } else if(kind === 'err'){
+      iconHtml = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+    } else if(isSpin){
+      iconHtml = '<svg class="toast-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>';
+    }
+
+    toast.innerHTML = `${iconHtml}<span>${text}</span>`;
+
+    toast.addEventListener('click', () => {
+      dismissToast(toast);
+    });
+
+    container.appendChild(toast);
+
+    let time = duration;
+    if(!time){
+      if(isSpin){
+        time = 10000;
+      } else if(kind === 'err'){
+        time = 3800;
+      } else {
+        time = 2800;
+      }
+    }
+
+    toastTimer = setTimeout(() => {
+      dismissToast(toast);
+    }, time);
+  }
+
+  function dismissToast(toast){
+    if(!toast || toast.classList.contains('hiding')) return;
+    toast.classList.add('hiding');
+    setTimeout(() => {
+      if(toast && toast.parentNode){
+        toast.parentNode.removeChild(toast);
+      }
+    }, 260);
+  }
+  window.showToast = showToast;
+
   function setBackupStatus(text, kind){
     backupStatus.textContent = text || '';
     backupStatus.className = 'backup-status' + (kind ? (' ' + kind) : '');
   }
 
   function setSyncStatus(text, kind){
-    cloudSyncStatus.textContent = text || '';
-    cloudSyncStatus.className = 'backup-status' + (kind ? (' ' + kind) : '');
+    if(cloudSyncStatus){
+      cloudSyncStatus.textContent = text || '';
+      cloudSyncStatus.className = 'backup-status' + (kind ? (' ' + kind) : '');
+    }
+    if(text){
+      showToast(text, kind);
+    }
   }
 
   function resetBackupSheet(){
