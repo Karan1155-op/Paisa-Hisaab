@@ -1948,7 +1948,7 @@
     flex-direction:column;
     align-items:center;
     gap:3px;
-    padding:8px 18px;
+    padding:6px 12px;
     border:none;
     background:none;
     color:rgba(255,255,255,0.55);
@@ -1958,6 +1958,9 @@
     cursor:pointer;
     transition: color 0.15s;
     position:relative;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
   }
   .nav-item .nav-icon{
     font-size:20px;
@@ -2147,48 +2150,91 @@
   }
 
   /* ── Header Sync Badge ── */
+  /* ── Glowing Icon-Only Sync Badge ── */
   .sync-badge-btn{
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1.8px solid var(--line);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    background: var(--card);
-    border: 1.5px solid var(--line);
-    font-family: 'Inter', sans-serif;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--text-soft);
+    justify-content: center;
     cursor: pointer;
     box-shadow: var(--shadow);
-    transition: all 0.15s ease;
-    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-soft);
+    position: relative;
+    user-select: none;
   }
-  .sync-badge-btn:active{ transform: scale(0.95); }
-  .sync-badge-btn.synced{ border-color: #B4F4CC; color: #0E8040; background: #EDFCF4; }
-  .sync-badge-btn.synced .sync-badge-dot{ background: #12A454; }
-  .sync-badge-btn.cloud-new{ border-color: #C5B0FF; color: #5B3DF5; background: #F3F0FF; animation: pulseSync 2s infinite; }
-  .sync-badge-btn.cloud-new .sync-badge-dot{ background: #7C5CFF; }
-  .sync-badge-btn.local-new{ border-color: #FFE2A6; color: #B36B00; background: #FFF9ED; }
-  .sync-badge-btn.local-new .sync-badge-dot{ background: #F5A623; }
-  .sync-badge-btn.conflict{ border-color: #FFB3AE; color: #C0292B; background: #FDEAE9; }
-  .sync-badge-btn.conflict .sync-badge-dot{ background: #E3483F; }
-  .sync-badge-btn.syncing{ opacity: 0.85; }
-  .sync-badge-btn.syncing .sync-badge-icon{ display:inline-block; animation: spinSync 1s linear infinite; }
-
-  @keyframes pulseSync{
-    0%{ box-shadow: 0 0 0 0 rgba(91,61,245,0.4); }
-    70%{ box-shadow: 0 0 0 7px rgba(91,61,245,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(91,61,245,0); }
+  .sync-badge-btn:hover{
+    transform: translateY(-1px) scale(1.05);
   }
-  @keyframes spinSync{ 100%{ transform: rotate(360deg); } }
+  .sync-badge-btn:active{
+    transform: scale(0.92);
+  }
+  .sync-svg-icon{
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.3;
+    transition: transform 0.2s ease, stroke 0.2s ease;
+  }
 
-  .sync-badge-dot{
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #A0A3BD;
-    display: inline-block;
+  /* Status Glowing Colors */
+  /* In Sync: Green Glow */
+  .sync-badge-btn.synced{
+    border-color: #10B981;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.08);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+  }
+
+  /* Unsaved Local Changes: Orange Glow */
+  .sync-badge-btn.local_new,
+  .sync-badge-btn.local-new{
+    border-color: #F59E0B;
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+    animation: pulseOrangeGlow 2s infinite ease-in-out;
+  }
+
+  /* Sync Error: Red Glow */
+  .sync-badge-btn.error{
+    border-color: #EF4444;
+    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+  }
+
+  /* Syncing: Spinning Refresh Animation */
+  .sync-badge-btn.syncing{
+    border-color: var(--grad1);
+    color: var(--grad1);
+    background: rgba(91, 61, 245, 0.1);
+    box-shadow: 0 0 14px rgba(91, 61, 245, 0.45);
+  }
+  .sync-badge-btn.syncing .sync-svg-icon{
+    animation: spinSync 0.85s linear infinite;
+  }
+
+  /* Cloud New / Conflict: Purple / Violet Glow */
+  .sync-badge-btn.cloud_new,
+  .sync-badge-btn.conflict{
+    border-color: #8B5CF6;
+    color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.1);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.45);
+  }
+
+  @keyframes spinSync{
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes pulseOrangeGlow{
+    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.35); }
+    50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.65); }
   }
 
   /* ── Sync State Card in Subpage ── */
@@ -3301,4 +3347,137 @@
   body.dark-mode .ssc-profile-bar{
     background: rgba(142, 122, 255, 0.09);
     border-color: rgba(142, 122, 255, 0.25);
+  }
+
+  /* ── Instagram-Style Quick Switch Bottom Sheet ── */
+  .quick-switch-sheet{
+    text-align: left;
+    max-height: 75vh;
+  }
+  .quick-switch-header{
+    margin-bottom: 14px;
+  }
+  .quick-switch-header h2{
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 3px;
+    color: var(--text);
+  }
+  .quick-switch-sub{
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .quick-switch-list{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  .qs-item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+  }
+  .qs-item:hover{
+    border-color: var(--grad1);
+    transform: translateY(-1px);
+  }
+  .qs-item.active{
+    border-color: var(--grad1);
+    background: linear-gradient(135deg, rgba(91, 61, 245, 0.08), rgba(168, 85, 247, 0.04));
+    box-shadow: 0 4px 14px rgba(91, 61, 245, 0.1);
+  }
+  .qs-item-left{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .qs-avatar{
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(91, 61, 245, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .qs-name{
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .qs-bal{
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .quick-switch-add-btn{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px dashed var(--line);
+    background: transparent;
+    color: var(--grad1);
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .quick-switch-add-btn:hover{
+    border-color: var(--grad1);
+    background: rgba(91, 61, 245, 0.06);
+  }
+
+  /* Profile Card Action Buttons */
+  .pc-edit-btn{
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 6px;
+    opacity: 0.55;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+  }
+  .pc-edit-btn:hover{
+    opacity: 1;
+    background: rgba(91, 61, 245, 0.1);
+    transform: scale(1.12);
+  }
+
+  /* Dark mode overrides */
+  body.dark-mode .qs-item{
+    background: #141727;
+    border-color: var(--line);
+  }
+  body.dark-mode .qs-item.active{
+    background: linear-gradient(135deg, rgba(142, 122, 255, 0.14), rgba(216, 180, 254, 0.05));
+    border-color: var(--grad1);
+  }
+  body.dark-mode .qs-avatar{
+    background: rgba(142, 122, 255, 0.15);
+  }
+  body.dark-mode .quick-switch-add-btn{
+    border-color: var(--line);
+    color: #D8B4FE;
+  }
+  body.dark-mode .quick-switch-add-btn:hover{
+    border-color: var(--grad1);
+    background: rgba(142, 122, 255, 0.1);
   }

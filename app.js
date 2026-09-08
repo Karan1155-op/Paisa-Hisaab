@@ -1727,9 +1727,7 @@
 
   function updateSyncBadgeUI(){
     const badgeBtn = document.getElementById('syncBadgeBtn');
-    const badgeText = document.getElementById('syncBadgeText');
-
-    if(!badgeBtn || !badgeText) return;
+    if(!badgeBtn) return;
 
     const cfg = loadSyncConfig();
     if(!cfg.gistId || !cfg.token){
@@ -1740,19 +1738,19 @@
     badgeBtn.style.display = 'inline-flex';
     badgeBtn.className = 'sync-badge-btn ' + syncState.status;
 
+    let tooltip = 'In Sync with Cloud';
     if(syncState.status === 'syncing'){
-      badgeText.textContent = 'Syncing…';
+      tooltip = 'Syncing with cloud…';
     } else if(syncState.status === 'cloud_new'){
-      badgeText.textContent = 'Updating…';
+      tooltip = 'Cloud has updates (Tap to sync)';
     } else if(syncState.status === 'local_new'){
-      badgeText.textContent = 'Unsaved to Cloud';
+      tooltip = 'Unsaved local changes (Tap to sync)';
     } else if(syncState.status === 'conflict'){
-      badgeText.textContent = 'Merging…';
+      tooltip = 'Multi-device sync needed (Tap to merge)';
     } else if(syncState.status === 'error'){
-      badgeText.textContent = 'Sync Error';
-    } else {
-      badgeText.textContent = 'In Sync';
+      tooltip = 'Sync error — check token & internet (Tap to retry)';
     }
+    badgeBtn.title = tooltip;
   }
 
   function updateSubpageStateCard(){
@@ -2282,8 +2280,7 @@
   document.getElementById('smartSyncBtn').addEventListener('click', () => smartSync(false));
   document.getElementById('sscRefreshBtn').addEventListener('click', () => checkCloudStatus(false, true));
   document.getElementById('syncBadgeBtn').addEventListener('click', () => {
-    // Open cloud sync subpage
-    document.getElementById('openCloudSyncSubpageBtn').click();
+    smartSync(false);
   });
 
   function showCustomConfirm({ icon = '❓', title = 'Confirm Action', msg = 'Are you sure?', okText = 'Proceed', cancelText = 'Cancel', isDanger = false }){
@@ -2360,7 +2357,8 @@
     const pdfExportOverlay = document.getElementById('pdfExportOverlay');
     const dateTimeOverlay = document.getElementById('dateTimeOverlay');
     const customCalOverlay = document.getElementById('customCalendarOverlay');
-    const profileSheet = document.getElementById('profileSheetOverlay');
+    const quickSwitchOverlay = document.getElementById('quickSwitchOverlay');
+    const editProfileOverlay = document.getElementById('editProfileOverlay');
     const createProfileModal = document.getElementById('createProfileOverlay');
     const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
     const cloudSyncSubpage = document.getElementById('cloudSyncSubpageOverlay');
@@ -2373,8 +2371,9 @@
            (pdfExportOverlay && pdfExportOverlay.classList.contains('show')) ||
            (dateTimeOverlay && dateTimeOverlay.classList.contains('show')) ||
            (customCalOverlay && customCalOverlay.classList.contains('show')) ||
+           (quickSwitchOverlay && quickSwitchOverlay.classList.contains('show')) ||
+           (editProfileOverlay && editProfileOverlay.classList.contains('show')) ||
            (createProfileModal && createProfileModal.classList.contains('show')) ||
-           (profileSheet && profileSheet.classList.contains('show')) ||
            (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
            (cloudSyncSubpage && cloudSyncSubpage.classList.contains('show')) ||
            (backupSubpage && backupSubpage.classList.contains('show')) ||
@@ -3177,9 +3176,11 @@
     cloudSyncSubpage.className = 'settings-subpage';
     if(syncAdvSubpage) syncAdvSubpage.className = 'settings-subpage';
 
+    const profilesOverlay = document.getElementById('profilesOverlay');
     const overlayMap = {
       'transactions': txnListOverlay,
-      'settings': settingsOverlay
+      'settings': settingsOverlay,
+      'profiles': profilesOverlay
     };
 
     const prevOverlay = overlayMap[prevTab];
@@ -3219,6 +3220,10 @@
           if(txnReasonSearchClear) txnReasonSearchClear.style.display = 'none';
         }
         renderTxnList();
+      } else if(newTab === 'profiles'){
+        if(clearFab) clearFab.style.display = 'none';
+        if(pdfFabBtn) pdfFabBtn.style.display = 'none';
+        renderProfilePageList();
       }
 
       if(prevTab === 'home'){
@@ -3228,27 +3233,28 @@
           isTabAnimating = false;
         }, 150);
       } else {
-        // Switching between transactions and settings — prevent any home screen flash
+        const prevBase = prevTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay';
+        const newBase = newTab === 'transactions' ? 'txn-list-overlay' : 'settings-overlay';
         if(isGoingRight){
           prevOverlay.style.zIndex = '80';
           newOverlay.style.zIndex = '82';
-          newOverlay.className = 'settings-overlay show slide-in-right';
+          newOverlay.className = newBase + ' show slide-in-right';
           setTimeout(() => {
-            prevOverlay.className = 'txn-list-overlay';
+            prevOverlay.className = prevBase;
             prevOverlay.style.zIndex = '';
-            newOverlay.className = 'settings-overlay show';
+            newOverlay.className = newBase + ' show';
             newOverlay.style.zIndex = '';
             isTabAnimating = false;
           }, 150);
         } else {
           newOverlay.style.zIndex = '80';
-          newOverlay.className = 'txn-list-overlay show';
+          newOverlay.className = newBase + ' show';
           prevOverlay.style.zIndex = '82';
-          prevOverlay.className = 'settings-overlay show slide-out-right';
+          prevOverlay.className = prevBase + ' show slide-out-right';
           setTimeout(() => {
-            prevOverlay.className = 'settings-overlay';
+            prevOverlay.className = prevBase;
             prevOverlay.style.zIndex = '';
-            newOverlay.className = 'txn-list-overlay show';
+            newOverlay.className = newBase + ' show';
             newOverlay.style.zIndex = '';
             isTabAnimating = false;
           }, 150);
@@ -3256,6 +3262,9 @@
       }
     }
   }
+
+  const closeProfilesOverlayBtn = document.getElementById('closeProfilesOverlayBtn');
+  if(closeProfilesOverlayBtn) closeProfilesOverlayBtn.addEventListener('click', () => switchTab('home'));
 
   // ── Settings Subpages Navigation ──
   const backupSubpage = document.getElementById('backupSubpageOverlay');
@@ -3373,18 +3382,26 @@
       return;
     }
 
-    // 4cd. Create Profile Modal
-    const createProfileModal = document.getElementById('createProfileOverlay');
-    if(createProfileModal && createProfileModal.classList.contains('show')){
-      createProfileModal.classList.remove('show');
+    // 4cd. Quick Switch Modal
+    const quickSwitchOverlay = document.getElementById('quickSwitchOverlay');
+    if(quickSwitchOverlay && quickSwitchOverlay.classList.contains('show')){
+      quickSwitchOverlay.classList.remove('show');
       if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
 
-    // 4ce. Profile Switcher Sheet
-    const profileSheet = document.getElementById('profileSheetOverlay');
-    if(profileSheet && profileSheet.classList.contains('show')){
-      profileSheet.classList.remove('show');
+    // 4ce. Edit Profile Modal
+    const editProfileOverlay = document.getElementById('editProfileOverlay');
+    if(editProfileOverlay && editProfileOverlay.classList.contains('show')){
+      editProfileOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
+    // 4cf. Create Profile Modal
+    const createProfileModal = document.getElementById('createProfileOverlay');
+    if(createProfileModal && createProfileModal.classList.contains('show')){
+      createProfileModal.classList.remove('show');
       if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
       return;
     }
@@ -3424,34 +3441,20 @@
 
   /* ── Multi-Profile / Multi-Khata UI Controller ── */
   let selectedProfileEmoji = '🐖';
+  let editingProfileEmoji = '🐖';
 
   function updateHeaderProfileUI(){
     const activeProf = getActiveProfile();
-    const pillIcon = document.getElementById('profilePillIcon');
-    const pillName = document.getElementById('profilePillName');
-    if(pillIcon) pillIcon.textContent = activeProf.icon || '🕊️';
-    if(pillName) pillName.textContent = activeProf.name || 'Khata';
+
+    const navProfIcon = document.getElementById('navProfileIcon');
+    if(navProfIcon) navProfIcon.textContent = activeProf.icon || '🕊️';
 
     const profIconEl = document.getElementById('sscProfileIcon');
     const profNameEl = document.getElementById('sscProfileName');
     const profFileEl = document.getElementById('sscProfileFile');
     if(profIconEl) profIconEl.textContent = activeProf.icon || '🕊️';
-    if(profNameEl) profNameEl.textContent = activeProf.name || 'Khata';
+    if(profNameEl) profNameEl.textContent = activeProf.name || 'Account';
     if(profFileEl) profFileEl.textContent = getActiveSyncFileName();
-  }
-
-  function openProfileSheet(){
-    renderProfileList();
-    const overlay = document.getElementById('profileSheetOverlay');
-    if(overlay){
-      overlay.classList.add('show');
-      ensureNavHistory();
-    }
-  }
-
-  function closeProfileSheet(){
-    const overlay = document.getElementById('profileSheetOverlay');
-    if(overlay) overlay.classList.remove('show');
   }
 
   function openCreateProfileModal(){
@@ -3462,12 +3465,12 @@
 
     input.value = '';
     selectedProfileEmoji = '🐖';
-    document.querySelectorAll('.cp-emoji-chip').forEach(chip => {
+    document.querySelectorAll('#createProfileOverlay .cp-emoji-chip').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.emoji === selectedProfileEmoji);
     });
     if(preview) preview.textContent = generateProfileSyncFileName('');
 
-    closeProfileSheet();
+    closeQuickSwitchModal();
     modal.classList.add('show');
     ensureNavHistory();
     setTimeout(() => input.focus(), 150);
@@ -3478,6 +3481,110 @@
     if(modal) modal.classList.remove('show');
   }
 
+  function openQuickSwitchModal(){
+    renderQuickSwitchList();
+    const overlay = document.getElementById('quickSwitchOverlay');
+    if(overlay){
+      overlay.classList.add('show');
+      ensureNavHistory();
+    }
+  }
+
+  function closeQuickSwitchModal(){
+    const overlay = document.getElementById('quickSwitchOverlay');
+    if(overlay) overlay.classList.remove('show');
+  }
+
+  function renderQuickSwitchList(){
+    const container = document.getElementById('quickSwitchListContainer');
+    if(!container) return;
+    const profiles = loadProfiles();
+    const activeId = getActiveProfileId();
+
+    container.innerHTML = '';
+    profiles.forEach(prof => {
+      const item = document.createElement('div');
+      const isActive = prof.id === activeId;
+      item.className = 'qs-item' + (isActive ? ' active' : '');
+      const stats = getProfileStats(prof.id);
+      const balFormatted = (stats.balance >= 0 ? '₹' : '-₹') + Math.abs(stats.balance).toLocaleString('en-IN');
+
+      item.innerHTML = `
+        <div class="qs-item-left">
+          <div class="qs-avatar">${prof.icon || '🕊️'}</div>
+          <div>
+            <div class="qs-name">${escapeHtml(prof.name)} ${prof.isProtected ? '<span class="pc-badge-tag protected" style="font-size:9px; padding:1px 5px;">Primary</span>' : ''}</div>
+            <div class="qs-bal">${stats.count} ${stats.count === 1 ? 'entry' : 'entries'} • Balance: ${balFormatted}</div>
+          </div>
+        </div>
+        ${isActive ? '<span class="pc-active-check" style="width:22px; height:22px; font-size:11px;">✓</span>' : ''}
+      `;
+
+      item.addEventListener('click', () => {
+        if(navigator.vibrate) try{ navigator.vibrate(30); }catch(e){}
+        closeQuickSwitchModal();
+        switchProfile(prof.id);
+      });
+
+      container.appendChild(item);
+    });
+  }
+
+  function openEditProfileModal(profileId){
+    const profiles = loadProfiles();
+    const target = profiles.find(p => p.id === profileId);
+    if(!target) return;
+
+    const modal = document.getElementById('editProfileOverlay');
+    const idInput = document.getElementById('editProfileIdInput');
+    const nameInput = document.getElementById('editProfileNameInput');
+    if(!modal || !idInput || !nameInput) return;
+
+    idInput.value = target.id;
+    nameInput.value = target.name;
+    editingProfileEmoji = target.icon || '🐖';
+
+    document.querySelectorAll('#editProfileEmojiGrid .cp-emoji-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.emoji === editingProfileEmoji);
+    });
+
+    modal.classList.add('show');
+    ensureNavHistory();
+    setTimeout(() => nameInput.focus(), 150);
+  }
+
+  function closeEditProfileModal(){
+    const modal = document.getElementById('editProfileOverlay');
+    if(modal) modal.classList.remove('show');
+  }
+
+  function saveEditProfile(){
+    const idInput = document.getElementById('editProfileIdInput');
+    const nameInput = document.getElementById('editProfileNameInput');
+    const id = idInput ? idInput.value : '';
+    const newName = nameInput ? nameInput.value.trim() : '';
+    if(!id || !newName) return;
+
+    const profiles = loadProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if(idx !== -1){
+      profiles[idx] = {
+        ...profiles[idx],
+        name: newName,
+        icon: editingProfileEmoji || profiles[idx].icon || '🐖'
+      };
+      saveProfiles(profiles);
+      updateHeaderProfileUI();
+      renderProfilePageList();
+      closeEditProfileModal();
+
+      const cfg = loadSyncConfig();
+      if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+        debouncedAutoSync();
+      }
+    }
+  }
+
   function switchProfile(profileId){
     if(!profileId) return;
     setActiveProfileId(profileId);
@@ -3486,7 +3593,7 @@
     updateSubpageStateCard();
     updateSyncBadgeUI();
     updateSyncLastText();
-    closeProfileSheet();
+    renderProfilePageList();
 
     // Check cloud status for newly active profile
     const cfg = loadSyncConfig();
@@ -3495,8 +3602,8 @@
     }
   }
 
-  function renderProfileList(){
-    const container = document.getElementById('profileListContainer');
+  function renderProfilePageList(){
+    const container = document.getElementById('profilePageListContainer');
     if(!container) return;
     const profiles = loadProfiles();
     const activeId = getActiveProfileId();
@@ -3529,15 +3636,24 @@
           </div>
         </div>
         <div class="pc-right">
-          ${isActive ? '<span class="pc-active-check" title="Active">✓</span>' : ''}
-          ${!prof.isProtected ? `<button type="button" class="pc-delete-btn" title="Delete Khata" data-del-id="${prof.id}">🗑️</button>` : ''}
+          ${isActive ? '<span class="pc-active-check" title="Active Account">✓</span>' : ''}
+          <button type="button" class="pc-edit-btn" title="Edit Name & Icon" data-edit-id="${prof.id}">✏️</button>
+          ${!prof.isProtected ? `<button type="button" class="pc-delete-btn" title="Delete Profile" data-del-id="${prof.id}">🗑️</button>` : ''}
         </div>
       `;
 
       card.addEventListener('click', (ev) => {
-        if(ev.target.closest('.pc-delete-btn')) return;
+        if(ev.target.closest('.pc-delete-btn') || ev.target.closest('.pc-edit-btn')) return;
         switchProfile(prof.id);
       });
+
+      const editBtn = card.querySelector('.pc-edit-btn');
+      if(editBtn){
+        editBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          openEditProfileModal(prof.id);
+        });
+      }
 
       const delBtn = card.querySelector('.pc-delete-btn');
       if(delBtn){
@@ -3591,7 +3707,7 @@
     const confirmed = await showCustomConfirm({
       icon: '🗑️',
       title: `Delete '${target.name}'?`,
-      msg: `Kya aap sach me '${target.name}' khata delete karna chahte hain? Iska sara local data aur entries permanently delete ho jayenge.`,
+      msg: `Are you sure you want to permanently delete '${target.name}'? All transactions stored in this profile will be removed.`,
       okText: 'Yes, Delete',
       cancelText: 'Cancel',
       isDanger: true
@@ -3600,7 +3716,7 @@
     if(!confirmed) return;
 
     requestPassword({
-      title: 'Enter security password',
+      title: 'Security Confirmation',
       sub: `Confirm to delete '${target.name}'`,
       onSuccess: () => {
         try{
@@ -3617,29 +3733,72 @@
         if(getActiveProfileId() === profileId){
           switchProfile('default');
         } else {
-          renderProfileList();
+          renderProfilePageList();
         }
       }
     });
   }
 
   function setupProfileEventListeners(){
-    const pillBtn = document.getElementById('profilePillBtn');
-    if(pillBtn) pillBtn.addEventListener('click', openProfileSheet);
+    // Instagram-style Long-press on Profiles Tab
+    const navItemProfiles = document.getElementById('navItemProfiles');
+    let profilesLongPressTimer = null;
+    let isProfilesLongPressTriggered = false;
 
-    const closeSheetBtn = document.getElementById('closeProfileSheetBtn');
-    if(closeSheetBtn) closeSheetBtn.addEventListener('click', closeProfileSheet);
+    function startProfilesLongPress(){
+      isProfilesLongPressTriggered = false;
+      clearTimeout(profilesLongPressTimer);
+      profilesLongPressTimer = setTimeout(() => {
+        isProfilesLongPressTriggered = true;
+        if(navigator.vibrate) try{ navigator.vibrate(40); }catch(e){}
+        openQuickSwitchModal();
+      }, 450);
+    }
 
-    const sheetOverlay = document.getElementById('profileSheetOverlay');
-    if(sheetOverlay){
-      sheetOverlay.addEventListener('click', (e) => {
-        if(e.target === sheetOverlay) closeProfileSheet();
+    function cancelProfilesLongPress(){
+      clearTimeout(profilesLongPressTimer);
+    }
+
+    if(navItemProfiles){
+      navItemProfiles.addEventListener('touchstart', startProfilesLongPress, { passive: true });
+      navItemProfiles.addEventListener('touchend', cancelProfilesLongPress);
+      navItemProfiles.addEventListener('touchmove', cancelProfilesLongPress);
+
+      navItemProfiles.addEventListener('mousedown', (e) => {
+        if(e.button === 0) startProfilesLongPress();
+      });
+      navItemProfiles.addEventListener('mouseup', cancelProfilesLongPress);
+      navItemProfiles.addEventListener('mouseleave', cancelProfilesLongPress);
+
+      navItemProfiles.addEventListener('click', (e) => {
+        if(isProfilesLongPressTriggered){
+          e.preventDefault();
+          e.stopPropagation();
+          isProfilesLongPressTriggered = false;
+          return;
+        }
       });
     }
 
-    const openCreateBtn = document.getElementById('openCreateProfileBtn');
-    if(openCreateBtn) openCreateBtn.addEventListener('click', openCreateProfileModal);
+    // Quick switch modal events
+    const closeQuickSwitchBtn = document.getElementById('closeQuickSwitchBtn');
+    if(closeQuickSwitchBtn) closeQuickSwitchBtn.addEventListener('click', closeQuickSwitchModal);
 
+    const qsAddProfileBtn = document.getElementById('qsAddProfileBtn');
+    if(qsAddProfileBtn) qsAddProfileBtn.addEventListener('click', openCreateProfileModal);
+
+    const quickSwitchOverlay = document.getElementById('quickSwitchOverlay');
+    if(quickSwitchOverlay){
+      quickSwitchOverlay.addEventListener('click', (e) => {
+        if(e.target === quickSwitchOverlay) closeQuickSwitchModal();
+      });
+    }
+
+    // Profiles Page Add Profile button
+    const pageOpenCreateProfileBtn = document.getElementById('pageOpenCreateProfileBtn');
+    if(pageOpenCreateProfileBtn) pageOpenCreateProfileBtn.addEventListener('click', openCreateProfileModal);
+
+    // Create Profile Modal events
     const closeCreateBtn = document.getElementById('closeCreateProfileBtn');
     if(closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreateProfileModal);
 
@@ -3669,9 +3828,9 @@
       });
     }
 
-    document.querySelectorAll('.cp-emoji-chip').forEach(chip => {
+    document.querySelectorAll('#createProfileOverlay .cp-emoji-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        document.querySelectorAll('.cp-emoji-chip').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('#createProfileOverlay .cp-emoji-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         selectedProfileEmoji = chip.dataset.emoji || '🐖';
       });
@@ -3679,6 +3838,41 @@
 
     const saveBtn = document.getElementById('saveNewProfileBtn');
     if(saveBtn) saveBtn.addEventListener('click', saveNewProfile);
+
+    // Edit Profile Modal events
+    const closeEditProfileBtn = document.getElementById('closeEditProfileBtn');
+    if(closeEditProfileBtn) closeEditProfileBtn.addEventListener('click', closeEditProfileModal);
+
+    const cancelEditProfileBtn = document.getElementById('cancelEditProfileBtn');
+    if(cancelEditProfileBtn) cancelEditProfileBtn.addEventListener('click', closeEditProfileModal);
+
+    const saveEditProfileBtn = document.getElementById('saveEditProfileBtn');
+    if(saveEditProfileBtn) saveEditProfileBtn.addEventListener('click', saveEditProfile);
+
+    const editOverlay = document.getElementById('editProfileOverlay');
+    if(editOverlay){
+      editOverlay.addEventListener('click', (e) => {
+        if(e.target === editOverlay) closeEditProfileModal();
+      });
+    }
+
+    const editNameInput = document.getElementById('editProfileNameInput');
+    if(editNameInput){
+      editNameInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          saveEditProfile();
+        }
+      });
+    }
+
+    document.querySelectorAll('#editProfileEmojiGrid .cp-emoji-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#editProfileEmojiGrid .cp-emoji-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        editingProfileEmoji = chip.dataset.emoji || '🐖';
+      });
+    });
   }
 
   // Initialize Profiles UI
