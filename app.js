@@ -2358,6 +2358,7 @@
     const dateTimeOverlay = document.getElementById('dateTimeOverlay');
     const customCalOverlay = document.getElementById('customCalendarOverlay');
     const quickSwitchOverlay = document.getElementById('quickSwitchOverlay');
+    const profileActionsOverlay = document.getElementById('profileActionsOverlay');
     const editProfileOverlay = document.getElementById('editProfileOverlay');
     const createProfileModal = document.getElementById('createProfileOverlay');
     const syncAdvSubpage = document.getElementById('syncAdvancedSubpageOverlay');
@@ -2372,6 +2373,7 @@
            (dateTimeOverlay && dateTimeOverlay.classList.contains('show')) ||
            (customCalOverlay && customCalOverlay.classList.contains('show')) ||
            (quickSwitchOverlay && quickSwitchOverlay.classList.contains('show')) ||
+           (profileActionsOverlay && profileActionsOverlay.classList.contains('show')) ||
            (editProfileOverlay && editProfileOverlay.classList.contains('show')) ||
            (createProfileModal && createProfileModal.classList.contains('show')) ||
            (syncAdvSubpage && syncAdvSubpage.classList.contains('show')) ||
@@ -3399,6 +3401,14 @@
       return;
     }
 
+    // 4cd2. Profile Actions Modal
+    const profileActionsOverlay = document.getElementById('profileActionsOverlay');
+    if(profileActionsOverlay && profileActionsOverlay.classList.contains('show')){
+      profileActionsOverlay.classList.remove('show');
+      if(hasAnyOpenOverlay()) history.pushState({ paisaNav: true }, '');
+      return;
+    }
+
     // 4ce. Edit Profile Modal
     const editProfileOverlay = document.getElementById('editProfileOverlay');
     if(editProfileOverlay && editProfileOverlay.classList.contains('show')){
@@ -3519,7 +3529,7 @@
         <div class="qs-item-left">
           <div class="qs-avatar">${prof.icon || '🕊️'}</div>
           <div>
-            <div class="qs-name">${escapeHtml(prof.name)} ${prof.isProtected ? '<span class="pc-badge-tag protected" style="font-size:9px; padding:1px 5px;">Primary</span>' : ''}</div>
+            <div class="qs-name">${escapeHtml(prof.name)}</div>
             <div class="qs-bal">${stats.count} ${stats.count === 1 ? 'entry' : 'entries'} • Balance: ${balFormatted}</div>
           </div>
         </div>
@@ -3534,6 +3544,37 @@
 
       container.appendChild(item);
     });
+  }
+
+  let selectedActionProfileId = null;
+
+  function openProfileActionsSheet(profileId){
+    const profiles = loadProfiles();
+    const prof = profiles.find(p => p.id === profileId);
+    if(!prof) return;
+
+    selectedActionProfileId = profileId;
+    const stats = getProfileStats(profileId);
+    const balFormatted = (stats.balance >= 0 ? '₹' : '-₹') + Math.abs(stats.balance).toLocaleString('en-IN');
+
+    const avatarEl = document.getElementById('paAvatar');
+    const nameEl = document.getElementById('paName');
+    const subEl = document.getElementById('paSub');
+    if(avatarEl) avatarEl.textContent = prof.icon || '🐖';
+    if(nameEl) nameEl.textContent = prof.name;
+    if(subEl) subEl.textContent = `${stats.count} ${stats.count === 1 ? 'entry' : 'entries'} • Balance: ${balFormatted}`;
+
+    const overlay = document.getElementById('profileActionsOverlay');
+    if(overlay){
+      overlay.classList.add('show');
+      ensureNavHistory();
+    }
+  }
+
+  function closeProfileActionsSheet(){
+    const overlay = document.getElementById('profileActionsOverlay');
+    if(overlay) overlay.classList.remove('show');
+    selectedActionProfileId = null;
   }
 
   function openEditProfileModal(profileId){
@@ -3631,7 +3672,6 @@
           <div class="pc-info">
             <div class="pc-title-row">
               <span class="pc-name">${escapeHtml(prof.name)}</span>
-              ${prof.isProtected ? '<span class="pc-badge-tag protected">Primary</span>' : ''}
             </div>
             <div class="pc-stats">
               <span class="pc-txns">${stats.count} ${stats.count === 1 ? 'entry' : 'entries'}</span>
@@ -3643,31 +3683,16 @@
         </div>
         <div class="pc-right">
           ${isActive ? '<span class="pc-active-check" title="Active Account">✓</span>' : ''}
-          <button type="button" class="pc-edit-btn" title="Edit Name & Icon" data-edit-id="${prof.id}">✏️</button>
-          ${!prof.isProtected ? `<button type="button" class="pc-delete-btn" title="Delete Profile" data-del-id="${prof.id}">🗑️</button>` : ''}
+          <span class="pc-hold-hint" title="Hold to manage">⋮</span>
         </div>
       `;
 
-      card.addEventListener('click', (ev) => {
-        if(ev.target.closest('.pc-delete-btn') || ev.target.closest('.pc-edit-btn')) return;
-        switchProfile(prof.id);
-      });
-
-      const editBtn = card.querySelector('.pc-edit-btn');
-      if(editBtn){
-        editBtn.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          openEditProfileModal(prof.id);
-        });
-      }
-
-      const delBtn = card.querySelector('.pc-delete-btn');
-      if(delBtn){
-        delBtn.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          promptDeleteProfile(prof.id);
-        });
-      }
+      attachLongPress(
+        card,
+        () => switchProfile(prof.id),
+        () => openProfileActionsSheet(prof.id),
+        480
+      );
 
       container.appendChild(card);
     });
@@ -3706,7 +3731,15 @@
     const profiles = loadProfiles();
     const target = profiles.find(p => p.id === profileId);
     if(!target) return;
-    if(target.isProtected || target.id === 'default'){
+
+    if(profiles.length <= 1){
+      await showCustomConfirm({
+        icon: 'ℹ️',
+        title: 'Cannot Delete',
+        msg: 'You must have at least one active profile.',
+        okText: 'Understood',
+        cancelText: ''
+      });
       return;
     }
 
@@ -3736,8 +3769,13 @@
         const remaining = profiles.filter(p => p.id !== profileId);
         saveProfiles(remaining);
 
+        const cfg = loadSyncConfig();
+        if(cfg.gistId && cfg.token && cfg.autoPushOnSave !== false){
+          debouncedAutoSync();
+        }
+
         if(getActiveProfileId() === profileId){
-          switchProfile('default');
+          switchProfile(remaining[0].id);
         } else {
           renderProfilePageList();
         }
@@ -3810,6 +3848,35 @@
     // Profiles Page Add Profile button
     const pageOpenCreateProfileBtn = document.getElementById('pageOpenCreateProfileBtn');
     if(pageOpenCreateProfileBtn) pageOpenCreateProfileBtn.addEventListener('click', openCreateProfileModal);
+
+    // Profile Actions Bottom Sheet events
+    const closeProfileActionsBtn = document.getElementById('closeProfileActionsBtn');
+    if(closeProfileActionsBtn) closeProfileActionsBtn.addEventListener('click', closeProfileActionsSheet);
+
+    const profileActionsOverlay = document.getElementById('profileActionsOverlay');
+    if(profileActionsOverlay){
+      profileActionsOverlay.addEventListener('click', (e) => {
+        if(e.target === profileActionsOverlay) closeProfileActionsSheet();
+      });
+    }
+
+    const paEditBtn = document.getElementById('paEditBtn');
+    if(paEditBtn){
+      paEditBtn.addEventListener('click', () => {
+        const id = selectedActionProfileId;
+        closeProfileActionsSheet();
+        if(id) openEditProfileModal(id);
+      });
+    }
+
+    const paDeleteBtn = document.getElementById('paDeleteBtn');
+    if(paDeleteBtn){
+      paDeleteBtn.addEventListener('click', () => {
+        const id = selectedActionProfileId;
+        closeProfileActionsSheet();
+        if(id) promptDeleteProfile(id);
+      });
+    }
 
     // Create Profile Modal events
     const closeCreateBtn = document.getElementById('closeCreateProfileBtn');

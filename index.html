@@ -708,14 +708,44 @@
   </div>
 </div>
 
+<!-- Profile Actions Bottom Sheet (Triggered on Long Press of a Profile Card) -->
+<div class="overlay" id="profileActionsOverlay">
+  <div class="sheet profile-actions-sheet">
+    <button type="button" class="sheet-close" id="closeProfileActionsBtn" title="Close">✕</button>
+    <div class="handle"></div>
+    <div class="pa-header">
+      <div class="pa-avatar" id="paAvatar">🐖</div>
+      <div class="pa-info">
+        <h3 id="paName">Profile Name</h3>
+        <p class="pa-sub" id="paSub">0 entries • Balance: ₹0</p>
+      </div>
+    </div>
+    <div class="pa-actions">
+      <button type="button" class="pa-action-btn edit" id="paEditBtn">
+        <span class="pa-btn-icon">✏️</span>
+        <div class="pa-btn-content">
+          <span class="pa-btn-title">Edit Profile</span>
+          <span class="pa-btn-desc">Change name and choose a different icon</span>
+        </div>
+      </button>
+      <button type="button" class="pa-action-btn delete" id="paDeleteBtn">
+        <span class="pa-btn-icon">🗑️</span>
+        <div class="pa-btn-content">
+          <span class="pa-btn-title">Delete Profile</span>
+          <span class="pa-btn-desc">Permanently remove this book & its records</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Full Profiles Page Overlay (Tab 4) -->
 <div class="profiles-overlay" id="profilesOverlay">
   <div class="settings-header">
     <div>
       <h2>Manage Profiles</h2>
-      <p class="settings-sub">Switch, rename, or add books</p>
+      <p class="settings-sub">Tap to switch • Hold to edit or delete</p>
     </div>
-    <button type="button" class="settings-close" id="closeProfilesOverlayBtn" title="Close">✕</button>
   </div>
   <div class="settings-body" style="padding-top:16px;">
     <div class="profile-list" id="profilePageListContainer"></div>
